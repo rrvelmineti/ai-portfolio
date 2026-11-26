@@ -14,12 +14,13 @@ from ai_platform_auth.db import migrate
 from ai_platform_common.db import database_url, get_engine, make_session_factory
 from fastapi import Depends, FastAPI
 
-migrate(database_url())                                 # or run migrations in your deploy step
-session_factory = make_session_factory(get_engine())    # DATABASE_URL
-auth = Auth.from_env(session_factory)                   # raises ConfigError without a good JWT_SECRET
+migrate(database_url())  # or run migrations in your deploy step
+session_factory = make_session_factory(get_engine())  # DATABASE_URL
+auth = Auth.from_env(session_factory)  # raises ConfigError without a good JWT_SECRET
 
 app = FastAPI()
-auth.install(app)       # /auth/* router + error handlers + request-id and audit middleware
+auth.install(app)  # /auth/* router + error handlers + request-id and audit middleware
+
 
 @app.get("/claims")
 def list_claims(
