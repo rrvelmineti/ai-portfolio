@@ -12,7 +12,7 @@ from __future__ import annotations
 
 from collections.abc import Callable
 
-from ai_platform_gateway.config import GatewayConfig
+from ai_platform_gateway.config import GatewayConfig, default_config
 from ai_platform_gateway.errors import NotSupported
 from ai_platform_gateway.gateway import Gateway
 from ai_platform_gateway.providers.base import (
@@ -101,12 +101,23 @@ def fake_gateway(
     config: GatewayConfig | None = None,
     environ: dict[str, str] | None = None,
 ) -> Gateway:
-    """A Gateway wired to fake providers, with instant (no-sleep) retries."""
+    """A Gateway wired to fake providers, with instant (no-sleep) retries.
+
+    Providers named in the config but not passed in are treated as unconfigured
+    (skipped like a provider without keys).
+    """
+    cfg = config or default_config()
     registry = ProviderRegistry(factories={})
+    for entry in cfg.models.values():
+        if entry.provider not in providers:
+            registry.register(
+                entry.provider,
+                FakeProvider(entry.provider, required_env=("FAKE_PROVIDER_NOT_CONFIGURED",)),
+            )
     for name, provider in providers.items():
         registry.register(name, provider)
     return Gateway(
-        config=config,
+        config=cfg,
         registry=registry,
         retry_policy=RetryPolicy(sleep=lambda _s: None),
         environ=environ or {},
