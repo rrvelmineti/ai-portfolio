@@ -17,7 +17,7 @@ from sqlalchemy import select, update
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
-from ai_platform_auth.audit import RequestInfo, audit
+from ai_platform_auth.audit import audit
 from ai_platform_auth.errors import (
     Conflict,
     InvalidCredentials,
@@ -102,10 +102,7 @@ class AuthService:
         )
 
     # ------------------------------------------------------------------ login
-    def login(
-        self, session: Session, tenant_slug: str, username: str, password: str,
-        request: RequestInfo,
-    ) -> TokenPair:  # fmt: skip
+    def login(self, session: Session, tenant_slug: str, username: str, password: str) -> TokenPair:
         """Authenticate; every failure raises the same ``InvalidCredentials``."""
         now = self.clock()
         tenant = session.scalar(select(Tenant).where(Tenant.slug == tenant_slug.lower()))
@@ -119,7 +116,7 @@ class AuthService:
 
         def fail(reason: str, action: str = "auth.login_failed") -> InvalidCredentials:
             audit(
-                session, action, request=request,
+                session, action,
                 tenant_id=tenant.id if tenant else None,
                 user_id=user.id if user else None,
                 resource_type="user", resource_id=str(user.id) if user else None,
@@ -145,7 +142,7 @@ class AuthService:
                 user.locked_until = now + self.settings.lockout_duration
                 user.failed_logins = 0
                 audit(
-                    session, "auth.lockout", request=request, tenant_id=user.tenant_id,
+                    session, "auth.lockout", tenant_id=user.tenant_id,
                     user_id=user.id, resource_type="user", resource_id=str(user.id),
                     details={"locked_until": user.locked_until.isoformat()},
                 )  # fmt: skip
@@ -158,14 +155,14 @@ class AuthService:
             user.password_hash = new_hash
         pair, _ = self._issue(session, user, family_id=uuid.uuid4())
         audit(
-            session, "auth.login", request=request, tenant_id=user.tenant_id,
+            session, "auth.login", tenant_id=user.tenant_id,
             user_id=user.id, resource_type="user", resource_id=str(user.id),
         )  # fmt: skip
         session.commit()
         return pair
 
     # ------------------------------------------------------------------ refresh / logout
-    def refresh(self, session: Session, raw_token: str, request: RequestInfo) -> TokenPair:
+    def refresh(self, session: Session, raw_token: str) -> TokenPair:
         """Rotate a refresh token. Reusing a revoked token revokes its whole family."""
         now = self.clock()
         row = session.scalar(
@@ -180,7 +177,7 @@ class AuthService:
         if row.revoked_at is not None:
             revoked = self._revoke_family(session, row.family_id)
             audit(
-                session, "auth.refresh_reuse_detected", request=request,
+                session, "auth.refresh_reuse_detected",
                 tenant_id=user.tenant_id, user_id=user.id, resource_type="refresh_token",
                 resource_id=str(row.id),
                 details={"family_id": str(row.family_id), "revoked": revoked},
@@ -203,14 +200,14 @@ class AuthService:
         row.revoked_at = now
         row.replaced_by = new_row.id
         audit(
-            session, "auth.refresh", request=request, tenant_id=user.tenant_id,
+            session, "auth.refresh", tenant_id=user.tenant_id,
             user_id=user.id, resource_type="refresh_token", resource_id=str(new_row.id),
             details={"family_id": str(row.family_id), "replaces": str(row.id)},
         )  # fmt: skip
         session.commit()
         return pair
 
-    def logout(self, session: Session, raw_token: str, request: RequestInfo) -> None:
+    def logout(self, session: Session, raw_token: str) -> None:
         """Revoke the refresh token's family. Unknown tokens are ignored (idempotent)."""
         row = session.scalar(
             select(RefreshToken).where(RefreshToken.token_hash == hash_refresh_token(raw_token))
@@ -220,7 +217,7 @@ class AuthService:
         user = session.get(User, row.user_id)
         self._revoke_family(session, row.family_id)
         audit(
-            session, "auth.logout", request=request,
+            session, "auth.logout",
             tenant_id=user.tenant_id if user else None, user_id=row.user_id,
             resource_type="refresh_token", resource_id=str(row.id),
             details={"family_id": str(row.family_id)},
@@ -238,7 +235,7 @@ class AuthService:
     # ------------------------------------------------------------------ users (admin)
     def create_user(
         self, session: Session, actor: User, scope: TenantScope, *, username: str,
-        email: str, password: str, role: Role, request: RequestInfo,
+        email: str, password: str, role: Role,
     ) -> User:  # fmt: skip
         """Create a user in the actor's tenant."""
         user = User(
@@ -256,7 +253,7 @@ class AuthService:
             session.rollback()
             raise Conflict("Username already exists in this tenant") from exc
         audit(
-            session, "user.create", request=request, tenant_id=scope.tenant_id,
+            session, "user.create", tenant_id=scope.tenant_id,
             user_id=actor.id, resource_type="user", resource_id=str(user.id),
             details={"username": username, "role": role.value},
         )  # fmt: skip
@@ -277,7 +274,7 @@ class AuthService:
 
     def update_user(
         self, session: Session, actor: User, scope: TenantScope, user_id: uuid.UUID,
-        changes: UserChanges, request: RequestInfo,
+        changes: UserChanges,
     ) -> User:  # fmt: skip
         """Change role, (de)activate or unlock a user in the actor's tenant."""
         user = self.get_user(session, scope, user_id)
@@ -300,7 +297,7 @@ class AuthService:
             user.failed_logins = 0
         if diff:
             audit(
-                session, "user.update", request=request, tenant_id=scope.tenant_id,
+                session, "user.update", tenant_id=scope.tenant_id,
                 user_id=actor.id, resource_type="user", resource_id=str(user.id),
                 details=diff,
             )  # fmt: skip
@@ -308,9 +305,7 @@ class AuthService:
         return user
 
     # ------------------------------------------------------------------ tenants (superadmin)
-    def create_tenant(
-        self, session: Session, actor: User, *, slug: str, name: str, request: RequestInfo
-    ) -> Tenant:
+    def create_tenant(self, session: Session, actor: User, *, slug: str, name: str) -> Tenant:
         if not SLUG_RE.match(slug):
             raise Conflict("Slug must be lowercase letters, digits and hyphens")
         tenant = Tenant(id=uuid.uuid4(), slug=slug, name=name)
@@ -321,7 +316,7 @@ class AuthService:
             session.rollback()
             raise Conflict("Tenant slug already exists") from exc
         audit(
-            session, "tenant.create", request=request, tenant_id=tenant.id, user_id=actor.id,
+            session, "tenant.create", tenant_id=tenant.id, user_id=actor.id,
             resource_type="tenant", resource_id=str(tenant.id), details={"slug": slug},
         )  # fmt: skip
         session.commit()
