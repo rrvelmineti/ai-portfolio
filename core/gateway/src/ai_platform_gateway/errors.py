@@ -95,6 +95,31 @@ class AllProvidersFailed(GatewayError):
         self.attempts = attempts
 
 
+class GuardrailError(GatewayError):
+    """A guardrail could not run (fail closed): the call was blocked, nothing was sent."""
+
+
+class GuardrailBlocked(GatewayError):
+    """A guardrail blocked the call (PII in ``pii="block"`` mode, injection, canary leak...).
+
+    ``reasons`` are short, log-safe codes; ``score`` is the risk score when relevant.
+    """
+
+    def __init__(self, message: str, *, reasons: list[str], score: float | None = None) -> None:
+        super().__init__(message)
+        self.reasons = reasons
+        self.score = score
+
+
+class PolicyViolation(GatewayError):
+    """A product topic policy matched; ``refusal`` is the message to show the user."""
+
+    def __init__(self, topic: str, refusal: str) -> None:
+        super().__init__(f"blocked topic: {topic}")
+        self.topic = topic
+        self.refusal = refusal
+
+
 RETRYABLE_ERRORS: tuple[type[GatewayError], ...] = (RateLimited, ProviderUnavailable)
 
 
