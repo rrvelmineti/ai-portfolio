@@ -48,6 +48,7 @@ select = [
 
 [tool.ruff.lint.per-file-ignores]
 "**/tests/**" = ["S101", "ANN401"]  # assert and Any-typed fixtures are fine in tests
+"scripts/**" = ["T201"]                # CLI scripts print their output
 
 # ---------------------------------------------------------------- pytest
 [tool.pytest.ini_options]
@@ -55,9 +56,14 @@ testpaths = ["platform", "products"]
 addopts = [
     "--import-mode=importlib",
     "--strict-markers",
+    "-m", "not live",
     "--cov",
     "--cov-report=term-missing",
     "--cov-fail-under=80",
+]
+
+markers = [
+    "live: calls real provider APIs (needs keys; excluded by default, run with -m live)",
 ]
 
 [tool.coverage.run]
@@ -78,4 +84,5 @@ files = [
     "platform/common/tests",
     "platform/gateway/src",
     "platform/gateway/tests",
+    "scripts",
 ]
