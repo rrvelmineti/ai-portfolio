@@ -84,3 +84,14 @@ def run_migrations(
 ) -> None:
     """Upgrade the database to ``revision`` using the migrations in ``script_location``."""
     command.upgrade(alembic_config(script_location, url, version_table), revision)
+
+
+def downgrade_migrations(
+    script_location: Path | str,
+    url: str | URL,
+    *,
+    version_table: str,
+    revision: str = "base",
+) -> None:
+    """Downgrade the database to ``revision`` (default: remove everything)."""
+    command.downgrade(alembic_config(script_location, url, version_table), revision)
