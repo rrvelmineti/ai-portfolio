@@ -88,13 +88,18 @@ models:
     context_limit: null  # verify: context window not confirmed from model page
     supports_images: true
 
-  openai/gpt-4o-mini:
-    # Marked "Deprecated" on the OpenAI model page (2026-11-26); plan a replacement.
+  openai/gpt-6-luna:
+    # OpenAI's named replacement for the deprecated gpt-4o-mini
+    # (developers.openai.com/api/docs/deprecations, checked 2026-11-26); recommended
+    # "for cost-sensitive, high-volume workloads" on the models overview.
     provider: openai
-    model: gpt-4o-mini
-    price_input_per_1m: 0.15
-    price_output_per_1m: 0.60
-    context_limit: 128000
+    model: gpt-6-luna
+    price_input_per_1m: 0.10
+    price_output_per_1m: 0.50
+    context_limit: 1050000
+    # verify: temperature support is not documented; the model has reasoning-effort
+    # controls, so temperature is dropped (dropping it cannot cause a 400).
+    supports_temperature: false
     supports_images: true
 
   openai/text-embedding-3-small:
@@ -163,7 +168,7 @@ aliases:
   fast:
     kind: chat
     description: Low latency / low cost.
-    fallback: [groq/llama-3.1-8b-instant, anthropic/claude-haiku-5-5, openai/gpt-4o-mini]
+    fallback: [groq/llama-3.1-8b-instant, anthropic/claude-haiku-5-5, openai/gpt-6-luna]
   vision:
     kind: chat
     description: Image + text input.
@@ -171,9 +176,10 @@ aliases:
   claude-sonnet:
     kind: chat
     fallback: [anthropic/claude-sonnet-5-5, bedrock/claude-sonnet-5-5]
-  gpt-4o-mini:
+  openai-mini:
     kind: chat
-    fallback: [openai/gpt-4o-mini, azure_openai/chat]
+    description: OpenAI's recommended small model (was the gpt-4o-mini alias).
+    fallback: [openai/gpt-6-luna, azure_openai/chat]
   gemini-flash:
     kind: chat
     fallback: [gemini/gemini-3.8-flash]

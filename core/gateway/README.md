@@ -98,9 +98,10 @@ Routing is config, not code. The file has two sections:
 |---|---|
 | `default` | Claude Sonnet 5.5 (Anthropic) → Claude Sonnet 5.5 (Bedrock) → GPT-4o |
 | `best` | Claude Opus 5.5 (Anthropic) → Claude Opus 5.5 (Bedrock) |
-| `fast` | Groq Llama 3.1 8B → Claude Haiku 5.5 → GPT-4o mini |
+| `fast` | Groq Llama 3.1 8B → Claude Haiku 5.5 → GPT-6 Luna |
 | `vision` | Claude Sonnet 5.5 → GPT-4o → Gemini 3.8 Flash |
-| `claude-sonnet`, `gpt-4o-mini`, `gemini-flash`, `groq-llama` | Pinned to one model family |
+| `openai-mini` | GPT-6 Luna (OpenAI) → Azure OpenAI deployment |
+| `claude-sonnet`, `gemini-flash`, `groq-llama` | Pinned to one model family |
 | `default-embed` | text-embedding-3-small → Azure deployment → gemini-embedding-2 (all 1536-dim) |
 | `titan-embed` | Titan Text Embeddings V2 (1024-dim) |
 

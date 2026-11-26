@@ -6,7 +6,7 @@ from pydantic import ValidationError
 
 REQUIRED_ALIASES = {
     "default", "best", "fast", "vision", "default-embed",
-    "claude-sonnet", "gpt-4o-mini", "gemini-flash", "groq-llama",
+    "claude-sonnet", "openai-mini", "gemini-flash", "groq-llama",
 }  # fmt: skip
 
 
@@ -25,6 +25,14 @@ def test_alias_chains_match_agreed_routing() -> None:
     ]
     assert [e.provider for e in cfg.chain("best")] == ["anthropic", "bedrock"]
     assert cfg.chain("best")[0].model == "claude-opus-5-5"
+
+
+def test_openai_mini_alias_uses_recommended_small_model() -> None:
+    cfg = default_config()
+    assert "gpt-4o-mini" not in cfg.aliases
+    assert [e.model for e in cfg.chain("openai-mini")][0] == "gpt-6-luna"
+    assert cfg.chain("fast")[-1].model == "gpt-6-luna"
+    assert all(m.model != "gpt-4o-mini" for m in cfg.models.values())
 
 
 def test_claude_entries_disable_temperature() -> None:

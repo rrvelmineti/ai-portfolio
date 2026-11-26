@@ -5,6 +5,14 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Changed — Phase 0.3 cleanup
+- Renamed the top-level `platform/` folder to `core/` (package names unchanged) and
+  removed the pytest stdlib-`platform` workaround; the regression test stays.
+  See the ADR 0001 revision note.
+- Gateway: the `gpt-4o-mini` alias is now `openai-mini` and routes to `gpt-6-luna`,
+  OpenAI's named replacement for the deprecated `gpt-4o-mini`. The `fast` chain
+  ends in `gpt-6-luna` as well.
+
 ### Added — Phase 0.2: Model gateway
 - `ai_platform_gateway` (`platform/gateway`): `complete()` / `embed()`, the single
   entry point for AI model calls, with `CompletionResult` / `EmbeddingResult`.
