@@ -7,6 +7,7 @@ members = [
     "ai-platform-auth",
     "ai-platform-common",
     "ai-platform-gateway",
+    "ai-platform-observability",
     "ai-portfolio",
 ]
 
@@ -86,6 +87,29 @@ requires-dist = [
 ]
 
 [[package]]
+name = "ai-platform-observability"
+version = "0.1.0"
+source = { editable = "core/observability" }
+dependencies = [
+    { name = "ai-platform-common" },
+    { name = "ai-platform-gateway" },
+    { name = "fastapi" },
+    { name = "langsmith" },
+    { name = "prometheus-client" },
+    { name = "sentry-sdk" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "ai-platform-common", editable = "core/common" },
+    { name = "ai-platform-gateway", editable = "core/gateway" },
+    { name = "fastapi", specifier = "==0.165.0" },
+    { name = "langsmith", specifier = "==0.16.2" },
+    { name = "prometheus-client", specifier = "==0.26.0" },
+    { name = "sentry-sdk", specifier = "==3.0.1" },
+]
+
+[[package]]
 name = "ai-portfolio"
 version = "0.1.0"
 source = { virtual = "." }
@@ -93,6 +117,7 @@ dependencies = [
     { name = "ai-platform-auth" },
     { name = "ai-platform-common" },
     { name = "ai-platform-gateway" },
+    { name = "ai-platform-observability" },
 ]
 
 [package.dev-dependencies]
@@ -112,6 +137,7 @@ requires-dist = [
     { name = "ai-platform-auth", editable = "core/auth" },
     { name = "ai-platform-common", editable = "core/common" },
     { name = "ai-platform-gateway", editable = "core/gateway" },
+    { name = "ai-platform-observability", editable = "core/observability" },
 ]
 
 [package.metadata.requires-dev]
@@ -1066,6 +1092,15 @@ wheels = [
 ]
 
 [[package]]
+name = "prometheus-client"
+version = "0.26.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/52/73/f1334c29c2af4cd9dba6c7817e61b611bd0215e2eb5565c6064a4de18802/prometheus_client-0.26.0.tar.gz", hash = "sha256:04a91bcf94e2cf74a44a1a874d651a2e853ed354b6e822f3b7487751465d5c2b", size = 92910, upload-time = "2026-07-24T19:36:41.893Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/eb/a3/b69efbf4143b5b9859b977770bbbabcc2796b702fa69dc40271e45cd5a56/prometheus_client-0.26.0-py3-none-any.whl", hash = "sha256:fa93d06737aa02bacd05794768508bb97d2fbee28cb3bca04eaae92f0ca953d6", size = 64494, upload-time = "2026-07-24T19:36:40.854Z" },
+]
+
+[[package]]
 name = "psycopg"
 version = "3.3.9"
 source = { registry = "https://pypi.org/simple" }
@@ -1351,6 +1386,19 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/49/c5/0a5ce655109cb96b8dfad36908a4e108d15f5dc2eff8fbc3146c4312e704/s3transfer-0.19.3.tar.gz", hash = "sha256:8326acc3d056d7f7b8a37110c7d2aea41f67e83f6ae79cd3b5fbcca34c726406", size = 166087, upload-time = "2026-10-19T19:19:49.751Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/e2/a4/88f9e10498759121060b8050a1554753dfc04df39bbbcc7aad9ecc8d9440/s3transfer-0.19.3-py3-none-any.whl", hash = "sha256:24eb7535804306355e31c952a90022bf5b2f9d760f9a11062c7493a217c08553", size = 90252, upload-time = "2026-10-19T19:19:48.309Z" },
+]
+
+[[package]]
+name = "sentry-sdk"
+version = "3.0.1"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "certifi" },
+    { name = "urllib3" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/5a/25/705f7ede684ad1221c46b82f4dc41946cd3ad674b129fe43e8bbf09dfedb/sentry_sdk-3.0.1.tar.gz", hash = "sha256:f70e3b7e789e2bfbb8d5614615037ab73303647aa7f782cc442452c6289696d7", size = 894494, upload-time = "2026-11-25T13:07:08.45Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/a3/42/71f6dc2a1179b54526ca93b429e7311953c944eafb5424ce4ed065a32a25/sentry_sdk-3.0.1-py3-none-any.whl", hash = "sha256:feb0c131d2e497842e968f13363ef5f065f61d2517be005328766bc00e28e4b8", size = 477923, upload-time = "2026-11-25T13:07:06.904Z" },
 ]
 
 [[package]]
