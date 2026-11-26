@@ -63,8 +63,8 @@ writing any files for that phase.** Phases and their status live in `docs/plan.m
 ```
 ai-portfolio/
 ├── core/                 # shared platform components
-│   ├── gateway/          # API gateway / routing in front of products
-│   ├── auth/             # authentication & authorization
+│   ├── gateway/          # model gateway: the only way products call AI models
+│   ├── auth/             # authentication, roles, tenants, audit log
 │   ├── observability/    # JSON logging, tracing, LangSmith integration
 │   ├── guardrails/       # PII redaction (Presidio), input/output safety checks
 │   └── common/           # shared utilities and base types

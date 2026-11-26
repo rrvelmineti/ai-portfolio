@@ -5,6 +5,31 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Added — Phase 0.3: Authentication, roles and audit log
+- `ai_platform_auth` (`core/auth`), mounted by any FastAPI product with `Auth.install(app)`:
+  - Endpoints: `/auth/login` (OAuth2 form plus tenant), `/refresh`, `/logout`, `/me`;
+    admin `/users` (create, list, role, deactivate, unlock); superadmin `/tenants`.
+  - Dependencies: `get_current_user`, `require_role` (admin > analyst > viewer),
+    `require_superadmin`, `get_tenant_scope`.
+- Postgres schema `auth` with Alembic migrations:
+  - `tenants`, `users` and `refresh_tokens`;
+  - an append-only `audit_log`, with a trigger that blocks UPDATE, DELETE and TRUNCATE.
+- Security:
+  - Argon2id passwords (12+ characters);
+  - HS256 access tokens valid 15 minutes, with a startup check that `JWT_SECRET`
+    is at least 32 bytes;
+  - rotating 7-day refresh tokens with reuse detection that revokes the whole family;
+  - lockout after 5 failures for 15 minutes, with one generic login error;
+  - per-IP login rate limiting behind a `RateLimiter` interface;
+  - tenant isolation through `TenantScope`.
+- `audit()` helper, request-ID middleware, and audit middleware for every write request.
+- `ai_platform_common.db`: engine, sessions, Alembic migrations runner.
+- `docker-compose.yml` (Postgres 16 with pgvector); a CI Postgres service container,
+  with database tests required in CI.
+- `scripts/seed_demo.py` (demo tenant and users, passwords from env vars) and
+  `core/auth/demo_app.py` (one endpoint per role).
+- ADR 0003 and `core/auth/README.md`.
+
 ### Changed — Phase 0.3 cleanup
 - Renamed the top-level `platform/` folder to `core/` (package names unchanged) and
   removed the pytest stdlib-`platform` workaround; the regression test stays.
