@@ -14,8 +14,6 @@ from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 DEFAULT_MODELS_PATH = Path(__file__).with_name("models.yaml")
 
-ProviderName = Literal["anthropic", "openai", "azure_openai", "bedrock", "gemini", "groq"]
-
 _ENV_REF = re.compile(r"^\$\{([A-Z0-9_]+)\}$")
 
 

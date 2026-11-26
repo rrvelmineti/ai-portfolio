@@ -5,11 +5,11 @@ is product-specific: products depend on the platform, never the other way round.
 
 | Folder | Purpose |
 |---|---|
-| `gateway/` | API gateway: routing, rate limiting, request validation |
+| `gateway/` | Model gateway: the only way products call AI models (`ai_platform_gateway`) |
 | `auth/` | Authentication and authorization |
 | `observability/` | Structured JSON logging, tracing, metrics, LangSmith |
 | `guardrails/` | PII detection/redaction (Presidio) and LLM input/output safety |
-| `common/` | Shared utilities, config loading, base types |
+| `common/` | Shared utilities: env config, JSON logging, base types |
 
 > Note: this folder is **not** a Python package (it would shadow the stdlib
 > `platform` module). Each sub-folder ships its own package, e.g.
