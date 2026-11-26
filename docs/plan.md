@@ -16,6 +16,9 @@ common utilities, CI and infrastructure.
   - 0.1 Foundation (repo structure, tooling, CI) — **Done**
   - 0.2 Model gateway (`ai_platform_gateway`: providers, routing, fallback,
     retries, cost, logging, LangChain adapter) — **Done**
+  - 0.3 Auth (`ai_platform_auth`: tenants, users, roles, JWT + rotating refresh
+    tokens, lockout, rate limiting, append-only audit log; `platform/` renamed to
+    `core/`) — **Done**
 
 ## Claims Onboarding
 

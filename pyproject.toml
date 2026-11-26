@@ -4,7 +4,7 @@ version = "0.1.0"
 description = "Production-grade AI portfolio monorepo: shared platform + four products."
 readme = "README.md"
 requires-python = ">=3.12,<3.13"
-dependencies = ["ai-platform-common", "ai-platform-gateway"]
+dependencies = ["ai-platform-auth", "ai-platform-common", "ai-platform-gateway"]
 
 [dependency-groups]
 dev = [
@@ -15,17 +15,19 @@ dev = [
     "pytest-cov>=6.0",
     "ruff>=0.8",
     "types-pyyaml==6.0.12.20261122",
+    "uvicorn==0.54.0",
 ]
 
 [tool.uv]
 package = false
 
 [tool.uv.workspace]
-members = ["platform/common", "platform/gateway"]
+members = ["core/auth", "core/common", "core/gateway"]
 
 [tool.uv.sources]
 ai-platform-common = { workspace = true }
 ai-platform-gateway = { workspace = true }
+ai-platform-auth = { workspace = true }
 
 # ---------------------------------------------------------------- Ruff
 [tool.ruff]
@@ -47,12 +49,12 @@ select = [
 ]
 
 [tool.ruff.lint.per-file-ignores]
-"**/tests/**" = ["S101", "ANN401"]  # assert and Any-typed fixtures are fine in tests
+"**/tests/**" = ["S101", "ANN401", "S105", "S106"]  # asserts, Any fixtures, synthetic passwords
 "scripts/**" = ["T201"]                # CLI scripts print their output
 
 # ---------------------------------------------------------------- pytest
 [tool.pytest.ini_options]
-testpaths = ["platform", "products"]
+testpaths = ["core", "products"]
 addopts = [
     "--import-mode=importlib",
     "--strict-markers",
@@ -67,7 +69,7 @@ markers = [
 ]
 
 [tool.coverage.run]
-source = ["platform", "products"]
+source = ["core", "products"]
 omit = ["**/tests/**"]
 branch = true
 
@@ -79,10 +81,17 @@ skip_empty = true
 [tool.mypy]
 python_version = "3.12"
 strict = true
+# Test modules are named by path (core.auth.tests.conftest), packages from src/.
+explicit_package_bases = true
+namespace_packages = true
+mypy_path = ["core/auth/src", "core/common/src", "core/gateway/src"]
 files = [
-    "platform/common/src",
-    "platform/common/tests",
-    "platform/gateway/src",
-    "platform/gateway/tests",
+    "core/auth/demo_app.py",
+    "core/auth/src",
+    "core/auth/tests",
+    "core/common/src",
+    "core/common/tests",
+    "core/gateway/src",
+    "core/gateway/tests",
     "scripts",
 ]

@@ -43,8 +43,9 @@ writing any files for that phase.** Phases and their status live in `docs/plan.m
   gitignored and `.env.example` documents the variable names with dummy values.
 - **Synthetic data only.** No real customer, personal, or production data anywhere
   in the repo (fixtures, seeds, notebooks, tests).
-- Never name a Python package `platform` (it shadows the stdlib module). Platform
-  code lives in packages such as `platform/common/src/ai_platform_common`. Product
+- Shared platform code lives under `core/` (never a folder or package named after a
+  stdlib module, e.g. `platform`). Each component ships its own package, such as
+  `core/common/src/ai_platform_common`. Product
   folders use hyphens; their Python packages use underscores (e.g. `claims_onboarding`).
 
 ## Workflow rules
@@ -61,9 +62,9 @@ writing any files for that phase.** Phases and their status live in `docs/plan.m
 
 ```
 ai-portfolio/
-├── platform/
-│   ├── gateway/          # API gateway / routing in front of products
-│   ├── auth/             # authentication & authorization
+├── core/                 # shared platform components
+│   ├── gateway/          # model gateway: the only way products call AI models
+│   ├── auth/             # authentication, roles, tenants, audit log
 │   ├── observability/    # JSON logging, tracing, LangSmith integration
 │   ├── guardrails/       # PII redaction (Presidio), input/output safety checks
 │   └── common/           # shared utilities and base types
