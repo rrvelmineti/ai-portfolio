@@ -47,7 +47,7 @@ select = [
 ]
 
 [tool.ruff.lint.per-file-ignores]
-"**/tests/**" = ["S101"]  # assert is expected in tests
+"**/tests/**" = ["S101", "ANN401"]  # assert and Any-typed fixtures are fine in tests
 
 # ---------------------------------------------------------------- pytest
 [tool.pytest.ini_options]

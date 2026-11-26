@@ -10,8 +10,7 @@ from ai_platform_gateway import (
     NotSupported,
     TextPart,
 )
-
-from .fakes import FakeProvider, GatewayFactory, NoEmbedProvider
+from ai_platform_gateway.testing import FakeProvider, GatewayFactory, NoEmbedProvider
 
 
 def test_routes_alias_to_first_provider(make_gateway: GatewayFactory) -> None:

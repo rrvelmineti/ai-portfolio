@@ -3,8 +3,7 @@ from __future__ import annotations
 import pytest
 from ai_platform_gateway.config import ModelEntry
 from ai_platform_gateway.cost import compute_cost
-
-from .fakes import FakeProvider, GatewayFactory, completion
+from ai_platform_gateway.testing import FakeProvider, GatewayFactory, completion
 
 
 def entry(**kw: object) -> ModelEntry:

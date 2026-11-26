@@ -11,8 +11,7 @@ from ai_platform_gateway import (
     RateLimited,
 )
 from ai_platform_gateway.retry import RetryPolicy
-
-from .fakes import FakeProvider, GatewayFactory
+from ai_platform_gateway.testing import FakeProvider, GatewayFactory
 
 
 def rl() -> RateLimited:

@@ -9,8 +9,7 @@ from ai_platform_gateway.config import GatewayConfig, load_config
 from ai_platform_gateway.gateway import Gateway
 from ai_platform_gateway.providers.registry import ProviderRegistry
 from ai_platform_gateway.retry import RetryPolicy
-
-from .fakes import FakeProvider, GatewayFactory
+from ai_platform_gateway.testing import FakeProvider, GatewayFactory
 
 TEST_MODELS = """
 models:

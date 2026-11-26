@@ -13,9 +13,8 @@ from ai_platform_gateway.errors import (
     error_from_status,
 )
 from ai_platform_gateway.gateway import Gateway
+from ai_platform_gateway.testing import FakeProvider, GatewayFactory
 from ai_platform_gateway.types import ImagePart, Message, TextPart
-
-from .fakes import FakeProvider, GatewayFactory
 
 
 def test_module_level_functions_use_default_gateway(make_gateway: GatewayFactory) -> None:

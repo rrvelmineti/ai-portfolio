@@ -8,8 +8,7 @@ import logging
 import pytest
 from ai_platform_common.logging import JsonFormatter
 from ai_platform_gateway import AllProvidersFailed, AuthError, CallRecord, on_call_complete
-
-from .fakes import FakeProvider, GatewayFactory
+from ai_platform_gateway.testing import FakeProvider, GatewayFactory
 
 SENSITIVE_PROMPT = "Policyholder Jane Synthetic, DOB 1970-01-01, says the roof leaked"
 FAKE_KEY = "sk-test-NOT-A-REAL-KEY-1234567890"  # noqa: S105 - synthetic

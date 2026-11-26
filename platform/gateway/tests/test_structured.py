@@ -3,9 +3,8 @@ from __future__ import annotations
 import pytest
 from ai_platform_gateway import SchemaValidationError
 from ai_platform_gateway.structured import merge_system, strip_fences
+from ai_platform_gateway.testing import FakeProvider, GatewayFactory, completion
 from pydantic import BaseModel
-
-from .fakes import FakeProvider, GatewayFactory, completion
 
 
 class Claim(BaseModel):

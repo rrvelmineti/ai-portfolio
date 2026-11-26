@@ -1,9 +1,18 @@
-"""Scripted fake providers for unit tests (no network, no SDKs)."""
+"""Test helpers: scripted fake providers (no network, no SDKs, no keys).
+
+Products can use these in their own unit tests::
+
+    from ai_platform_gateway.testing import FakeProvider, fake_gateway
+
+    gw = fake_gateway({"anthropic": FakeProvider("anthropic", ["ok"])})
+    set_gateway(gw)
+"""
 
 from __future__ import annotations
 
-from collections.abc import Callable, Mapping
+from collections.abc import Callable
 
+from ai_platform_gateway.config import GatewayConfig
 from ai_platform_gateway.errors import NotSupported
 from ai_platform_gateway.gateway import Gateway
 from ai_platform_gateway.providers.base import (
@@ -13,6 +22,8 @@ from ai_platform_gateway.providers.base import (
     ProviderCompletion,
     ProviderEmbedding,
 )
+from ai_platform_gateway.providers.registry import ProviderRegistry
+from ai_platform_gateway.retry import RetryPolicy
 
 Step = ProviderCompletion | ProviderEmbedding | BaseException | str
 
@@ -50,7 +61,8 @@ class FakeProvider(BaseProvider):
             return ProviderCompletion(
                 text=f"{self.name}:{step}", input_tokens=100, output_tokens=50, finish_reason="stop"
             )
-        assert isinstance(step, ProviderCompletion)
+        if not isinstance(step, ProviderCompletion):
+            raise TypeError(f"bad scripted step {step!r}")
         return step
 
     def embed(self, request: EmbeddingRequest) -> ProviderEmbedding:
@@ -63,7 +75,8 @@ class FakeProvider(BaseProvider):
         step = self._next(self.embed_steps)
         if isinstance(step, BaseException):
             raise step
-        assert isinstance(step, ProviderEmbedding)
+        if not isinstance(step, ProviderEmbedding):
+            raise TypeError(f"bad scripted step {step!r}")
         return step
 
 
@@ -74,13 +87,27 @@ class NoEmbedProvider(FakeProvider):
         raise NotSupported(f"{self.name} does not support embeddings", provider=self.name)
 
 
-def env(**values: str) -> Mapping[str, str]:
-    """Build a fake environment."""
-    return dict(values)
-
-
 def completion(text: str, inp: int = 10, out: int = 5) -> ProviderCompletion:
+    """A scripted completion step."""
     return ProviderCompletion(text=text, input_tokens=inp, output_tokens=out)
 
 
 GatewayFactory = Callable[..., Gateway]
+
+
+def fake_gateway(
+    providers: dict[str, FakeProvider],
+    *,
+    config: GatewayConfig | None = None,
+    environ: dict[str, str] | None = None,
+) -> Gateway:
+    """A Gateway wired to fake providers, with instant (no-sleep) retries."""
+    registry = ProviderRegistry(factories={})
+    for name, provider in providers.items():
+        registry.register(name, provider)
+    return Gateway(
+        config=config,
+        registry=registry,
+        retry_policy=RetryPolicy(sleep=lambda _s: None),
+        environ=environ or {},
+    )
