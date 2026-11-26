@@ -7,6 +7,7 @@ import pytest
 from ai_platform_gateway import hooks
 from ai_platform_gateway.config import GatewayConfig, load_config
 from ai_platform_gateway.gateway import Gateway
+from ai_platform_gateway.guards import PassthroughGuard
 from ai_platform_gateway.providers.registry import ProviderRegistry
 from ai_platform_gateway.retry import RetryPolicy
 from ai_platform_gateway.testing import FakeProvider, GatewayFactory
@@ -60,6 +61,7 @@ def make_gateway(test_config: GatewayConfig, sleeps: list[float]) -> GatewayFact
             registry=registry,
             retry_policy=RetryPolicy(sleep=sleeps.append),
             environ=environ or {},
+            guard=PassthroughGuard(),  # gateway unit tests don't load the Presidio model
         )
 
     return factory

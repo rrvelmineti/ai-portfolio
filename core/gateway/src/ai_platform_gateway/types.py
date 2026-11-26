@@ -96,6 +96,13 @@ class CompletionResult(BaseModel):
     attempts: int
     finish_reason: str | None = None
     attempt_records: list[AttemptRecord] = Field(default_factory=list)
+    # Guardrails (counts and codes only; never values)
+    pii_mode: str = "mask"
+    mapping_id: str | None = None  # for unmask() within the same request
+    pii_entities: dict[str, int] = Field(default_factory=dict)
+    injection_score: float | None = None
+    guard_flags: list[str] = Field(default_factory=list)  # input side, e.g. untrusted content
+    output_flags: list[str] = Field(default_factory=list)  # e.g. output_pii:PERSON
 
 
 class EmbeddingResult(BaseModel):
@@ -113,3 +120,6 @@ class EmbeddingResult(BaseModel):
     fallback_used: bool = False
     attempts: int = 1
     attempt_records: list[AttemptRecord] = Field(default_factory=list)
+    pii_mode: str = "mask"
+    mapping_id: str | None = None
+    pii_entities: dict[str, int] = Field(default_factory=dict)

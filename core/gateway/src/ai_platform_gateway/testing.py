@@ -15,6 +15,7 @@ from collections.abc import Callable
 from ai_platform_gateway.config import GatewayConfig, default_config
 from ai_platform_gateway.errors import NotSupported
 from ai_platform_gateway.gateway import Gateway
+from ai_platform_gateway.guards import Guard, PassthroughGuard
 from ai_platform_gateway.providers.base import (
     BaseProvider,
     CompletionRequest,
@@ -100,11 +101,14 @@ def fake_gateway(
     *,
     config: GatewayConfig | None = None,
     environ: dict[str, str] | None = None,
+    guard: Guard | None = None,
 ) -> Gateway:
     """A Gateway wired to fake providers, with instant (no-sleep) retries.
 
     Providers named in the config but not passed in are treated as unconfigured
-    (skipped like a provider without keys).
+    (skipped like a provider without keys). ``guard`` defaults to ``PassthroughGuard``
+    so product unit tests don't load the Presidio model; pass the real guardrails guard
+    in integration tests.
     """
     cfg = config or default_config()
     registry = ProviderRegistry(factories={})
@@ -121,4 +125,5 @@ def fake_gateway(
         registry=registry,
         retry_policy=RetryPolicy(sleep=lambda _s: None),
         environ=environ or {},
+        guard=guard or PassthroughGuard(),
     )
