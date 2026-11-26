@@ -49,7 +49,7 @@ select = [
 ]
 
 [tool.ruff.lint.per-file-ignores]
-"**/tests/**" = ["S101", "ANN401"]  # assert and Any-typed fixtures are fine in tests
+"**/tests/**" = ["S101", "ANN401", "S105", "S106"]  # asserts, Any fixtures, synthetic passwords
 "scripts/**" = ["T201"]                # CLI scripts print their output
 
 # ---------------------------------------------------------------- pytest
