@@ -53,7 +53,7 @@ def test_formatter_includes_exception() -> None:
     "key",
     ["password", "PASSWORD", "new_password", "access_token", "refresh-token", "token",
      "client_secret", "Authorization", "api_key", "X-API-Key", "apikey", "cookie",
-     "Set-Cookie", "SENTRY_DSN", "jwt", "aws_secret_access_key", "private_key"],
+     "Set-Cookie", "cookies", "SENTRY_DSN", "jwt", "aws_secret_access_key", "private_key"],
 )  # fmt: skip
 def test_sensitive_keys(key: str) -> None:
     assert is_sensitive_key(key)
@@ -109,3 +109,12 @@ def test_configure_logging_is_idempotent_and_routes_frameworks() -> None:
     assert logging.getLogger("uvicorn.access").disabled
     assert logging.getLogger("sqlalchemy.engine").level == logging.WARNING
     assert get_logger("x").name == "x"
+
+
+def test_context_is_stamped_at_record_creation() -> None:
+    configure_logging("INFO")
+    with request_context("req-stamped"):
+        rec = logging.getLogger("t").makeRecord("t", logging.INFO, __file__, 1, "m", (), None)
+    out = json.loads(JsonFormatter().format(rec))  # formatted after the context ended
+    assert out["request_id"] == "req-stamped"
+    assert "tenant_id" not in out  # None values are omitted

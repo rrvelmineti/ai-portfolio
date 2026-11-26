@@ -70,3 +70,15 @@ def session(session_factory: sessionmaker[Session]) -> Iterator[Session]:
     s = session_factory()
     yield s
     s.close()
+
+
+@pytest.fixture
+def committed_session_factory(engine: Engine) -> sessionmaker[Session]:
+    """Real sessions with their own connections (rows are committed for real).
+
+    For end-to-end HTTP tests where several writers (auth, audit, llm_calls recorder)
+    run in one request: in the rollback harness they share one connection, and an
+    outer session closing would roll back the others' savepoints. The throwaway test
+    database is dropped at the end of the session, and tests use unique ids.
+    """
+    return sessionmaker(bind=engine, expire_on_commit=False)

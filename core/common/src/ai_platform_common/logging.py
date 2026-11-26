@@ -30,7 +30,7 @@ REDACTED = "[redacted]"
 
 # A key is sensitive when any of its parts (split on _ - . and spaces) is one of these...
 _SENSITIVE_PARTS = frozenset(
-    {"password", "passwd", "pwd", "token", "secret", "authorization", "cookie", "apikey",
+    {"password", "passwd", "pwd", "token", "secret", "authorization", "cookie", "cookies", "apikey",
      "jwt", "dsn", "credential", "credentials", "passphrase"}
 )  # fmt: skip
 # ...or when it contains one of these two-part names.
@@ -89,9 +89,13 @@ class JsonFormatter(logging.Formatter):
             "logger": record.name,
             "message": record.getMessage(),
         }
-        ctx = current()
-        if ctx is not None:
-            payload.update(ctx.log_fields())
+        stamped = getattr(record, "context_fields", None)
+        if isinstance(stamped, dict):
+            payload.update({k: v for k, v in stamped.items() if v is not None})
+        else:
+            ctx = current()
+            if ctx is not None:
+                payload.update({k: v for k, v in ctx.log_fields().items() if v is not None})
         fields = getattr(record, "fields", None)
         if isinstance(fields, Mapping):
             payload.update(redact(fields))
@@ -107,6 +111,24 @@ _QUIET = {"sqlalchemy.engine": logging.WARNING, "sqlalchemy.pool": logging.WARNI
           "httpx": logging.WARNING, "httpx2": logging.WARNING}  # fmt: skip
 
 
+def _install_context_record_factory() -> None:
+    """Stamp the request context onto each record when it is *created*, so handlers
+    that format later (queues, test capture) still see the right request_id."""
+    previous = logging.getLogRecordFactory()
+    if getattr(previous, _CONFIGURED_ATTR, False):
+        return
+
+    def factory(*args: Any, **kwargs: Any) -> logging.LogRecord:  # noqa: ANN401
+        record = previous(*args, **kwargs)
+        ctx = current()
+        if ctx is not None:
+            record.context_fields = ctx.log_fields()
+        return record
+
+    setattr(factory, _CONFIGURED_ATTR, True)
+    logging.setLogRecordFactory(factory)
+
+
 def configure_logging(level: str | None = None) -> None:
     """Install one JSON handler on the root logger and route framework loggers to it.
 
@@ -115,6 +137,7 @@ def configure_logging(level: str | None = None) -> None:
     """
     root = logging.getLogger()
     root.setLevel((level or os.environ.get("LOG_LEVEL") or "INFO").upper())
+    _install_context_record_factory()
     if not any(getattr(h, _CONFIGURED_ATTR, False) for h in root.handlers):
         handler = logging.StreamHandler(sys.stderr)
         handler.setFormatter(JsonFormatter())
