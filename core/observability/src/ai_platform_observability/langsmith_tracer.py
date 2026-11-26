@@ -131,6 +131,11 @@ class traced:  # noqa: N801 - used like a function: ``with traced(...)`` / ``@tr
         self._token: Token[RunTree | None] | None = None
         self._start = 0.0
 
+    @property
+    def run(self) -> RunTree | None:
+        """The LangSmith parent run (None when LangSmith is off or failed)."""
+        return self._run
+
     def __enter__(self) -> traced:
         self._start = time.perf_counter()
         tracer = get_tracer()
