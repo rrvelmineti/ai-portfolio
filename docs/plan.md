@@ -11,9 +11,11 @@ Shared foundation used by every product: gateway, auth, observability (JSON
 logging, tracing, LangSmith), guardrails (Presidio PII redaction, LLM safety),
 common utilities, CI and infrastructure.
 
-- Status: **Not started**
+- Status: **In progress**
 - Phases:
-  - 0.1 Foundation (repo structure, tooling, CI) — **In progress**
+  - 0.1 Foundation (repo structure, tooling, CI) — **Done**
+  - 0.2 Model gateway (`ai_platform_gateway`: providers, routing, fallback,
+    retries, cost, logging, LangChain adapter) — **Done**
 
 ## Claims Onboarding
 

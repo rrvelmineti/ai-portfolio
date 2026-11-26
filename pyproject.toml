@@ -4,25 +4,28 @@ version = "0.1.0"
 description = "Production-grade AI portfolio monorepo: shared platform + four products."
 readme = "README.md"
 requires-python = ">=3.12,<3.13"
-dependencies = ["ai-platform-common"]
+dependencies = ["ai-platform-common", "ai-platform-gateway"]
 
 [dependency-groups]
 dev = [
+    "boto3-stubs[bedrock-runtime]==1.44.12",
     "mypy>=1.13",
     "pre-commit>=4.0",
     "pytest>=8.3",
     "pytest-cov>=6.0",
     "ruff>=0.8",
+    "types-pyyaml==6.0.12.20261122",
 ]
 
 [tool.uv]
 package = false
 
 [tool.uv.workspace]
-members = ["platform/common"]
+members = ["platform/common", "platform/gateway"]
 
 [tool.uv.sources]
 ai-platform-common = { workspace = true }
+ai-platform-gateway = { workspace = true }
 
 # ---------------------------------------------------------------- Ruff
 [tool.ruff]
@@ -44,7 +47,8 @@ select = [
 ]
 
 [tool.ruff.lint.per-file-ignores]
-"**/tests/**" = ["S101"]  # assert is expected in tests
+"**/tests/**" = ["S101", "ANN401"]  # assert and Any-typed fixtures are fine in tests
+"scripts/**" = ["T201"]                # CLI scripts print their output
 
 # ---------------------------------------------------------------- pytest
 [tool.pytest.ini_options]
@@ -52,9 +56,14 @@ testpaths = ["platform", "products"]
 addopts = [
     "--import-mode=importlib",
     "--strict-markers",
+    "-m", "not live",
     "--cov",
     "--cov-report=term-missing",
     "--cov-fail-under=80",
+]
+
+markers = [
+    "live: calls real provider APIs (needs keys; excluded by default, run with -m live)",
 ]
 
 [tool.coverage.run]
@@ -70,4 +79,10 @@ skip_empty = true
 [tool.mypy]
 python_version = "3.12"
 strict = true
-files = ["platform/common/src", "platform/common/tests"]
+files = [
+    "platform/common/src",
+    "platform/common/tests",
+    "platform/gateway/src",
+    "platform/gateway/tests",
+    "scripts",
+]
