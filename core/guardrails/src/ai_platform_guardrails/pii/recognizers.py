@@ -66,6 +66,10 @@ PERSON_AFTER_TITLE = (
 )
 
 
+_PHONE_PREFIX = r"(?:\+1[-.\s]?|001[-.\s]?)?"
+_PHONE_EXT = r"(?:\s?(?:x|ext\.?)\s?\d{1,6})?\b"
+
+
 def luhn_valid(digits: str) -> bool:
     """Standard Luhn (mod 10) check over a digit string."""
     total = 0
@@ -118,6 +122,21 @@ def default_recognizers() -> list[PatternRecognizer]:
     """Recognizers added to every analyzer. Formats are documented in the README."""
     return [
         NpiRecognizer(),
+        # Unambiguous US phone formats score on their own; bare 10 digits need context.
+        _pattern(
+            "PHONE_NUMBER",
+            "UsPhoneFormatRecognizer",
+            [
+                (
+                    rf"(?:(?<=\s)|^|(?<=[(:;,])){_PHONE_PREFIX}\(\d{{3}}\)\s?\d{{3}}[-.\s]\d{{4}}"
+                    rf"{_PHONE_EXT}",
+                    0.7,
+                ),
+                (rf"(?<![\w+]){_PHONE_PREFIX}\d{{3}}[-.]\d{{3}}[-.]\d{{4}}{_PHONE_EXT}", 0.65),
+                (r"\b\d{10}\b", 0.2),
+            ],
+            ["phone", "tel", "telephone", "mobile", "cell", "call", "fax", "contact"],
+        ),  # fmt: skip
         _pattern(
             "MEMBER_ID",
             "MemberIdRecognizer",
