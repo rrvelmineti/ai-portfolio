@@ -5,6 +5,41 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Added — Phase 0.4: Observability
+- `ai_platform_common.context`: per-request `RequestContext` (request_id, tenant, user,
+  route template, product) and a pure-ASGI middleware that reuses or creates
+  `X-Request-ID` and echoes it in the response.
+- Logging:
+  - JSON lines with the request context on every line;
+  - key-based `redact()` / `RedactionFilter` (password, token, secret,
+    authorization, api_key, cookie, ...), with token counts kept;
+  - uvicorn, FastAPI and SQLAlchemy logs routed through it.
+- `ai_platform_observability` (`core/observability`):
+  - `install_observability(app, session_factory, product=...)`;
+  - one `http.access` line per request (route template, status, latency);
+  - Prometheus `/metrics`, `/healthz`, `/readyz` (503 when the DB is down);
+  - optional Sentry with no-PII data collection and redaction.
+- AI-call tracing:
+  - one `observability.llm_calls` row per call, with cost and latency and no text
+    (Alembic migration);
+  - LLM metrics;
+  - optional LangSmith runs: metadata only, content behind `LANGSMITH_LOG_CONTENT`
+    and the `redact_content()` hook;
+  - `traced()` groups workflow steps;
+  - tracing failures never break an AI call.
+- Gateway: `complete()`/`embed()` take the request id, tenant, user and product from
+  the context; prompt/response text reaches hooks only when capture is enabled.
+- `scripts/usage_report.py` (cost, calls, avg/p95 latency and fallback rate per
+  product, provider and day) and `scripts/smoke_observability.py` (live).
+- ADR 0004 and `core/observability/README.md`.
+
+### Changed — Phase 0.4
+- Auth uses the shared request context: `RequestInfo` and auth's request-id middleware
+  are removed; `audit()` takes request details from the context; `AuditMiddleware` is
+  pure ASGI.
+- `ai_platform_common.testing` holds the shared Postgres test-database helpers.
+- `fake_gateway()` treats providers it wasn't given as unconfigured.
+
 ### Added — Phase 0.3: Authentication, roles and audit log
 - `ai_platform_auth` (`core/auth`), mounted by any FastAPI product with `Auth.install(app)`:
   - Endpoints: `/auth/login` (OAuth2 form plus tenant), `/refresh`, `/logout`, `/me`;

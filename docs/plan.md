@@ -19,6 +19,9 @@ common utilities, CI and infrastructure.
   - 0.3 Auth (`ai_platform_auth`: tenants, users, roles, JWT + rotating refresh
     tokens, lockout, rate limiting, append-only audit log; `platform/` renamed to
     `core/`) — **Done**
+  - 0.4 Observability (`ai_platform_observability`: request context, JSON logs with
+    redaction, access log, `llm_calls` table, LangSmith, Prometheus metrics, health,
+    Sentry, usage report) — **Done**
 
 ## Claims Onboarding
 
