@@ -54,6 +54,7 @@ class GuardrailsGuard:
         self.input_checks: list[InputCheck] = list(input_checks or [])
         self.output_checks: list[OutputCheck] = list(output_checks or [])
         self.after_mask: list[AfterMaskHook] = list(after_mask or [])
+        self.policy: Any = None  # ProductPolicy, set by build_guard
 
     @property
     def config(self) -> GuardrailsPiiConfig:
