@@ -1,11 +1,10 @@
-# platform/gateway — model gateway
+# core/gateway — model gateway
 
 The one way products call AI models. Product code never imports a provider SDK;
 it calls `complete()` or `embed()` with an **alias**, and the gateway picks the
 provider, retries, fails over, works out the cost and logs the call.
 
-Python package: `ai_platform_gateway` (in `src/`). The folder is `platform/gateway`,
-but `platform` is never a Python package, because it would shadow the stdlib module.
+Python package: `ai_platform_gateway` (in `src/`); the folder is `core/gateway`.
 
 ## Calling it
 

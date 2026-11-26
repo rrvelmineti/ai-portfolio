@@ -34,3 +34,17 @@ many libraries import.
 - Coverage is measured across all of `platform/` and `products/`, so every new
   module must ship with tests to keep CI green.
 - Contributors need `uv` installed; CI uses `astral-sh/setup-uv`.
+
+## Revision 2026-11-26 (Phase 0.3): `platform/` renamed to `core/`
+
+Keeping `platform/` out of the Python package namespace was not enough. pytest's
+`--import-mode=importlib` names test modules by their path from the repo root
+(`platform.common.tests.test_x`), and when a parent name is already imported but has no
+`__path__` (as with the stdlib `platform` module) it re-imports it from the folder.
+That replaced the stdlib module during test runs and broke botocore and truststore.
+Phase 0.2 worked around it in a root `conftest.py`.
+
+The folder is now `core/`, which matches no stdlib or installed module, and the
+workaround is gone. `core/common/tests/test_stdlib_platform.py` stays as a guard.
+Rule going forward: no top-level folder may share a name with a stdlib or installed
+module. Python package names (`ai_platform_*`) are unchanged.

@@ -21,7 +21,7 @@ dev = [
 package = false
 
 [tool.uv.workspace]
-members = ["platform/common", "platform/gateway"]
+members = ["core/common", "core/gateway"]
 
 [tool.uv.sources]
 ai-platform-common = { workspace = true }
@@ -52,7 +52,7 @@ select = [
 
 # ---------------------------------------------------------------- pytest
 [tool.pytest.ini_options]
-testpaths = ["platform", "products"]
+testpaths = ["core", "products"]
 addopts = [
     "--import-mode=importlib",
     "--strict-markers",
@@ -67,7 +67,7 @@ markers = [
 ]
 
 [tool.coverage.run]
-source = ["platform", "products"]
+source = ["core", "products"]
 omit = ["**/tests/**"]
 branch = true
 
@@ -80,9 +80,9 @@ skip_empty = true
 python_version = "3.12"
 strict = true
 files = [
-    "platform/common/src",
-    "platform/common/tests",
-    "platform/gateway/src",
-    "platform/gateway/tests",
+    "core/common/src",
+    "core/common/tests",
+    "core/gateway/src",
+    "core/gateway/tests",
     "scripts",
 ]

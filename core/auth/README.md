@@ -1,4 +1,4 @@
-# platform/auth
+# core/auth
 
 Authentication and authorization shared by all products: token validation,
 service-to-service auth, and role/permission checks exposed as FastAPI dependencies.

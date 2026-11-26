@@ -1,7 +1,7 @@
 # products
 
 The four AI products in this portfolio. Each product is an independent service
-built on top of the shared `platform/`. All data used by products is synthetic.
+built on top of the shared platform in `core/`. All data used by products is synthetic.
 
 | Folder | Product |
 |---|---|

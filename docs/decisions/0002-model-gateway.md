@@ -52,7 +52,7 @@ sit behind a small `Provider` protocol.
 - **`langchain_adapter.py`** provides `GatewayChatModel` (a `BaseChatModel`) and
   `GatewayEmbeddings`. They wrap `complete()` / `embed()`, so LangChain sits *on
   top of* the gateway, never inside it.
-- **The folder is repurposed.** `platform/gateway` was first described as an HTTP API
+- **The folder is repurposed.** `core/gateway` (then `platform/gateway`) was first described as an HTTP API
   gateway; it is now the model gateway.
 
 ## Alternatives in more detail
@@ -83,7 +83,7 @@ sit behind a small `Provider` protocol.
 
 - **We maintain six adapters**, each about 100–150 lines including error mapping.
   Each new provider means one more file and one more test module, using the recipe
-  in `platform/gateway/README.md`.
+  in `core/gateway/README.md`.
 - **Fewer features than LangChain or LiteLLM out of the box.** There's no streaming,
   tool calling, async or prompt caching yet. They will be added when a product
   needs them, behind the same interface.
@@ -101,5 +101,5 @@ sit behind a small `Provider` protocol.
   vector index is still a product-level decision.
 - **Future work: an HTTP edge component.** Request routing to product services,
   CORS, rate limiting and correlation IDs were in the original `platform/gateway`
-  description. They belong to a separate component (for example `platform/edge`),
+  description. They belong to a separate component (for example `core/edge`),
   to be planned in its own phase. The model gateway stays an in-process library.

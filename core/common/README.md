@@ -1,4 +1,4 @@
-# platform/common
+# core/common
 
 Shared, dependency-light utilities used by the rest of the platform and by products:
 configuration loading from environment variables, base types, and helpers.
