@@ -1,6 +1,7 @@
 """The demo app and the seed script (both loaded from their file paths)."""
 
 import importlib.util
+from collections.abc import Iterator
 from pathlib import Path
 from types import ModuleType
 from typing import Any
@@ -28,6 +29,18 @@ def load(path: Path, name: str) -> ModuleType:
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     return module
+
+
+@pytest.fixture(autouse=True)
+def _restore_gateway_hooks() -> Iterator[None]:
+    """The demo app registers the observability recorder process-wide; undo it."""
+    from ai_platform_gateway import hooks
+    from ai_platform_observability.recorder import unregister_recorders
+
+    saved = list(hooks.on_call_complete)
+    yield
+    unregister_recorders()
+    hooks.on_call_complete[:] = saved
 
 
 @pytest.fixture(scope="module")
@@ -110,5 +123,8 @@ def test_demo_app_role_endpoints(
             assert got == codes, username
             note = client.post("/demo/notes", headers={**h, "X-Request-ID": f"note-{username}"})
             assert note.status_code == (403 if username == "demo-viewer" else 201)
+        assert client.get("/healthz").json() == {"status": "ok"}
+        assert client.get("/readyz").status_code == 200
+        assert b"http_requests_total" in client.get("/metrics").content
     row = session.scalar(select(AuditLog).where(AuditLog.request_id == "note-demo-analyst"))
     assert row is not None and row.action == "http.post" and row.details == {"status": 201}

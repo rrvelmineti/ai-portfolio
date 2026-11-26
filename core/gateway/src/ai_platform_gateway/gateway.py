@@ -9,6 +9,7 @@ from functools import partial
 from typing import Any, Literal, TypeVar
 
 from ai_platform_common.config import debug_log_prompts
+from ai_platform_common.context import current, current_request_id
 from ai_platform_common.logging import get_logger
 from pydantic import BaseModel, ValidationError
 
@@ -37,6 +38,7 @@ from ai_platform_gateway.types import (
     CompletionResult,
     EmbeddingResult,
     Message,
+    TextPart,
 )
 
 log = get_logger("ai_platform_gateway")
@@ -104,7 +106,7 @@ class Gateway:
         request_id: str | None = None,
     ) -> CompletionResult:
         """Run a chat completion through ``model``'s fallback chain."""
-        rid = request_id or str(uuid.uuid4())
+        rid = request_id or current_request_id() or str(uuid.uuid4())
         start = time.perf_counter()
         messages = [Message(role="user", content=prompt)] if isinstance(prompt, str) else prompt
         records: list[AttemptRecord] = []
@@ -156,10 +158,12 @@ class Gateway:
                         ) from second_error
         except _ChainError as exc:
             records.extend(exc.records)
-            self._finish("complete", rid, model, start, records, metadata, error=exc.error)
+            self._finish("complete", rid, model, start, records, metadata, error=exc.error,
+                         content=(system, messages, None))  # fmt: skip
             raise exc.error from exc.error.__cause__
         except GatewayError as exc:
-            self._finish("complete", rid, model, start, records, metadata, error=exc)
+            self._finish("complete", rid, model, start, records, metadata, error=exc,
+                         content=(system, messages, None))  # fmt: skip
             raise
 
         latency = self._finish(
@@ -167,7 +171,7 @@ class Gateway:
             provider=outcome.entry.provider, model_id=outcome.model_id,
             input_tokens=in_tok, output_tokens=out_tok, cost=cost,
             fallback_used=fallback_used,
-            debug_text=(messages, resp.text),
+            content=(system, messages, resp.text),
         )  # fmt: skip
         return CompletionResult(
             text=resp.text,
@@ -196,7 +200,7 @@ class Gateway:
         request_id: str | None = None,
     ) -> EmbeddingResult:
         """Embed one or more texts through ``model``'s fallback chain."""
-        rid = request_id or str(uuid.uuid4())
+        rid = request_id or current_request_id() or str(uuid.uuid4())
         start = time.perf_counter()
         items = [texts] if isinstance(texts, str) else list(texts)
         records: list[AttemptRecord] = []
@@ -219,10 +223,12 @@ class Gateway:
             outcome = self._run_chain(model, call, needs_images=False)
             records = outcome.records
         except _ChainError as exc:
-            self._finish("embed", rid, model, start, exc.records, metadata, error=exc.error)
+            self._finish("embed", rid, model, start, exc.records, metadata, error=exc.error,
+                         content=(None, items, None))  # fmt: skip
             raise exc.error from exc.error.__cause__
         except GatewayError as exc:
-            self._finish("embed", rid, model, start, records, metadata, error=exc)
+            self._finish("embed", rid, model, start, records, metadata, error=exc,
+                         content=(None, items, None))  # fmt: skip
             raise
 
         resp = outcome.value
@@ -231,6 +237,7 @@ class Gateway:
             "embed", rid, model, start, records, metadata,
             provider=outcome.entry.provider, model_id=outcome.model_id,
             input_tokens=resp.tokens, cost=cost, fallback_used=outcome.fallback_used,
+            content=(None, items, None),
         )  # fmt: skip
         return EmbeddingResult(
             vectors=resp.vectors,
@@ -397,11 +404,12 @@ class Gateway:
         output_tokens: int | None = None,
         cost: float | None = None,
         fallback_used: bool = False,
-        debug_text: tuple[list[Message], str] | None = None,
+        content: tuple[str | None, list[Message] | list[str], str | None] | None = None,
     ) -> float:
         """Emit the single structured log line and run hooks. Returns latency in ms."""
         latency = round((time.perf_counter() - start) * 1000, 2)
         status: Literal["ok", "error"] = "ok" if error is None else "error"
+        who = _context_fields(metadata)
         record = hooks.CallRecord(
             request_id=request_id,
             operation="embed" if operation == "embed" else "complete",
@@ -418,7 +426,12 @@ class Gateway:
             latency_ms=latency,
             metadata=dict(metadata or {}),
             attempt_records=list(records),
+            tenant_id=who[0],
+            user_id=who[1],
+            product=who[2],
         )
+        if content is not None and hooks.capture_content():
+            record.content = _call_content(*content)
         fields: dict[str, Any] = {
             "request_id": request_id,
             "operation": record.operation,
@@ -438,9 +451,9 @@ class Gateway:
                 {"provider": r.provider, "outcome": r.outcome, "reason": r.reason} for r in records
             ],
         }
-        if debug_text is not None and debug_log_prompts(self.environ):
-            msgs, output = debug_text
-            fields["prompt"] = [m.text() for m in msgs]
+        if content is not None and debug_log_prompts(self.environ):
+            _system, msgs, output = content
+            fields["prompt"] = [m.text() if isinstance(m, Message) else m for m in msgs]
             fields["response"] = output
         level = log.info if error is None else log.error
         level("gateway.call", extra={"fields": fields})
@@ -450,6 +463,33 @@ class Gateway:
             except Exception:  # never let a hook break a call
                 log.exception("gateway.hook_failed", extra={"fields": {"request_id": request_id}})
         return latency
+
+
+def _context_fields(
+    metadata: dict[str, Any] | None,
+) -> tuple[str | None, str | None, str | None]:
+    """(tenant_id, user_id, product): tenant/user from the request context, product
+    from ``metadata["product"]`` or the context."""
+    ctx = current()
+    product = (metadata or {}).get("product") or (ctx.product if ctx else None)
+    return (
+        str(ctx.tenant_id) if ctx and ctx.tenant_id else None,
+        str(ctx.user_id) if ctx and ctx.user_id else None,
+        str(product) if product else None,
+    )
+
+
+def _call_content(
+    system: str | None, items: list[Message] | list[str], output: str | None
+) -> hooks.CallContent:
+    messages: list[dict[str, str]] = []
+    for item in items:
+        if isinstance(item, Message):
+            text = "".join(p.text if isinstance(p, TextPart) else "[image]" for p in item.parts())
+            messages.append({"role": item.role, "content": text})
+        else:
+            messages.append({"role": "input", "content": item})
+    return hooks.CallContent(system=system, messages=messages, output=output)
 
 
 _default: Gateway | None = None

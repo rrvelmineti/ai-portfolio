@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import ai_platform_gateway as gw
+import ai_platform_gateway.errors as gw_errors
 import pytest
 from ai_platform_gateway.errors import (
     AuthError,
@@ -68,3 +69,13 @@ def test_message_helpers() -> None:
     assert m.text() == "ab" and m.has_images()
     assert not Message(role="user", content="x").has_images()
     assert gw.GatewayError("x").describe() == "GatewayError"
+
+
+def test_fake_gateway_treats_unlisted_providers_as_unconfigured() -> None:
+    from ai_platform_gateway.testing import fake_gateway
+
+    gw = fake_gateway({"openai": FakeProvider("openai")})
+    res = gw.embed("x")  # default-embed chain also names azure_openai and gemini
+    assert res.provider == "openai"
+    with pytest.raises(gw_errors.NoProvidersConfigured):
+        gw.complete("hi", "groq-llama")

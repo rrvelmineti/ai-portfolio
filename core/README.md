@@ -7,9 +7,9 @@ is product-specific: products depend on the platform, never the other way round.
 |---|---|
 | `gateway/` | Model gateway: the only way products call AI models (`ai_platform_gateway`) |
 | `auth/` | Authentication, roles, tenants and append-only audit log (`ai_platform_auth`) |
-| `observability/` | Structured JSON logging, tracing, metrics, LangSmith |
+| `observability/` | Request context wiring, access log, `llm_calls`, LangSmith, Prometheus, health (`ai_platform_observability`) |
 | `guardrails/` | PII detection/redaction (Presidio) and LLM input/output safety |
-| `common/` | Shared utilities: env config, JSON logging, DB helpers |
+| `common/` | Shared utilities: env config, request context, JSON logging + redaction, DB helpers |
 
 > Note: this folder is **not** a Python package. Each sub-folder ships its own
 > package, e.g. `common/src/ai_platform_common`. It was called `platform/` until

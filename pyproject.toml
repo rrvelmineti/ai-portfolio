@@ -4,7 +4,12 @@ version = "0.1.0"
 description = "Production-grade AI portfolio monorepo: shared platform + four products."
 readme = "README.md"
 requires-python = ">=3.12,<3.13"
-dependencies = ["ai-platform-auth", "ai-platform-common", "ai-platform-gateway"]
+dependencies = [
+    "ai-platform-auth",
+    "ai-platform-common",
+    "ai-platform-gateway",
+    "ai-platform-observability",
+]
 
 [dependency-groups]
 dev = [
@@ -22,12 +27,13 @@ dev = [
 package = false
 
 [tool.uv.workspace]
-members = ["core/auth", "core/common", "core/gateway"]
+members = ["core/auth", "core/common", "core/gateway", "core/observability"]
 
 [tool.uv.sources]
 ai-platform-common = { workspace = true }
 ai-platform-gateway = { workspace = true }
 ai-platform-auth = { workspace = true }
+ai-platform-observability = { workspace = true }
 
 # ---------------------------------------------------------------- Ruff
 [tool.ruff]
@@ -84,7 +90,12 @@ strict = true
 # Test modules are named by path (core.auth.tests.conftest), packages from src/.
 explicit_package_bases = true
 namespace_packages = true
-mypy_path = ["core/auth/src", "core/common/src", "core/gateway/src"]
+mypy_path = [
+    "core/auth/src",
+    "core/common/src",
+    "core/gateway/src",
+    "core/observability/src",
+]
 files = [
     "core/auth/demo_app.py",
     "core/auth/src",
@@ -93,5 +104,7 @@ files = [
     "core/common/tests",
     "core/gateway/src",
     "core/gateway/tests",
+    "core/observability/src",
+    "core/observability/tests",
     "scripts",
 ]

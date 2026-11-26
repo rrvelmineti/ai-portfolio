@@ -1,7 +1,7 @@
 """Authentication, roles, tenants and audit log for ai-portfolio FastAPI products."""
 
 from ai_platform_auth.api import Auth, auth_error_response
-from ai_platform_auth.audit import RequestInfo, audit
+from ai_platform_auth.audit import audit
 from ai_platform_auth.errors import (
     AuthError,
     ConfigError,
@@ -30,7 +30,6 @@ __all__ = [
     "PermissionDenied",
     "RateLimitExceeded",
     "RateLimiter",
-    "RequestInfo",
     "Role",
     "Tenant",
     "TenantScope",

@@ -1,12 +1,16 @@
-"""Append-only audit log writer. There is deliberately no update or delete function."""
+"""Append-only audit log writer. There is deliberately no update or delete function.
+
+Request details (request_id, IP, user agent, and the authenticated tenant/user when
+not given explicitly) come from the shared request context.
+"""
 
 from __future__ import annotations
 
 import uuid
-from dataclasses import dataclass
 from typing import Any
 
-from ai_platform_common.logging import get_logger
+from ai_platform_common.context import current
+from ai_platform_common.logging import get_logger, redact
 from sqlalchemy import insert
 from sqlalchemy.orm import Session
 
@@ -14,42 +18,31 @@ from ai_platform_auth.models import AuditLog
 
 log = get_logger("ai_platform_auth.audit")
 
-# Keys whose values must never be written to the audit log or logs.
-_SENSITIVE_KEYS = {"password", "password_hash", "token", "access_token", "refresh_token",
-                   "secret", "jwt_secret", "authorization"}  # fmt: skip
-
-
-@dataclass
-class RequestInfo:
-    """Who/where a request came from. ``audited`` tells the middleware an explicit
-    audit entry was already written, so it does not add a generic one."""
-
-    request_id: str | None = None
-    ip: str | None = None
-    user_agent: str | None = None
-    audited: bool = False
-
-
-def _clean(details: dict[str, Any] | None) -> dict[str, Any]:
-    if not details:
-        return {}
-    return {k: ("[redacted]" if k.lower() in _SENSITIVE_KEYS else v) for k, v in details.items()}
+_UNSET: Any = object()
 
 
 def audit(
     session: Session,
     action: str,
     *,
-    request: RequestInfo | None = None,
-    tenant_id: uuid.UUID | None = None,
-    user_id: uuid.UUID | None = None,
+    tenant_id: uuid.UUID | None = _UNSET,
+    user_id: uuid.UUID | None = _UNSET,
     resource_type: str | None = None,
     resource_id: str | None = None,
     details: dict[str, Any] | None = None,
 ) -> None:
-    """Insert one audit row in the caller's transaction and emit a JSON log line."""
-    info = request or RequestInfo()
-    clean = _clean(details)
+    """Insert one audit row in the caller's transaction and emit a JSON log line.
+
+    ``tenant_id`` / ``user_id`` default to the authenticated user in the request
+    context; pass them explicitly (even ``None``) to override. Sensitive keys in
+    ``details`` are redacted.
+    """
+    ctx = current()
+    if tenant_id is _UNSET:
+        tenant_id = ctx.tenant_id if ctx else None
+    if user_id is _UNSET:
+        user_id = ctx.user_id if ctx else None
+    clean: dict[str, Any] = redact(details or {})
     session.execute(
         insert(AuditLog).values(
             tenant_id=tenant_id,
@@ -57,18 +50,19 @@ def audit(
             action=action,
             resource_type=resource_type,
             resource_id=resource_id,
-            ip=info.ip,
-            user_agent=(info.user_agent or "")[:500] or None,
-            request_id=info.request_id,
+            ip=ctx.ip if ctx else None,
+            user_agent=ctx.user_agent if ctx else None,
+            request_id=ctx.request_id if ctx else None,
             details=clean,
         )
     )
-    info.audited = True
+    if ctx is not None:
+        ctx.audited = True
     log.info(
         "audit",
         extra={"fields": {
-            "action": action, "tenant_id": str(tenant_id) if tenant_id else None,
-            "user_id": str(user_id) if user_id else None, "resource_type": resource_type,
-            "resource_id": resource_id, "request_id": info.request_id,
+            "action": action, "audit_tenant_id": str(tenant_id) if tenant_id else None,
+            "audit_user_id": str(user_id) if user_id else None,
+            "resource_type": resource_type, "resource_id": resource_id,
         }},
     )  # fmt: skip

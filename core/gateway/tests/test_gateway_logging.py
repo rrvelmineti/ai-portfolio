@@ -134,3 +134,56 @@ def test_embed_error_logged(make_gateway: GatewayFactory, caplog: pytest.LogCapt
     with caplog.at_level(logging.INFO), pytest.raises(NoProvidersConfigured):
         gw.embed("x", "vec")
     assert call_lines(caplog)[0]["error_type"] == "NoProvidersConfigured"
+
+
+def test_request_id_and_user_from_context(make_gateway: GatewayFactory) -> None:
+    import uuid
+
+    from ai_platform_common.context import request_context, set_user
+
+    seen: list[CallRecord] = []
+    on_call_complete.append(seen.append)
+    gw = make_gateway([FakeProvider("a"), FakeProvider("b")])
+    tid, uid = uuid.uuid4(), uuid.uuid4()
+    with request_context("ctx-req-7", product="claims-onboarding"):
+        set_user(tid, uid)
+        res = gw.complete("hi", "single")
+        emb = gw.embed("x", "vec")
+        explicit = gw.complete("hi", "single", request_id="explicit-1",
+                               metadata={"product": "override"})  # fmt: skip
+    assert res.request_id == "ctx-req-7" and emb.request_id == "ctx-req-7"
+    assert explicit.request_id == "explicit-1"
+    assert [r.request_id for r in seen] == ["ctx-req-7", "ctx-req-7", "explicit-1"]
+    assert seen[0].tenant_id == str(tid) and seen[0].user_id == str(uid)
+    assert seen[0].product == "claims-onboarding" and seen[2].product == "override"
+    assert all(r.content is None for r in seen)  # no text unless capture is enabled
+    outside = gw.complete("hi", "single")
+    assert outside.request_id not in ("ctx-req-7", "explicit-1")
+    assert seen[-1].tenant_id is None and seen[-1].product is None
+
+
+def test_content_captured_only_when_enabled(make_gateway: GatewayFactory) -> None:
+    from ai_platform_gateway import AuthError, ImagePart, Message, TextPart
+    from ai_platform_gateway.hooks import capture_content, set_capture_content
+
+    seen: list[CallRecord] = []
+    on_call_complete.append(seen.append)
+    gw = make_gateway([FakeProvider("a"), FakeProvider("b")])
+    assert capture_content() is False
+    set_capture_content(True)
+    try:
+        img = ImagePart.from_bytes(b"\x89PNG", "image/png")
+        gw.complete([Message(role="user", content=[TextPart(text="what is "), img])],
+                    "single", system="be brief")  # fmt: skip
+        gw.embed(["chunk"], "vec")
+        failing = make_gateway([FakeProvider("a", [AuthError("x", status_code=401)])])
+        with pytest.raises(AllProvidersFailed):
+            failing.complete("doomed prompt", "single")
+    finally:
+        set_capture_content(False)
+    c0, c1, c2 = (r.content for r in seen)
+    assert c0 is not None and c0.system == "be brief" and c0.output == "a:ok"
+    assert c0.messages == [{"role": "user", "content": "what is [image]"}]
+    assert c1 is not None and c1.messages == [{"role": "input", "content": "chunk"}]
+    assert c2 is not None and c2.messages[0]["content"] == "doomed prompt" and c2.output is None
+    assert "doomed prompt" not in repr(seen[2])  # content is not in the repr

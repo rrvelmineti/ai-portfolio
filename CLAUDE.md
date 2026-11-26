@@ -65,7 +65,7 @@ ai-portfolio/
 ├── core/                 # shared platform components
 │   ├── gateway/          # model gateway: the only way products call AI models
 │   ├── auth/             # authentication, roles, tenants, audit log
-│   ├── observability/    # JSON logging, tracing, LangSmith integration
+│   ├── observability/    # request tracing, llm_calls, LangSmith, metrics, health
 │   ├── guardrails/       # PII redaction (Presidio), input/output safety checks
 │   └── common/           # shared utilities and base types
 ├── products/

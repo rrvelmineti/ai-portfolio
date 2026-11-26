@@ -19,7 +19,7 @@ session_factory = make_session_factory(get_engine())  # DATABASE_URL
 auth = Auth.from_env(session_factory)  # raises ConfigError without a good JWT_SECRET
 
 app = FastAPI()
-auth.install(app)  # /auth/* router + error handlers + request-id and audit middleware
+auth.install(app)  # /auth/* router + error handlers + request context and audit middleware
 
 
 @app.get("/claims")

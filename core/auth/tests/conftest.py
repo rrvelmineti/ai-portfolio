@@ -1,8 +1,7 @@
 """DB fixtures for auth tests.
 
-Tests that need Postgres use the ``db_url`` / ``session`` fixtures. They read
-``TEST_DATABASE_URL`` (an admin connection, e.g. the docker-compose or CI service).
-A fresh database is created per test session, migrated, and dropped afterwards.
+Tests that need Postgres use the ``db_url`` / ``session`` fixtures. A fresh database is
+created from ``TEST_DATABASE_URL`` per test session, migrated, and dropped afterwards.
 Each test runs inside a transaction that is rolled back, so tests never see each
 other's rows (and the append-only audit log needs no cleanup).
 
@@ -12,37 +11,31 @@ Without ``TEST_DATABASE_URL`` the DB tests are skipped locally; with
 
 from __future__ import annotations
 
-import uuid
 from collections.abc import Iterator
 
 import pytest
 from ai_platform_auth.db import migrate
-from ai_platform_common.config import get_bool, get_env
-from sqlalchemy import Connection, Engine, create_engine, make_url, text
+from ai_platform_common.testing import (
+    DatabaseUnavailable,
+    db_tests_required,
+    temporary_database,
+    test_database_admin_url,
+)
+from sqlalchemy import Connection, Engine, create_engine
 from sqlalchemy.engine import URL
 from sqlalchemy.orm import Session, sessionmaker
 
 
 @pytest.fixture(scope="session")
 def db_url() -> Iterator[URL]:
-    raw = get_env("TEST_DATABASE_URL")
-    if raw is None:
-        if get_bool("REQUIRE_DB_TESTS"):
+    try:
+        admin_url = test_database_admin_url()
+    except DatabaseUnavailable:
+        if db_tests_required():
             pytest.fail("TEST_DATABASE_URL is not set but REQUIRE_DB_TESTS=1")
         pytest.skip("TEST_DATABASE_URL not set; skipping Postgres tests")
-    admin_url = make_url(raw)
-    name = f"auth_test_{uuid.uuid4().hex[:12]}"
-    admin = create_engine(admin_url, isolation_level="AUTOCOMMIT")
-    with admin.connect() as conn:
-        conn.execute(text(f'CREATE DATABASE "{name}"'))
-    url = admin_url.set(database=name)
-    try:
-        migrate(url)
+    with temporary_database(admin_url, [migrate], prefix="auth_test") as url:
         yield url
-    finally:
-        with admin.connect() as conn:
-            conn.execute(text(f'DROP DATABASE IF EXISTS "{name}" WITH (FORCE)'))
-        admin.dispose()
 
 
 @pytest.fixture(scope="session")

@@ -16,11 +16,12 @@ import sys
 import uuid
 from collections.abc import Mapping
 
-from ai_platform_auth.audit import RequestInfo, audit
+from ai_platform_auth.audit import audit
 from ai_platform_auth.db import migrate
 from ai_platform_auth.models import Role, Tenant, User
 from ai_platform_auth.passwords import hash_password
 from ai_platform_common.config import get_env
+from ai_platform_common.context import request_context
 from ai_platform_common.db import database_url, get_engine, make_session_factory, session_scope
 from ai_platform_common.logging import configure_logging
 from sqlalchemy import select
@@ -51,13 +52,12 @@ def seed(
 ) -> list[str]:
     """Create the demo tenant and users. Returns a list of human-readable actions."""
     actions: list[str] = []
-    info = RequestInfo(request_id=f"seed-{uuid.uuid4()}")
     tenant = session.scalar(select(Tenant).where(Tenant.slug == DEMO_TENANT))
     if tenant is None:
         tenant = Tenant(id=uuid.uuid4(), slug=DEMO_TENANT, name="Demo Tenant (synthetic)")
         session.add(tenant)
         session.flush()
-        audit(session, "tenant.create", request=info, tenant_id=tenant.id,
+        audit(session, "tenant.create", tenant_id=tenant.id,
               resource_type="tenant", resource_id=str(tenant.id),
               details={"slug": DEMO_TENANT, "source": "seed_demo"})  # fmt: skip
         actions.append(f"created tenant {DEMO_TENANT}")
@@ -73,7 +73,7 @@ def seed(
             )  # fmt: skip
             session.add(user)
             session.flush()
-            audit(session, "user.create", request=info, tenant_id=tenant.id,
+            audit(session, "user.create", tenant_id=tenant.id,
                   resource_type="user", resource_id=str(user.id),
                   details={"username": username, "role": role.value,
                            "source": "seed_demo"})  # fmt: skip
@@ -82,7 +82,7 @@ def seed(
             user.password_hash = hash_password(passwords[username])
             user.failed_logins = 0
             user.locked_until = None
-            audit(session, "user.update", request=info, tenant_id=tenant.id,
+            audit(session, "user.update", tenant_id=tenant.id,
                   resource_type="user", resource_id=str(user.id),
                   details={"password_reset": True, "source": "seed_demo"})  # fmt: skip
             actions.append(f"reset password for {username}")
@@ -104,7 +104,7 @@ def main(argv: list[str] | None = None) -> int:
         return 2
     migrate(url)
     factory = make_session_factory(get_engine(url))
-    with session_scope(factory) as session:
+    with request_context(f"seed-{uuid.uuid4()}"), session_scope(factory) as session:
         for line in seed(session, passwords, reset_passwords=args.reset_passwords):
             print(line)
     print(f"Log in with tenant '{DEMO_TENANT}' and the passwords from your env vars.")

@@ -16,6 +16,7 @@ import uuid
 from collections.abc import Callable, Iterator
 from typing import Annotated
 
+from ai_platform_common.context import current, ensure_request_context, set_user
 from fastapi import APIRouter, Depends, FastAPI, Form, Request, status
 from fastapi.responses import JSONResponse
 from fastapi.security import OAuth2PasswordBearer
@@ -32,7 +33,7 @@ from ai_platform_auth.errors import (
     TokenInvalid,
     WeakPassword,
 )
-from ai_platform_auth.middleware import AuditMiddleware, RequestContextMiddleware, request_info
+from ai_platform_auth.middleware import AuditMiddleware
 from ai_platform_auth.models import Role, User
 from ai_platform_auth.ratelimit import InMemoryRateLimiter, RateLimiter
 from ai_platform_auth.schemas import (
@@ -69,6 +70,13 @@ def auth_error_response(_request: Request, exc: Exception) -> JSONResponse:
     if isinstance(exc, RateLimitExceeded):
         headers["Retry-After"] = str(exc.retry_after)
     return JSONResponse({"detail": str(exc)}, status_code=code, headers=headers)
+
+
+def _mark_audited() -> None:
+    """Tell the audit middleware this request needs no generic audit row."""
+    ctx = current()
+    if ctx is not None:
+        ctx.audited = True
 
 
 class Auth:
@@ -109,10 +117,8 @@ class Auth:
         app.include_router(self.router)
         app.add_exception_handler(AuthError, auth_error_response)
         app.add_middleware(AuditMiddleware, session_factory=self.session_factory)
-        # added last = outermost, so the request id exists before auditing runs
-        app.add_middleware(
-            RequestContextMiddleware, trust_proxy_headers=self.settings.trust_proxy_headers
-        )
+        # shared request context (request id, ip, user) as the outermost middleware
+        ensure_request_context(app, trust_proxy_headers=self.settings.trust_proxy_headers)
 
     # ------------------------------------------------------------------ dependencies
     def get_session(self) -> Iterator[Session]:
@@ -129,7 +135,6 @@ class Auth:
         settings = self.settings
 
         def dependency(
-            request: Request,
             token: Annotated[str | None, Depends(oauth2)],
             session: Annotated[Session, Depends(self.get_session, scope="function")],
         ) -> User:
@@ -137,8 +142,7 @@ class Auth:
                 raise TokenInvalid("Not authenticated")
             claims = decode_access_token(token, settings)
             user = service.load_user(session, claims.user_id, claims.tenant_id)
-            request.state.auth_user_id = user.id
-            request.state.auth_tenant_id = user.tenant_id
+            set_user(user.tenant_id, user.id)
             return user
 
         return dependency
@@ -187,24 +191,22 @@ class Auth:
 
         @router.post("/login", response_model=TokenResponse)
         def login(
-            request: Request,
             session: SessionDep,
             username: Annotated[str, Form(max_length=200)],
             password: Annotated[str, Form(max_length=256)],
             tenant: Annotated[str | None, Form(max_length=63)] = None,
         ) -> TokenResponse:
             """OAuth2 password login. Give ``tenant``, or ``username`` as ``tenant/user``."""
-            info = request_info(request)
+            ctx = current()
             try:
-                self.rate_limiter.hit(f"login:{info.ip or 'unknown'}")
+                self.rate_limiter.hit(f"login:{(ctx.ip if ctx else None) or 'unknown'}")
             except RateLimitExceeded:
-                audit(session, "auth.login_rate_limited", request=info,
-                      details={"tenant": tenant})  # fmt: skip
+                audit(session, "auth.login_rate_limited", details={"tenant": tenant})
                 session.commit()
                 raise
             if tenant is None and "/" in username:
                 tenant, username = username.split("/", 1)
-            pair = svc.login(session, tenant or "", username, password, info)
+            pair = svc.login(session, tenant or "", username, password)
             return TokenResponse(
                 access_token=pair.access_token,
                 refresh_token=pair.refresh_token,
@@ -212,8 +214,8 @@ class Auth:
             )
 
         @router.post("/refresh", response_model=TokenResponse)
-        def refresh(request: Request, body: RefreshRequest, session: SessionDep) -> TokenResponse:
-            pair = svc.refresh(session, body.refresh_token, request_info(request))
+        def refresh(body: RefreshRequest, session: SessionDep) -> TokenResponse:
+            pair = svc.refresh(session, body.refresh_token)
             return TokenResponse(
                 access_token=pair.access_token,
                 refresh_token=pair.refresh_token,
@@ -221,23 +223,19 @@ class Auth:
             )
 
         @router.post("/logout", status_code=status.HTTP_204_NO_CONTENT)
-        def logout(request: Request, body: RefreshRequest, session: SessionDep) -> None:
-            info = request_info(request)
-            svc.logout(session, body.refresh_token, info)
-            info.audited = True  # unknown tokens: nothing to record beyond the request
+        def logout(body: RefreshRequest, session: SessionDep) -> None:
+            svc.logout(session, body.refresh_token)
+            _mark_audited()  # unknown tokens: nothing to record beyond the request
 
         @router.get("/me", response_model=UserOut)
         def me(user: CurrentDep) -> UserOut:
             return UserOut.from_user(user, self.clock())
 
         @router.post("/users", response_model=UserOut, status_code=status.HTTP_201_CREATED)
-        def create_user(
-            request: Request, body: UserCreate, admin: AdminDep, session: SessionDep
-        ) -> UserOut:
+        def create_user(body: UserCreate, admin: AdminDep, session: SessionDep) -> UserOut:
             user = svc.create_user(
                 session, admin, TenantScope(admin.tenant_id), username=body.username,
                 email=str(body.email), password=body.password, role=body.role,
-                request=request_info(request),
             )  # fmt: skip
             return UserOut.from_user(user, self.clock())
 
@@ -249,24 +247,18 @@ class Auth:
 
         @router.patch("/users/{user_id}", response_model=UserOut)
         def update_user(
-            request: Request, user_id: uuid.UUID, body: UserUpdate, admin: AdminDep,
-            session: SessionDep,
-        ) -> UserOut:  # fmt: skip
+            user_id: uuid.UUID, body: UserUpdate, admin: AdminDep, session: SessionDep
+        ) -> UserOut:
             user = svc.update_user(
                 session, admin, TenantScope(admin.tenant_id), user_id,
                 UserChanges(role=body.role, is_active=body.is_active, unlock=body.unlock),
-                request_info(request),
             )  # fmt: skip
-            request_info(request).audited = True  # no-op changes need no extra row
+            _mark_audited()  # no-op changes need no extra row
             return UserOut.from_user(user, self.clock())
 
         @router.post("/tenants", response_model=TenantOut, status_code=status.HTTP_201_CREATED)
-        def create_tenant(
-            request: Request, body: TenantCreate, actor: SuperDep, session: SessionDep
-        ) -> TenantOut:
-            tenant = svc.create_tenant(
-                session, actor, slug=body.slug, name=body.name, request=request_info(request)
-            )
+        def create_tenant(body: TenantCreate, actor: SuperDep, session: SessionDep) -> TenantOut:
+            tenant = svc.create_tenant(session, actor, slug=body.slug, name=body.name)
             return TenantOut.from_tenant(tenant)
 
         @router.get("/tenants", response_model=list[TenantOut])
