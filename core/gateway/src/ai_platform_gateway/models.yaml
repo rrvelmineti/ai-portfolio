@@ -186,6 +186,12 @@ aliases:
   groq-llama:
     kind: chat
     fallback: [groq/llama-3.3-70b-versatile]
+  demo-free:
+    kind: chat
+    description: >-
+      Public demo only (ADR 0008). Free-tier providers only: Gemini, then Groq. Never
+      add a paid provider here; a test enforces it.
+    fallback: [gemini/gemini-3.8-flash, groq/llama-3.3-70b-versatile]
 
   default-embed:
     kind: embed
