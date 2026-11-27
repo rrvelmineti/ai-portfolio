@@ -170,6 +170,9 @@ dev = [
 nlp-models = [
     { name = "en-core-web-lg" },
 ]
+serve = [
+    { name = "uvicorn" },
+]
 
 [package.metadata]
 requires-dist = [
@@ -193,6 +196,7 @@ dev = [
     { name = "uvicorn", specifier = "==0.54.0" },
 ]
 nlp-models = [{ name = "en-core-web-lg", url = "https://github.com/explosion/spacy-models/releases/download/en_core_web_lg-3.8.0/en_core_web_lg-3.8.0-py3-none-any.whl" }]
+serve = [{ name = "uvicorn", specifier = "==0.54.0" }]
 
 [[package]]
 name = "alembic"
