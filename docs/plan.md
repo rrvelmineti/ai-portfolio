@@ -22,6 +22,9 @@ common utilities, CI and infrastructure.
   - 0.4 Observability (`ai_platform_observability`: request context, JSON logs with
     redaction, access log, `llm_calls` table, LangSmith, Prometheus metrics, health,
     Sentry, usage report) — **Done**
+  - 0.5 Guardrails (`ai_platform_guardrails`: Presidio PII masking with Safe Harbor
+    mode, layered prompt-injection defence, topic policy, human approval gate,
+    evaluation corpus with CI targets) — **Done**
 
 ## Claims Onboarding
 

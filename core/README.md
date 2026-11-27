@@ -8,7 +8,7 @@ is product-specific: products depend on the platform, never the other way round.
 | `gateway/` | Model gateway: the only way products call AI models (`ai_platform_gateway`) |
 | `auth/` | Authentication, roles, tenants and append-only audit log (`ai_platform_auth`) |
 | `observability/` | Request context wiring, access log, `llm_calls`, LangSmith, Prometheus, health (`ai_platform_observability`) |
-| `guardrails/` | PII detection/redaction (Presidio) and LLM input/output safety |
+| `guardrails/` | PII masking (Presidio), prompt-injection defence, topic policy, approvals (`ai_platform_guardrails`) |
 | `common/` | Shared utilities: env config, request context, JSON logging + redaction, DB helpers |
 
 > Note: this folder is **not** a Python package. Each sub-folder ships its own

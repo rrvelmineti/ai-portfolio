@@ -5,6 +5,48 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Added — Phase 0.5: Guardrails
+- `ai_platform_guardrails` (`core/guardrails`):
+  - **Fail closed:** if a guardrail errors, the AI call is blocked.
+  - **PII masking** with Presidio and `en_core_web_lg`:
+    - custom recognizers: MEMBER_ID, CLAIM_NUMBER, POLICY_NUMBER, NPI (Luhn),
+      DOB-in-context, street addresses, US phone formats, Luhn card numbers, bank
+      accounts; per-tenant YAML patterns;
+    - typed, consistent placeholders; `unmask()` from a request-scoped vault that is
+      never logged;
+    - `mask_records()` and `privacy_report()`; HIPAA Safe Harbor mode.
+  - **Layered injection defence:**
+    - normalisation and decoding, weighted rules (6 languages), an optional LLM
+      classifier;
+    - `wrap_untrusted()` fences, where content is flagged rather than blocked;
+    - a canary token, blocking of exfiltration links, a tool allowlist;
+    - `guardrail.blocked` / `guardrail.flagged` audit rows.
+  - **Per-product topic policy** with refusals (example policies for Rewards Advisor and
+    Meal Vision).
+  - **Approval gate:** `guardrails.approval_requests`, four-eyes, expiry,
+    role-based visibility, `/approvals` router, audited decisions.
+  - `install_guardrails()` / `configure_guardrails()`.
+- Gateway:
+  - `ai_platform_gateway.guards` (Guard protocol, `PassthroughGuard` for unit tests);
+  - `pii` = mask / block / off (off requires a logged `pii_reason`) and `injection` =
+    block / flag / off;
+  - result fields `mapping_id`, `pii_entities`, `injection_score`, `guard_flags`,
+    `output_flags`;
+  - `GuardrailError`, `GuardrailBlocked`, `PolicyViolation`.
+- Observability: LangSmith content always goes through the PII masker first.
+- Evaluation:
+  - synthetic corpus in `eval/`: 190 texts, a 40-row claims table, 35 attacks and 35
+    benign look-alikes;
+  - `scripts/guardrails_report.py` and `docs/guardrails-results.md`;
+  - a CI gate on the targets.
+- Demo: `/demo/refunds` creates an approval request; the seed adds `demo-reviewer` as a
+  second approver.
+- Docs: ADR 0005, `docs/ai-use-policy.md`, `core/guardrails/README.md`.
+
+### Fixed — Phase 0.5
+- `presidio-analyzer` DEBUG logs contained analysed text; that logger is capped at
+  WARNING.
+
 ### Added — Phase 0.4: Observability
 - `ai_platform_common.context`: per-request `RequestContext` (request_id, tenant, user,
   route template, product) and a pure-ASGI middleware that reuses or creates
