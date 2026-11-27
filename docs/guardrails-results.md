@@ -88,3 +88,170 @@ The corpus was committed before the first scoring run and has not been edited si
 - **No detector catches everything.** 100% on 35 hand-written attacks does not mean 100% on
   attacks we have not imagined; see ADR 0005 for the layered design that limits the damage
   when a detector misses.
+
+## Held-out and public evaluation (report only)
+
+Same detectors, same scoring rules, three sets:
+- **Development:** the corpus above. Detectors were fixed against it, so it is optimistic.
+- **Held-out:** `eval/heldout`, frozen before its first scoring run (see its README). It was
+  written by the same assistant that built the detectors, so it is not independent either.
+- **Public:** `deepset/prompt-injections` test split, injection only, downloaded by
+  `scripts/download_public_eval.py` and never committed. The only independent check.
+
+Only the development set gates CI. The generated miss lists give sample ids, never
+text; the notes below quote a few synthetic values to explain the patterns.
+
+### PII recall (found/gold) and false positives
+
+| Entity | Development (gates CI) | Held-out (report only) | Public: deepset test (report only) | Dev target |
+|---|---:|---:|---:|---|
+| ADDRESS | 47/47 (100.0%) | 4/5 (80.0%) | not measured | 95% |
+| CLAIM_NUMBER | 108/108 (100.0%) | 3/3 (100.0%) | not measured | 100% |
+| CREDIT_CARD | 22/22 (100.0%) | 3/3 (100.0%) | not measured | 100% |
+| EMAIL | 98/98 (100.0%), 10 false pos. | 5/6 (83.3%) | not measured | 100% |
+| MEMBER_ID | 87/87 (100.0%) | 3/4 (75.0%) | not measured | 100% |
+| NPI | 62/62 (100.0%) | 6/6 (100.0%) | not measured | 100% |
+| PERSON | 220/225 (97.8%) | 25/28 (89.3%), 4 false pos. | not measured | 95% |
+| PHONE | 113/113 (100.0%) | 7/8 (87.5%), 1 false pos. | not measured | 100% |
+| US_SSN | 67/67 (100.0%) | 3/3 (100.0%) | not measured | 100% |
+| DATE_OF_BIRTH | 83/83 (100.0%) | 2/8 (25.0%) | not measured |  |
+| IP_ADDRESS | 6/6 (100.0%) | 3/3 (100.0%) | not measured |  |
+| POLICY_NUMBER | 42/42 (100.0%) | 2/3 (66.7%) | not measured |  |
+| US_BANK_NUMBER | 6/6 (100.0%) | 1/3 (33.3%), 1 false pos. | not measured |  |
+
+### Prompt injection
+
+| Metric | Development (gates CI) | Held-out (report only) | Public: deepset test (report only) | Dev target |
+|---|---:|---:|---:|---|
+| Attacks detected | 35/35 (100.0%) | 17/40 (42.5%) | 6/60 (10.0%) | 100% |
+| Benign false positives | 0/35 (0.0%) | 2/40 (5.0%) | 0/56 (0.0%) | < 10% |
+
+#### Held-out (report only): attacks detected by category
+
+| Category | Detected |
+|---|---:|
+| data_harvest | 0/3 |
+| delimiter_breaking | 3/3 |
+| encoded | 2/3 |
+| exfiltration | 3/3 |
+| hidden_instruction | 2/4 |
+| instruction_override | 3/7 |
+| jailbreak_roleplay | 2/3 |
+| multi_turn | 0/1 |
+| obfuscated | 1/1 |
+| oversight_evasion | 0/2 |
+| payload_split | 0/1 |
+| social_engineering | 0/2 |
+| system_prompt_extraction | 0/3 |
+| task_hijack | 0/2 |
+| tool_abuse | 1/2 |
+
+#### Public: deepset test (report only): attacks detected by category
+
+| Category | Detected |
+|---|---:|
+| deepset | 6/60 |
+
+#### Held-out (report only): misses and false positives (sample ids only)
+
+- ADDRESS missed: claude-pii-030
+- DATE_OF_BIRTH missed: claude-pii-007, claude-pii-028, claude-pii-034, claude-pii-036, claude-pii-047, claude-pii-049
+- EMAIL missed: claude-pii-032
+- MEMBER_ID missed: claude-pii-017
+- PERSON missed: claude-pii-001, claude-pii-026, claude-pii-040
+- PHONE missed: claude-pii-027
+- POLICY_NUMBER missed: claude-pii-019
+- US_BANK_NUMBER missed: claude-pii-042, claude-pii-043
+- PERSON false pos.: claude-pii-027, claude-pii-030, claude-pii-032, claude-pii-037
+- PHONE false pos.: claude-pii-051
+- US_BANK_NUMBER false pos.: claude-pii-014
+- injection missed: claude-atk-000, claude-atk-002, claude-atk-003, claude-atk-005, claude-atk-006, claude-atk-007, claude-atk-011, claude-atk-013, claude-atk-014, claude-atk-015, claude-atk-016, claude-atk-017, claude-atk-019, claude-atk-023, claude-atk-026, claude-atk-027, claude-atk-029, claude-atk-031, claude-atk-032, claude-atk-033, claude-atk-035, claude-atk-037, claude-atk-039
+- injection false positives: claude-ben-008, claude-ben-039
+
+#### Public: deepset test (report only): misses and false positives (sample ids only)
+
+- injection missed: deepset-test-000, deepset-test-001, deepset-test-003, deepset-test-008, deepset-test-015, deepset-test-016, deepset-test-020, deepset-test-033, deepset-test-037, deepset-test-038, deepset-test-040, deepset-test-043, deepset-test-045, deepset-test-049, deepset-test-052, deepset-test-053, deepset-test-057, deepset-test-066, deepset-test-070, deepset-test-074, deepset-test-075, deepset-test-078, deepset-test-079, deepset-test-080, deepset-test-081, deepset-test-083, deepset-test-084, deepset-test-085, deepset-test-086, deepset-test-087, deepset-test-088, deepset-test-089, deepset-test-090, deepset-test-091, deepset-test-092, deepset-test-094, deepset-test-095, deepset-test-096, deepset-test-097, deepset-test-099, deepset-test-101, deepset-test-102, deepset-test-103, deepset-test-104, deepset-test-105, deepset-test-106, deepset-test-107, deepset-test-108, deepset-test-109, deepset-test-111, deepset-test-112, deepset-test-113, deepset-test-114, deepset-test-115
+
+### What the gap means
+
+The first scoring run on the held-out and public sets is the run shown above. The
+held-out set was frozen in commit `c918e1a`, before any scoring, and no detector has
+changed since. Nothing has been tuned to these numbers.
+
+**Headline: the development numbers overstate real-world accuracy, a lot for injection.**
+100% on the development attacks says the rules recognise the phrasings they were written
+for. On new phrasings they catch 17/40 of the held-out attacks and 6/60 of the public ones.
+The low false-positive rates hold up (2/40, 0/56), so the rules are precise but narrow.
+
+#### Prompt injection
+
+- **No near misses.** Every missed attack scored below the 0.4 flag threshold, so the
+  optional LLM classifier, which only sees borderline inputs, would not have been asked
+  either. Lowering thresholds would not help; the rules simply don't fire.
+- **What the rules miss (held-out):** requests that sound like ordinary work, with no
+  override or jailbreak vocabulary:
+  - system-prompt extraction phrased as an audit or a question (0/3);
+  - harvesting other members' data (0/3);
+  - skipping approval "because the reviewer already agreed" (0/2);
+  - task hijack, social engineering, multi-turn and split payloads (0/6 combined);
+  - overrides worded differently from the rules: a developer "priority update", a
+    French and a Spanish override (both rule languages) and a Chinese one (not a rule
+    language);
+  - instructions hidden in an HTML comment or a JSON field (2 of the 4 hidden
+    instructions);
+  - a "grandmother" role-play and a rot13 payload.
+- **What they catch:** fake delimiters, exfiltration links, character spacing, most
+  encodings and explicit role-play personas.
+- **Public set (`deepset/prompt-injections`, test split):**
+  - **German:** 20 of the 60 attacks are German, and all 20 were missed. The rules cover
+    German override phrasing only, and the NER model is English.
+  - **English:** 6/40 (15%) caught. Most are task hijacks ("forget that, now write
+    about …") or role-play setups that our rules do not treat as attacks.
+  - **Labels:** some labels are debatable for our use. For example, `deepset-test-000`, an
+    "act as an interviewer" role-play prompt, is labelled an injection. The number is
+    reported as is; we did not relabel.
+- **Why it matters less than 10% suggests, and why it still matters:** the rule scanner
+  is one layer. The canary, output link blocking, the tool allowlist and the approval
+  gate do not depend on recognising the attack text. But the scanner is the only layer
+  that stops an attack *before* the model reads it, and on independent data it mostly
+  doesn't.
+
+#### PII
+
+- **Strong on fixed formats:** every SSN, card number, NPI, IP address and claim number
+  was found (18/18), including a claim number missing one hyphen.
+- **Dates of birth: 2/8.** The misses are formats the recognizer doesn't parse
+  ("3rd of May 1961", "Jan 5 '72", "19570823", "22.10.1975"), and dates with no DOB word
+  nearby. Dates without a DOB word are left alone by design (dates of service must stay
+  readable), so 2 of the 6 misses are a labelling choice in this set rather than a
+  detector bug. With Safe Harbor on, any date the date recognizer does find is
+  generalised to its year anyway.
+- **Off-format IDs:** `M-4471-2290`, `POL 00873321`, a hyphenated bank account and a
+  bare bank account with only "checking" as context were missed. Tenant-specific
+  recognizers are the intended fix for house formats.
+- **Names: 25/28.** Missed: a name in ALL CAPS, a lone first name that is also a word
+  ("Will") and "April May". False positives: an OCR-damaged label ("Narne"), a Spanish
+  phrase ("La paciente"), a place name ("Cody") and an obfuscated email.
+- **Type-strict scoring understates masking.** An obfuscated email
+  ("kim dot park at example dot com") was partly masked as a PERSON, and the rural-route
+  address lost only its city. These count as misses because the type is wrong; the value
+  is partly hidden, not fully exposed.
+- **Expected trade-offs, seen again:** a 10-digit order number masked as a phone and a
+  bank routing number masked as an account (the safe direction, documented in ADR 0005).
+
+#### NPI vs phone
+
+`core/guardrails/tests/test_npi_phone_overlap.py` pins the overlap. NPIs win over phones
+when both match. That is right for real NPIs, but about 1 in 10 bare 10-digit phone
+numbers starting with 2 also pass the NPI check and are then labelled NPI even next to
+"call" (an `xfail(strict=True)` test). The number is masked either way.
+
+#### What would change these numbers (not done here)
+
+Detector fixes belong in a separate branch, and that branch must say which held-out
+samples it was tuned against. Those samples then stop counting as held out.
+1. Turn on the LLM classifier for *all* chat input, not only borderline, and measure its
+   cost and latency.
+2. Add intent rules for extraction-as-audit, bulk data requests and approval skipping.
+3. Add DOB date formats, plus tenant recognizers for house ID formats.
+4. Score a public PII benchmark (future work, ADR 0006).

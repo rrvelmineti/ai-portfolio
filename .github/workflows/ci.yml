@@ -60,3 +60,11 @@ jobs:
 
       - name: Pytest with coverage
         run: uv run pytest
+
+      # Report only (ADR 0006): prints development vs held-out numbers, never fails the
+      # build. The development targets are enforced by the pytest gate above.
+      - name: Guardrails held-out report
+        run: |
+          uv run python scripts/guardrails_report.py --heldout \
+            --out "$RUNNER_TEMP/guardrails-results.md" 2>/dev/null \
+            | sed -n '/## Held-out and public evaluation/,$p' || true

@@ -34,3 +34,6 @@ crash.log
 .DS_Store
 .idea/
 .vscode/
+
+# Public evaluation datasets (downloaded by scripts/download_public_eval.py, never committed)
+eval/public/
