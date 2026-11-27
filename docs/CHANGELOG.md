@@ -6,8 +6,9 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ## [Unreleased]
 
 ### Added — Free deployment, host pending (ADR 0008)
-- **Image:** multi-stage `Dockerfile` (uv, slim, non-root uid 10001, healthcheck, models
-  baked in, no secrets), built with the same `scripts/build_runtime.sh` a host's build
+- **Image:** multi-stage `Dockerfile` (`python:3.12-slim` Debian 13 and uv, both pinned
+  by digest; Debian security updates applied, no pip at runtime; non-root uid 10001,
+  healthcheck, models baked in, no secrets), built with the same `scripts/build_runtime.sh` a host's build
   command runs; runtime `serve` group for uvicorn; `scripts/start_runtime.sh`.
 - **docker-compose `demo` profile:** Postgres, a one-shot migrate job (owner role) and the
   app as the restricted `ai_portfolio_app` role on a read-only filesystem.
@@ -27,6 +28,7 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - **CI:** image build + Trivy (CRITICAL with a fix fails), container smoke test, compose
   validation, Terraform fmt/validate/tflint/checkov. `deploy.yml` and `demo-reset.yml`
   exist but are off until `DEPLOY_ENABLED` / `DEMO_RESET_ENABLED` are set.
+- **Dependabot:** weekly grouped updates for Docker base images, GitHub Actions and uv.
 - **`infra/terraform`:** AWS modules (network, ecr, database, secrets, service) and a
   production composition. Never applied.
 - **Docs:** ADR 0008, `docs/architecture.md`, README "Live demo".
