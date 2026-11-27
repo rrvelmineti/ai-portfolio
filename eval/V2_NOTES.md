@@ -43,6 +43,15 @@ miss was a name).
 - **PII:** obfuscated emails, rural/PO Box/military addresses, written-out dates of birth
   and IDs with separators are now masked. Every dev value is fully masked except 5 names.
 
+### Known limits
+
+Every gap below is tracked as a GitHub issue labelled [`guardrails-backlog`](https://github.com/rrvelmineti/ai-portfolio/issues?q=label%3Aguardrails-backlog), with the evidence from this section:
+
+- [#9](https://github.com/rrvelmineti/ai-portfolio/issues/9): work-phrased attacks (instruction requests, bulk data, "already approved" claims); needs a held-out v3 first
+- [#10](https://github.com/rrvelmineti/ai-portfolio/issues/10): multilingual rule coverage and the Hindi classifier limit
+- [#11](https://github.com/rrvelmineti/ai-portfolio/issues/11): remaining PII leaks
+- [#12](https://github.com/rrvelmineti/ai-portfolio/issues/12): NPI-vs-phone labelling (xfail)
+
 ### What is still wrong (reported as is)
 
 **Injection: v2 misses (11)**
