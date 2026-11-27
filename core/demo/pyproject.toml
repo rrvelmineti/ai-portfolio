@@ -6,9 +6,11 @@ requires-python = ">=3.12,<3.13"
 dependencies = [
     "ai-platform-auth",
     "ai-platform-common",
+    "ai-platform-gateway",
     "ai-platform-guardrails",
     "ai-platform-observability",
     "psycopg[binary]==3.3.9",
+    "pydantic==2.14.4",
     "sqlalchemy==2.1.9",
 ]
 
@@ -22,5 +24,6 @@ packages = ["src/ai_platform_demo"]
 [tool.uv.sources]
 ai-platform-auth = { workspace = true }
 ai-platform-common = { workspace = true }
+ai-platform-gateway = { workspace = true }
 ai-platform-guardrails = { workspace = true }
 ai-platform-observability = { workspace = true }

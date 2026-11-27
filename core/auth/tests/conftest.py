@@ -34,9 +34,14 @@ def db_url() -> Iterator[URL]:
         if db_tests_required():
             pytest.fail("TEST_DATABASE_URL is not set but REQUIRE_DB_TESTS=1")
         pytest.skip("TEST_DATABASE_URL not set; skipping Postgres tests")
-    from ai_platform_guardrails.db import migrate as migrate_guardrails  # demo app approvals
+    # the demo app also needs approvals (guardrails), AI-call records (observability) and
+    # the AI usage counters (demo)
+    from ai_platform_demo.usage import migrate as migrate_usage
+    from ai_platform_guardrails.db import migrate as migrate_guardrails
+    from ai_platform_observability.db import migrate as migrate_observability
 
-    with temporary_database(admin_url, [migrate, migrate_guardrails], prefix="auth_test") as url:
+    migrations = [migrate, migrate_guardrails, migrate_observability, migrate_usage]
+    with temporary_database(admin_url, migrations, prefix="auth_test") as url:
         yield url
 
 

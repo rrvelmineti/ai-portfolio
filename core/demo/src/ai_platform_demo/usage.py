@@ -23,7 +23,8 @@ from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
 
 from ai_platform_common.config import get_env
-from sqlalchemy import Column, DateTime, Integer, MetaData, String, Table, func
+from ai_platform_common.db import get_engine, normalize_url
+from sqlalchemy import URL, Column, DateTime, Integer, MetaData, String, Table, func, text
 from sqlalchemy.dialects.postgresql import insert as pg_insert
 from sqlalchemy.orm import Session
 
@@ -38,6 +39,17 @@ ai_usage = Table(
     Column("calls", Integer, nullable=False),
     Column("updated_at", DateTime(timezone=True), nullable=False, server_default=func.now()),
 )
+
+
+def migrate(url: str | URL) -> None:
+    """Create the ``demo`` schema and its usage table if missing (owner role)."""
+    engine = get_engine(normalize_url(url))
+    try:
+        with engine.begin() as conn:
+            conn.execute(text(f'CREATE SCHEMA IF NOT EXISTS "{SCHEMA}"'))
+            metadata.create_all(conn, checkfirst=True)
+    finally:
+        engine.dispose()
 
 
 @dataclass(frozen=True)

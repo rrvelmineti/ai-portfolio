@@ -60,9 +60,11 @@ source = { editable = "core/demo" }
 dependencies = [
     { name = "ai-platform-auth" },
     { name = "ai-platform-common" },
+    { name = "ai-platform-gateway" },
     { name = "ai-platform-guardrails" },
     { name = "ai-platform-observability" },
     { name = "psycopg", extra = ["binary"] },
+    { name = "pydantic" },
     { name = "sqlalchemy" },
 ]
 
@@ -70,9 +72,11 @@ dependencies = [
 requires-dist = [
     { name = "ai-platform-auth", editable = "core/auth" },
     { name = "ai-platform-common", editable = "core/common" },
+    { name = "ai-platform-gateway", editable = "core/gateway" },
     { name = "ai-platform-guardrails", editable = "core/guardrails" },
     { name = "ai-platform-observability", editable = "core/observability" },
     { name = "psycopg", extras = ["binary"], specifier = "==3.3.9" },
+    { name = "pydantic", specifier = "==2.14.4" },
     { name = "sqlalchemy", specifier = "==2.1.9" },
 ]
 

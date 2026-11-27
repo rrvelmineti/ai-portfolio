@@ -13,6 +13,10 @@ in deployment CI runs them with the owner role before each deploy.
 Also: http://127.0.0.1:8000/metrics, /healthz and /readyz. The demo is not meant to be
 indexed: /robots.txt disallows everything and every response says ``noindex``.
 
+http://127.0.0.1:8000/ is the public landing page: the guest logins (never the admin)
+and a small form for ``POST /demo/ask``, the one AI endpoint, which is rate limited and
+capped (``ai_platform_demo.usage``) and uses only the free ``demo-free`` model alias.
+
 Then open http://127.0.0.1:8000/docs, click "Authorize" and log in with username
 ``demo/demo-analyst`` (tenant/user) and that user's password.
 
@@ -23,21 +27,29 @@ No ``from __future__ import annotations`` here: FastAPI needs the real
 import resource
 import time
 from collections.abc import Awaitable, Callable
+from datetime import UTC, datetime
 from typing import Annotated
 
 from ai_platform_auth import Auth, Role, TenantScope, User
 from ai_platform_auth.db import migrate
-from ai_platform_common.config import get_bool
+from ai_platform_auth.ratelimit import InMemoryRateLimiter
+from ai_platform_common.config import get_bool, get_env
+from ai_platform_common.context import current
 from ai_platform_common.db import database_url, get_engine, make_session_factory
+from ai_platform_demo.ask import AskRefused, AskRequest, AskResponse, ask
+from ai_platform_demo.landing import CONTENT_SECURITY_POLICY, render_landing
+from ai_platform_demo.usage import DemoLimitReached, UsageCaps
+from ai_platform_demo.usage import migrate as migrate_usage
 from ai_platform_guardrails import install_guardrails
 from ai_platform_guardrails.db import migrate as migrate_guardrails
 from ai_platform_observability import install_observability
 from ai_platform_observability.db import migrate as migrate_observability
 from fastapi import Depends, FastAPI, Request, Response
-from fastapi.responses import PlainTextResponse
+from fastapi.responses import HTMLResponse, JSONResponse, PlainTextResponse
 from sqlalchemy.orm import Session, sessionmaker
 
 ROBOTS_TXT = "User-agent: *\nDisallow: /\n"
+AI_RATE_WINDOW_S = 60.0
 
 
 def create_app(
@@ -56,8 +68,12 @@ def create_app(
             migrate(url)
             migrate_observability(url)
             migrate_guardrails(url)
+            migrate_usage(url)
         session_factory = make_session_factory(get_engine(url))
     auth = Auth.from_env(session_factory)
+    caps = UsageCaps.from_env()
+    # per user and per client IP, on top of the daily caps (stops bursts from one visitor)
+    ai_limiter = InMemoryRateLimiter(int(get_env("DEMO_AI_RATE_LIMIT") or 5), AI_RATE_WINDOW_S)
 
     app = FastAPI(title="ai-portfolio auth demo")
     auth.install(app)
@@ -73,6 +89,12 @@ def create_app(
     @app.get("/robots.txt", include_in_schema=False)
     def robots() -> PlainTextResponse:
         return PlainTextResponse(ROBOTS_TXT)
+
+    @app.get("/", include_in_schema=False)
+    def landing() -> HTMLResponse:
+        """Public landing page: guest logins (never the admin), limits, a small form."""
+        headers = {"Content-Security-Policy": CONTENT_SECURITY_POLICY}
+        return HTMLResponse(render_landing(caps), headers=headers)
 
     if get_bool("DEMO_DIAGNOSTICS", False):
         _add_diagnostics(app)
@@ -129,7 +151,34 @@ def create_app(
         """A write endpoint: the audit middleware records it automatically."""
         return {"saved_by": user.username, "tenant_id": str(scope.tenant_id)}
 
+    @app.post("/demo/ask", tags=["demo"], response_model=AskResponse)
+    def ask_ai(
+        user: Annotated[User, Depends(auth.require_role(Role.VIEWER))], body: AskRequest
+    ) -> AskResponse | JSONResponse:
+        """Ask the free demo model, with PII masking and injection blocking on.
+
+        Rate limited per user and per IP, then capped per guest per day and globally per
+        day and month. A cap returns 429 with a friendly "Demo limit reached" message.
+        """
+        ctx = current()
+        ai_limiter.hit(f"ai:user:{user.id}")
+        ai_limiter.hit(f"ai:ip:{(ctx.ip if ctx else None) or 'unknown'}")
+        try:
+            return ask(session_factory, user.id, body.question, caps)
+        except DemoLimitReached as exc:
+            retry = max(1, int((exc.resets_at - _utcnow()).total_seconds()))
+            return JSONResponse({"detail": exc.message, "scope": exc.scope,
+                                 "resets_at": exc.resets_at.isoformat()},
+                                status_code=429, headers={"Retry-After": str(retry)})  # fmt: skip
+        except AskRefused as exc:
+            return JSONResponse({"detail": exc.detail, "reasons": exc.reasons},
+                                status_code=exc.status_code)  # fmt: skip
+
     return app
+
+
+def _utcnow() -> datetime:
+    return datetime.now(UTC)
 
 
 def _add_diagnostics(app: FastAPI) -> None:

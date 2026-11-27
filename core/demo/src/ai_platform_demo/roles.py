@@ -27,7 +27,7 @@ from psycopg import sql
 from sqlalchemy import URL, text
 
 from ai_platform_demo.usage import SCHEMA as DEMO_SCHEMA
-from ai_platform_demo.usage import metadata as usage_metadata
+from ai_platform_demo.usage import migrate as migrate_usage
 
 APP_ROLE = "ai_portfolio_app"
 SCHEMAS = ("auth", "observability", "guardrails", DEMO_SCHEMA)
@@ -55,13 +55,7 @@ def migrate_all(owner_url: str | URL) -> None:
     migrate_auth(url)
     migrate_observability(url)
     migrate_guardrails(url)
-    engine = get_engine(url)
-    try:
-        with engine.begin() as conn:
-            conn.execute(text(f'CREATE SCHEMA IF NOT EXISTS "{DEMO_SCHEMA}"'))
-            usage_metadata.create_all(conn, checkfirst=True)
-    finally:
-        engine.dispose()
+    migrate_usage(url)
 
 
 def bootstrap_app_role(owner_url: str | URL, app_password: str, role: str = APP_ROLE) -> None:
