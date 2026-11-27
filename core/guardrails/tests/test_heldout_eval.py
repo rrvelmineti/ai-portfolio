@@ -8,6 +8,7 @@ from __future__ import annotations
 import hashlib
 import importlib.util
 import json
+import shutil
 from pathlib import Path
 from types import ModuleType
 from typing import Any
@@ -160,7 +161,19 @@ def test_report_script_adds_comparison(tmp_path: Path) -> None:
     )
     text = out.read_text(encoding="utf-8")
     assert "## Held-out and public evaluation (report only)" in text
-    assert "Held-out (report only)" in text and "Public: deepset" not in text
+    assert "Held-out v1 (tuning data)" in text and "Public: deepset" not in text
+    assert "Held-out v2 (unseen)" not in text
+
+    # --heldout-v2 reads eval/heldout_v2 and appends the v2 notes. A COPY OF v1 stands in for
+    # v2 here: the real held-out v2 must not be scored before the end of guardrails-v2.
+    shutil.copytree(eval_dir / "heldout", eval_dir / "heldout_v2")
+    (eval_dir / "V2_NOTES.md").write_text("## V2 NOTES MARKER\n", encoding="utf-8")
+    (eval_dir / "CLASSIFIER_COMPARISON.md").write_text("## COMPARISON MARKER\n", "utf-8")
+    args = ["--heldout-v2", "--eval-dir", str(eval_dir), "--out", str(out)]
+    assert report.main(args) == 0
+    text = out.read_text(encoding="utf-8")
+    assert "Held-out v2 (unseen)" in text and "Held-out v1 (tuning data)" not in text
+    assert "## V2 NOTES MARKER" in text and "## COMPARISON MARKER" in text
 
 
 # ------------------------------------------------------------------ public download (offline)
