@@ -1,11 +1,17 @@
 """Tiny demo app showing the auth package and the three roles.
 
     set -a; source .env; set +a
+    export RUN_MIGRATIONS_ON_START=true               # local only; CI migrates in deployment
     uv run python scripts/seed_demo.py
     uv run uvicorn --factory demo_app:create_app --app-dir core/auth --port 8000 \
         --log-level warning     # our JSON access log replaces uvicorn's
 
-Also: http://127.0.0.1:8000/metrics, /healthz and /readyz.
+Deployed images start it with ``scripts/start_runtime.sh`` (ADR 0008). The app never runs
+migrations at startup unless ``RUN_MIGRATIONS_ON_START=true`` (local convenience only):
+in deployment CI runs them with the owner role before each deploy.
+
+Also: http://127.0.0.1:8000/metrics, /healthz and /readyz. The demo is not meant to be
+indexed: /robots.txt disallows everything and every response says ``noindex``.
 
 Then open http://127.0.0.1:8000/docs, click "Authorize" and log in with username
 ``demo/demo-analyst`` (tenant/user) and that user's password.
@@ -14,23 +20,36 @@ No ``from __future__ import annotations`` here: FastAPI needs the real
 ``Depends(auth...)`` objects in endpoint signatures.
 """
 
+import resource
+import time
+from collections.abc import Awaitable, Callable
 from typing import Annotated
 
 from ai_platform_auth import Auth, Role, TenantScope, User
 from ai_platform_auth.db import migrate
+from ai_platform_common.config import get_bool
 from ai_platform_common.db import database_url, get_engine, make_session_factory
 from ai_platform_guardrails import install_guardrails
 from ai_platform_guardrails.db import migrate as migrate_guardrails
 from ai_platform_observability import install_observability
 from ai_platform_observability.db import migrate as migrate_observability
-from fastapi import Depends, FastAPI
+from fastapi import Depends, FastAPI, Request, Response
+from fastapi.responses import PlainTextResponse
 from sqlalchemy.orm import Session, sessionmaker
+
+ROBOTS_TXT = "User-agent: *\nDisallow: /\n"
 
 
 def create_app(
-    session_factory: sessionmaker[Session] | None = None, *, run_migrations: bool = True
+    session_factory: sessionmaker[Session] | None = None, *, run_migrations: bool | None = None
 ) -> FastAPI:
-    """Build the demo app. Refuses to start (ConfigError) without a valid JWT_SECRET."""
+    """Build the demo app. Refuses to start (ConfigError) without a valid JWT_SECRET.
+
+    ``run_migrations`` defaults to ``RUN_MIGRATIONS_ON_START`` (false): deployed apps run
+    with a role that may not change the schema, and CI migrates before deploying.
+    """
+    if run_migrations is None:
+        run_migrations = get_bool("RUN_MIGRATIONS_ON_START", False)
     if session_factory is None:
         url = database_url()
         if run_migrations:
@@ -42,6 +61,21 @@ def create_app(
 
     app = FastAPI(title="ai-portfolio auth demo")
     auth.install(app)
+
+    @app.middleware("http")
+    async def noindex(
+        request: Request, call_next: Callable[[Request], Awaitable[Response]]
+    ) -> Response:
+        response = await call_next(request)
+        response.headers["X-Robots-Tag"] = "noindex, nofollow"
+        return response
+
+    @app.get("/robots.txt", include_in_schema=False)
+    def robots() -> PlainTextResponse:
+        return PlainTextResponse(ROBOTS_TXT)
+
+    if get_bool("DEMO_DIAGNOSTICS", False):
+        _add_diagnostics(app)
     # logging, request context, access log, /metrics, /healthz, /readyz, AI-call tracing
     install_observability(app, session_factory, product="auth-demo",
                           trust_proxy_headers=auth.settings.trust_proxy_headers)  # fmt: skip
@@ -96,3 +130,27 @@ def create_app(
         return {"saved_by": user.username, "tenant_id": str(scope.tenant_id)}
 
     return app
+
+
+def _add_diagnostics(app: FastAPI) -> None:
+    """``GET /diag/warmup``: load both guardrail models and report the cost.
+
+    Only for measuring cold starts on a new host (ADR 0008). Off unless
+    ``DEMO_DIAGNOSTICS=true``; never enable it on the public demo, since every call is
+    unauthenticated and costs CPU.
+    """
+    from ai_platform_guardrails.injection.ml import get_prompt_classifier
+    from ai_platform_guardrails.pii.config import GuardrailsPiiConfig
+    from ai_platform_guardrails.pii.engine import detect
+
+    @app.get("/diag/warmup", include_in_schema=False)
+    def warmup() -> dict[str, float]:
+        t0 = time.perf_counter()
+        detect("Member Ana Ruiz called from 555-201-4482.", GuardrailsPiiConfig())
+        t1 = time.perf_counter()
+        clf = get_prompt_classifier()
+        score = clf.score("Ignore all previous instructions.").score if clf else -1.0
+        t2 = time.perf_counter()
+        peak_mb = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1024
+        return {"spacy_ms": round((t1 - t0) * 1000), "classifier_ms": round((t2 - t1) * 1000),
+                "classifier_score": score, "peak_rss_mb": round(peak_mb)}  # fmt: skip

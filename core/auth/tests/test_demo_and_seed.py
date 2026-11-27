@@ -150,3 +150,70 @@ def login_header(client: TestClient, username: str) -> dict[str, str]:
     r = client.post("/auth/login", data={"username": f"demo/{username}", "password": pw})
     assert r.status_code == 200, r.text
     return {"Authorization": f"Bearer {r.json()['access_token']}"}
+
+
+# ------------------------------------------------------------------ deployment behaviour (ADR 0008)
+
+
+def test_demo_is_not_indexed(
+    demo_mod: Any, session_factory: sessionmaker[Session], monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setenv("JWT_SECRET", TEST_SECRET.decode())
+    with TestClient(demo_mod.create_app(session_factory)) as client:
+        r = client.get("/robots.txt")
+        assert r.status_code == 200 and r.text == "User-agent: *\nDisallow: /\n"
+        assert client.get("/healthz").headers["X-Robots-Tag"] == "noindex, nofollow"
+        assert client.get("/nope").headers["X-Robots-Tag"] == "noindex, nofollow"
+
+
+def test_no_migrations_at_startup_unless_asked(
+    demo_mod: Any, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    calls: list[str] = []
+    for name in ("migrate", "migrate_observability", "migrate_guardrails"):
+        monkeypatch.setattr(demo_mod, name, lambda _url, n=name: calls.append(n))
+    monkeypatch.setenv("JWT_SECRET", TEST_SECRET.decode())
+    monkeypatch.setenv("DATABASE_URL", "postgresql+psycopg://u:p@127.0.0.1:1/none")
+    monkeypatch.delenv("RUN_MIGRATIONS_ON_START", raising=False)
+    demo_mod.create_app()
+    assert calls == []
+    monkeypatch.setenv("RUN_MIGRATIONS_ON_START", "true")
+    demo_mod.create_app()
+    assert calls == ["migrate", "migrate_observability", "migrate_guardrails"]
+
+
+def test_models_load_lazily_not_at_startup_or_login(
+    demo_mod: Any, seed_mod: Any, session: Session, session_factory: sessionmaker[Session],
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:  # fmt: skip
+    """Health checks, crawlers and logins must not pay the model-load cost."""
+    from ai_platform_guardrails.injection import ml
+    from ai_platform_guardrails.pii.engine import get_analyzer
+
+    monkeypatch.setenv("JWT_SECRET", TEST_SECRET.decode())
+    seed_mod.seed(session, seed_mod.read_passwords(PASSWORDS))
+    session.commit()
+    get_analyzer.cache_clear()
+    ml._default.cache_clear()
+    with TestClient(demo_mod.create_app(session_factory)) as client:
+        assert client.get("/healthz").status_code == 200
+        assert client.get("/readyz").status_code == 200
+        assert client.get("/robots.txt").status_code == 200
+        login_header(client, "demo-viewer")
+    assert get_analyzer.cache_info().currsize == 0
+    assert ml._default.cache_info().currsize == 0
+
+
+def test_diagnostics_route_only_when_enabled(
+    demo_mod: Any, session_factory: sessionmaker[Session], monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setenv("JWT_SECRET", TEST_SECRET.decode())
+    monkeypatch.delenv("DEMO_DIAGNOSTICS", raising=False)
+    with TestClient(demo_mod.create_app(session_factory)) as client:
+        assert client.get("/diag/warmup").status_code == 404
+    monkeypatch.setenv("DEMO_DIAGNOSTICS", "true")
+    monkeypatch.setenv("GUARD_ML_CLASSIFIER", "false")  # the auth suite doesn't need the model
+    with TestClient(demo_mod.create_app(session_factory)) as client:
+        body = client.get("/diag/warmup").json()
+    assert set(body) == {"spacy_ms", "classifier_ms", "classifier_score", "peak_rss_mb"}
+    assert body["classifier_score"] == -1.0 and body["peak_rss_mb"] > 0
