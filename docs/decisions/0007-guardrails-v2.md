@@ -90,9 +90,52 @@ Those task hijacks are handled by **architecture, not detection**:
 - human approval for risky actions;
 - least privilege for what a product's model can do at all.
 
-### 5. PII
+### 5. PII: real leaks first
 
-Section filled in by the PII commits of this branch (see below).
+- **Obfuscated emails** (`name dot x at domain dot tld`, `(at)`/`[at]`/`{at}`) are masked
+  as EMAIL. A stop-list keeps prose like "at the dot com era" out.
+- **Addresses:**
+  - PO Box/POB, rural and highway-contract routes, military APO/FPO/DPO, and unit forms;
+  - a bug that cut addresses at "Dr." is fixed;
+  - a **merge step** extends an address over a following unit or city/state/ZIP and absorbs
+    overlapping detections, so a partial address is never left.
+- **Dates of birth written out** (ordinals, word ordinals, `'yy`, French/German/Spanish
+  months) count when a DOB word is near (also `geb.`, `né`, `nacido`, `जन्मतिथि`).
+- **IDs with separators** (spaces, dashes, `#`, either case) for member, policy and claim
+  numbers. The guardrails README shows how tenants add their own formats.
+- **A partial-leak metric:** every gold value is counted as fully masked, a partial leak or
+  a full leak, with masking by any type counting.
+
+### 6. Evaluation hygiene
+
+- **Held-out v1 was marked seen** and used for tuning.
+- **Held-out v2 was frozen** before any v2 change (source hash
+  `b0649dec9fe63ca8f19ce68359f1e1ff8ef57272469f2bcf1ed542db9eebe3c3`) and scored once, at
+  the end, together with the deepset test split and with the guardrails v1 code as a
+  baseline on the same data.
+- **Disclosed:** 8 of v2's 60 PII lines were typed from memory as probe inputs while the PII
+  fixes were developed. No code changed in response to them, but they are not cleanly
+  unseen. The results show v2 PII with and without them.
+
+## Results (single final scoring; details in `docs/guardrails-results.md`)
+
+| | Guardrails v1 | Guardrails v2 |
+|---|---:|---:|
+| v2 attacks caught (unseen) | 5/40 (12.5%) | **29/40 (72.5%)** |
+| v2 benign wrongly flagged | 2/40 | 3/40 (7.5%) |
+| deepset test attacks caught (public; guard-small trained on deepset train) | 6/60 | **24/60** |
+| deepset test benign wrongly flagged | 0/56 | 0/56 |
+| v2 PII values found, right type (without the 8 probed lines) | 38/65 | **50/65** (42/56) |
+| v2 PII values fully leaked, any type (without the 8 probed lines) | – | 14/65 (13/56), plus 2 partial |
+| dev targets (CI gate) | met | met |
+
+**Not built in this branch:**
+- the semantic policy signals for work-phrased attacks (requests for instructions, bulk
+  data, claimed approvals);
+- the multilingual extension of the rules.
+
+10 of the 11 v2 misses are exactly those work-phrased requests. They are the next step,
+measured on a new held-out set, because v2 has now been seen.
 
 ## Considered
 
@@ -148,6 +191,11 @@ reproduced in `docs/guardrails-results.md` (from `eval/CLASSIFIER_COMPARISON.md`
 - **Small sets.** v1 and v2 each have 40 attacks, so one sample is 2.5 points.
 - **Vendor risk** (section 2). The pin and the hash checks protect against silent
   changes, not against a flawed model.
+- **Work-phrased attacks** (bulk data, claimed approvals) mostly pass detection (section 6).
+  The approval gate is the control that holds: a second person must approve.
+- **PII formats still leaking on v2:** spelled-out and international phones, an SSN without
+  dashes, dotted card numbers, grouped NPIs and bank numbers, numbered or Spanish street
+  names, "03-MAY-1961" and "03.05.1961" dates of birth, and non-Latin or all-caps names.
 - **Memory.** One process with spaCy lg and guard-small uses about **1.5 GB**. Phase 0.6 has
   to size containers per worker accordingly.
 

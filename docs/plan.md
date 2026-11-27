@@ -27,6 +27,8 @@ common utilities, CI and infrastructure.
     evaluation corpus with CI targets) — **Done**
     - Follow-up: held-out and public guardrails evaluation, report only (ADR 0006)
       — **Done**
+    - Follow-up: guardrails v2 (local ML injection classifier, per-layer thresholds,
+      PII leak fixes, held-out v2; ADR 0007) — **Done**
 
 ## Claims Onboarding
 

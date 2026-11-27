@@ -5,6 +5,41 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Added — Guardrails v2 (ADR 0007)
+- **Local ML injection classifier** behind a `PromptClassifier` interface:
+  - Horizon-Labs `prompt-injection-guard-small` (int8 ONNX, Apache-2.0 with the mmBERT
+    MIT notice), pinned revision `0c8139d1` with Hub SHA-256 checks;
+  - only the ONNX model, `tokenizer.json` and `config.json` are loaded;
+  - `scripts/download_guard_model.py`; CI caches it; fail closed when enabled but missing.
+  - New pinned dependencies: `onnxruntime==1.32.0`, `tokenizers==0.23.3` (no torch or
+    transformers).
+- **One decision rule** (`injection/decision.py`) for the guard and the evaluation:
+  - rules 0.70 block / 0.40 flag (unchanged);
+  - classifier 0.80 block / 0.70 flag;
+  - chat may be blocked; `wrap_untrusted` content is only flagged; content past 64 windows
+    is flagged as unscanned.
+  - Thresholds chosen on tuning data only: `scripts/tune_injection_thresholds.py`,
+    `docs/injection-thresholds.md`.
+- **PII:**
+  - obfuscated emails;
+  - PO Box, rural-route, military and unit addresses, with an address merge step so no
+    partial address is left;
+  - written-out dates of birth (en/fr/de/es) near DOB words;
+  - member, policy and claim IDs with separators or in either case;
+  - README worked example for tenant formats.
+- **Evaluation:**
+  - partial-leak metric per entity;
+  - held-out v1 marked seen, held-out v2 frozen and scored once;
+  - deepset train split for tuning (`download_public_eval.py --split train`);
+  - `guardrails_report.py --heldout-v2`;
+  - the classifier comparison (`eval/CLASSIFIER_COMPARISON.md`) and before/after notes in
+    `docs/guardrails-results.md`.
+- **Results on unseen data:**
+  - v2 injection 5/40 → 29/40, with benign 2/40 → 3/40;
+  - deepset test 6/60 → 24/60;
+  - v2 PII 38/65 → 50/65 (42/56 without 8 lines that were used as probe inputs during
+    development, disclosed in the results).
+
 ### Added — Held-out guardrails evaluation (ADR 0006)
 - `eval/heldout/`: frozen held-out set (60 PII lines with 83 values, 40 attacks, 40 benign
   look-alikes), committed before any scoring, pinned by `MANIFEST.sha256` (checked by a
