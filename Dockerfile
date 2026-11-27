@@ -10,11 +10,13 @@
 #   --secret id=ca,src=/path/to/ca-bundle.crt
 # The bundle is mounted for the build step only and never stored in a layer.
 
-ARG PYTHON_IMAGE=python:3.12-slim-bookworm
+# Base images are pinned by digest; Dependabot proposes updates weekly
+# (.github/dependabot.yml). python:3.12-slim = Debian 13 "trixie", Python 3.12.16
+# (2026-11-24). Keep the builder and runtime digests identical.
 
-FROM ghcr.io/astral-sh/uv:0.13.10 AS uv
+FROM ghcr.io/astral-sh/uv:0.13.10@sha256:a3ea1357342c1a4bf9a0c53a3deb1b55379aefa037338d8113d5771efa01774f AS uv
 
-FROM ${PYTHON_IMAGE} AS builder
+FROM python:3.12-slim@sha256:191083cdf6c7bda8c76158983163ead5d5cf7b77cf3033e805bb0f5296f51b4b AS builder
 COPY --from=uv /uv /usr/local/bin/uv
 WORKDIR /app
 COPY pyproject.toml uv.lock ./
@@ -25,8 +27,14 @@ RUN --mount=type=cache,target=/root/.cache/uv \
     if [ -f /run/secrets/ca ]; then export SSL_CERT_FILE=/run/secrets/ca; fi; \
     bash scripts/build_runtime.sh
 
-FROM ${PYTHON_IMAGE} AS runtime
-RUN useradd --system --uid 10001 --user-group --no-create-home --home-dir /app app
+FROM python:3.12-slim@sha256:191083cdf6c7bda8c76158983163ead5d5cf7b77cf3033e805bb0f5296f51b4b AS runtime
+# Debian security fixes published after the base image was built, and no pip at runtime
+# (the app's venv doesn't need it; it only adds attack surface).
+RUN apt-get update \
+    && apt-get upgrade -y --no-install-recommends \
+    && rm -rf /var/lib/apt/lists/* \
+    && python -m pip uninstall -y pip \
+    && useradd --system --uid 10001 --user-group --no-create-home --home-dir /app app
 WORKDIR /app
 COPY --from=builder --chown=app:app /app/.venv /app/.venv
 COPY --from=builder --chown=app:app /app/.models /app/.models
