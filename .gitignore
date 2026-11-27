@@ -37,3 +37,6 @@ crash.log
 
 # Public evaluation datasets (downloaded by scripts/download_public_eval.py, never committed)
 eval/public/
+
+# Downloaded ML models (scripts/download_guard_model.py), never committed
+.models/
