@@ -24,7 +24,7 @@ SEED = 20261127
 
 fake = Faker("en_US")
 Faker.seed(SEED)
-rng = random.Random(SEED)
+rng = random.Random(SEED)  # noqa: S311 - reproducible synthetic data, not security
 
 # Given names that are also common English words (tricky for NER).
 WORD_NAMES = ["Will", "Rose", "Grant", "Hope", "Faith", "Mark", "Bill", "Summer", "Joy",

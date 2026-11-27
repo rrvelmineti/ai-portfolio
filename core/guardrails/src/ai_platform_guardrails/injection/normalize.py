@@ -31,6 +31,8 @@ HEX_TOKEN = re.compile(r"\b(?:0x)?((?:[0-9a-fA-F]{2}){8,})\b")
 U_ESCAPE = re.compile(r"(?:\\u[0-9a-fA-F]{4}){4,}")
 PCT_ESCAPE = re.compile(r"(?:%[0-9a-fA-F]{2}){4,}")
 SPACED_LETTERS = re.compile(r"\b(?:[A-Za-z][ .\-_]){5,}[A-Za-z]\b")
+# "I g n o r e   a l l": single letters separated by one space, words by 2+ spaces
+SPACED_WORDS = re.compile(r"(?:\b[A-Za-z]\b(?: {1,3}|$)){6,}")
 
 
 @dataclass
@@ -69,6 +71,17 @@ def _try_hex(token: str) -> str | None:
     return out if _printable_ratio(out) > 0.9 and " " in out else None
 
 
+def _despace(text: str) -> str:
+    """Re-join letter-spaced text: 2+ spaces separate words, single separators vanish."""
+
+    def join(m: re.Match[str]) -> str:
+        words = re.split(r" {2,}", m.group(0).strip())
+        return " " + " ".join(re.sub(r"[ .\-_]", "", w) for w in words) + " "
+
+    text = SPACED_WORDS.sub(join, text)
+    return SPACED_LETTERS.sub(lambda m: re.sub(r"[ .\-_]", "", m.group(0)), text)
+
+
 def normalise(text: str) -> Normalised:
     """Normalise ``text`` and collect decoded variants (one level deep)."""
     cleaned, obfuscated = _clean(text)
@@ -89,10 +102,9 @@ def normalise(text: str) -> Normalised:
         variants.append(("unicode_escape", _clean(decoded)[0].lower()))
     for m in PCT_ESCAPE.finditer(cleaned):
         variants.append(("url_encoding", _clean(unquote(m.group(0)))[0].lower()))
-    spaced = SPACED_LETTERS.findall(cleaned)
+    spaced = SPACED_LETTERS.findall(cleaned) or SPACED_WORDS.search(cleaned)
     if spaced:
-        joined = SPACED_LETTERS.sub(lambda m: re.sub(r"[ .\-_]", "", m.group(0)), cleaned)
-        variants.append(("spaced_letters", joined.lower()))
+        variants.append(("spaced_letters", _despace(cleaned).lower()))
         obfuscated = True
     leet = cleaned.lower().translate(LEET)
     if leet != cleaned.lower():

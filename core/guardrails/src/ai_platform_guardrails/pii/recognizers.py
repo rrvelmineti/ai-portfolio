@@ -104,6 +104,28 @@ class NpiRecognizer(PatternRecognizer):
         return npi_valid(pattern_text)
 
 
+class LuhnCardRecognizer(PatternRecognizer):
+    """12-19 digit card numbers (optionally grouped) that pass Luhn, near card context.
+
+    Presidio's built-in recognizer knows common brand prefixes/lengths; this catches the
+    rest (e.g. 12-digit Maestro, 19-digit Visa) without flagging random digit runs.
+    """
+
+    def __init__(self) -> None:
+        super().__init__(
+            supported_entity="CREDIT_CARD",
+            name="LuhnCardRecognizer",
+            patterns=[Pattern("luhn_card", r"\b\d(?:[ -]?\d){11,18}\b", 0.3)],
+            context=["card", "credit", "debit", "visa", "mastercard", "amex", "maestro",
+                     "statement", "charged", "payment", "ending"],
+        )  # fmt: skip
+
+    def validate_result(self, pattern_text: str) -> bool | None:
+        digits = re.sub(r"\D", "", pattern_text)
+        # None keeps the (context-dependent) score; True would force 1.0 for any Luhn hit
+        return None if 12 <= len(digits) <= 19 and luhn_valid(digits) else False
+
+
 def _pattern(entity: str, name: str, regexes: list[tuple[str, float]], context: list[str],
              *, flags: int | None = None) -> PatternRecognizer:  # fmt: skip
     kwargs: dict[str, Any] = {}
@@ -133,9 +155,17 @@ def default_recognizers() -> list[PatternRecognizer]:
                     0.7,
                 ),
                 (rf"(?<![\w+]){_PHONE_PREFIX}\d{{3}}[-.]\d{{3}}[-.]\d{{4}}{_PHONE_EXT}", 0.65),
-                (r"\b\d{10}\b", 0.2),
+                (r"\b[2-9]\d{2}[2-9]\d{6}\b", 0.5),  # NANP area+exchange; masks on the safe side
             ],
             ["phone", "tel", "telephone", "mobile", "cell", "call", "fax", "contact"],
+        ),  # fmt: skip
+        LuhnCardRecognizer(),
+        # Bank account numbers: 8-17 digits, only next to account/bank context.
+        _pattern(
+            "US_BANK_NUMBER",
+            "BankAccountRecognizer",
+            [(r"\b\d{8,17}\b", 0.3)],
+            ["account", "acct", "bank", "routing", "checking", "savings", "iban"],
         ),  # fmt: skip
         _pattern(
             "MEMBER_ID",
@@ -145,7 +175,7 @@ def default_recognizers() -> list[PatternRecognizer]:
                 (r"\bM\d{8,10}\b", 0.6),  # e.g. M12345678
                 (r"\b[A-Z]\d{2}[A-Z]\d{5,7}\b", 0.3),
             ],  # weak, needs context
-            ["member", "member id", "mbr", "subscriber", "enrollee", "id card"],
+            ["member", "mbr", "subscriber", "enrollee", "id", "card"],
             flags=CASE_SENSITIVE,
         ),  # fmt: skip
         _pattern(
@@ -155,7 +185,7 @@ def default_recognizers() -> list[PatternRecognizer]:
                 (r"\bCLM-?\d{4}-?\d{6,8}\b", 0.7),  # e.g. CLM-2024-0012345
                 (r"\b\d{2}[A-Z]\d{9,11}\b", 0.3),
             ],  # weak, needs context
-            ["claim", "claim number", "claim no", "claim #", "icn"],
+            ["claim", "icn", "number", "no"],
             flags=CASE_SENSITIVE,
         ),  # fmt: skip
         _pattern(
@@ -165,20 +195,21 @@ def default_recognizers() -> list[PatternRecognizer]:
                 (r"\bPOL-?\d{6,10}\b", 0.7),  # e.g. POL-00123456
                 (r"\b[A-Z]{2}\d{8}\b", 0.3),
             ],  # weak, needs context
-            ["policy", "policy number", "policy no", "pol #", "group policy"],
+            ["policy", "pol", "number", "no"],
             flags=CASE_SENSITIVE,
         ),  # fmt: skip
         _pattern(
             "DATE_OF_BIRTH",
             "DateOfBirthRecognizer",
             [(_DATE, 0.3)],
-            ["dob", "d.o.b", "date of birth", "birth date", "birthdate", "born", "birthday"],
+            # "bear" is spaCy's lemma of "born"
+            ["dob", "birth", "birthdate", "birthday", "born", "bear"],
         ),
         _pattern(
             "ADDRESS",
             "StreetAddressRecognizer",
             [(ADDRESS_REGEX, 0.7), (PO_BOX_REGEX, 0.7)],
-            ["address", "street", "lives at", "mail to", "residence"],
+            ["address", "street", "live", "mail", "residence"],
             flags=CASE_SENSITIVE,
         ),  # fmt: skip
         _pattern(
@@ -193,7 +224,7 @@ def default_recognizers() -> list[PatternRecognizer]:
             "ZIP_CODE",
             "ZipCodeRecognizer",
             [(r"(?<=\b[A-Z]{2}\s{1,2})\d{5}(?:-\d{4})?\b", 0.6), (r"\b\d{5}(?:-\d{4})?\b", 0.2)],
-            ["zip", "zip code", "postal", "postcode"],
+            ["zip", "postal", "postcode"],
             flags=CASE_SENSITIVE,
         ),  # fmt: skip
         _pattern(

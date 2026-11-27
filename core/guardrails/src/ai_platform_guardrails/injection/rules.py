@@ -51,9 +51,10 @@ RULES: list[Rule] = [
         0.8,
         r"\byou\s+are\s+now\s+(?:dan|an?\s+(?:unrestricted|unfiltered|uncensored|evil|jailbroken))",
         r"\bdo\s+anything\s+now\b",
-        r"\b(?:developer|god|dan|jailbreak|unrestricted|sudo)\s+mode\b",
+        r"\b(?:enable|enter|activate|switch\s+(?:on|to)|turn\s+on|in)\s+(?:the\s+)?(?:developer|god|dan|jailbreak|unrestricted|sudo)\s+mode\b.{0,80}\b(?:you|your|policy|rules|restrictions|filters)\b",
+        r"\byou\s+are\s+(?:now\s+)?in\s+(?:developer|god|dan|jailbreak|unrestricted|sudo)\s+mode\b",
         r"\bpretend\s+(?:that\s+)?(?:you\s+are|to\s+be|you're)\b.{0,60}\b(?:no|without|free\s+of)\s+(?:rules|restrictions|limits|filters|guidelines|ethics)",
-        r"\bact\s+as\b.{0,60}\b(?:without|no)\s+(?:any\s+)?(?:restrictions|limits|rules|filters|ethics)",
+        r"\bact\s+as\b.{0,120}\b(?:without|no)\s+(?:any\s+)?(?:restrictions|limits|rules|filters|ethics)",
         r"\b(?:no\s+longer|not)\s+bound\s+by\b",
         r"\bstay\s+in\s+character\b",
         r"\bjailbr[eo]a?k(?:en|ing)?\b",
@@ -100,6 +101,21 @@ RULES: list[Rule] = [
         r"\b(?:send|post|upload|forward|transmit|exfiltrate|leak|email)\b.{0,60}\b(?:to|at|into)\s+(?:https?://|[\w.+-]+@[\w-]+\.)",
         r"\b(?:append|add|encode|put|include|embed)\b.{0,60}\b(?:in|to|into)\s+(?:the\s+|a\s+)?(?:url|link|image|query\s+string)",
         r"\bfetch\s+(?:the\s+)?(?:url|https?://)",
+    ),  # fmt: skip
+    # --- asking to skip oversight (combined with another signal this blocks)
+    *_r(
+        "oversight_evasion",
+        0.5,
+        r"\b(?:no|without(?:\s+any)?)\s+(?:confirmation|approval|review|verification|logging|audit(?:ing)?)\s*(?:needed|required|necessary)?\b",
+        r"\b(?:do\s+not|don't|dont|never)\s+(?:log|record|audit|tell|notify|report|mention)\b",
+        r"\b(?:skip|bypass|disable|turn\s+off)\s+(?:the\s+)?(?:approval|review|audit|logging|confirmation|checks?)\b",
+    ),  # fmt: skip
+    # --- harvesting other people's sensitive data
+    *_r(
+        "data_harvest",
+        0.75,
+        r"\b(?:other|all|every|another)\s+(?:customers?|members?|users?|patients?|people|clients?)(?:'s?|s')?\s+(?:ssns?|social\s+security|passwords?|credit\s+cards?|card\s+numbers?|personal\s+(?:data|details|information)|medical\s+records?|addresses|emails?)",
+        r"\b(?:list|dump|export|show|give)\s+(?:me\s+)?(?:every|all)\s+(?:member|customer|user|patient)s?(?:'s?)?\s+(?:emails?|ssns?|addresses|phone\s+numbers|records|data)",
     ),  # fmt: skip
     # --- tool abuse
     *_r(
