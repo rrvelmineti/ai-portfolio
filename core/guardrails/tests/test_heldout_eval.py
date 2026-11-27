@@ -47,6 +47,29 @@ def test_heldout_files_match_the_freeze_manifest() -> None:
         assert actual == digest, f"{name} changed after the freeze (see eval/heldout/README.md)"
 
 
+HELDOUT_V2 = ROOT / "eval" / "heldout_v2"
+V2_SOURCE_SHA256 = "b0649dec9fe63ca8f19ce68359f1e1ff8ef57272469f2bcf1ed542db9eebe3c3"
+
+
+def test_heldout_v2_matches_its_freeze_manifest_without_scoring() -> None:
+    """v2 is checked for integrity only; it must not be scored before the end of guardrails-v2."""
+    src = (HELDOUT_V2 / "claude_v2_samples.txt").read_bytes()
+    assert hashlib.sha256(src).hexdigest() == V2_SOURCE_SHA256
+    lines = (HELDOUT_V2 / "MANIFEST.sha256").read_text(encoding="utf-8").splitlines()
+    assert len(lines) == 5
+    for line in lines:
+        digest, name = line.split(maxsplit=1)
+        actual = hashlib.sha256((HELDOUT_V2 / name).read_bytes()).hexdigest()
+        assert actual == digest, f"{name} changed after the v2 freeze"
+
+
+def test_heldout_v2_jsonl_is_generated_from_the_source(capsys: pytest.CaptureFixture[str]) -> None:
+    convert = _load_script("convert_tagged_samples")
+    assert convert.main([str(HELDOUT_V2 / "claude_v2_samples.txt"), "--check",
+                         "--out-dir", str(HELDOUT_V2)]) == 0  # fmt: skip
+    assert "up to date" in capsys.readouterr().out
+
+
 def test_heldout_jsonl_is_generated_from_the_source(capsys: pytest.CaptureFixture[str]) -> None:
     convert = _load_script("convert_tagged_samples")
     assert convert.main([str(HELDOUT / "claude_samples.txt"), "--check"]) == 0
