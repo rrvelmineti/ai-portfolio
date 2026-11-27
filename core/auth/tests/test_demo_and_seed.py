@@ -217,3 +217,9 @@ def test_diagnostics_route_only_when_enabled(
         body = client.get("/diag/warmup").json()
     assert set(body) == {"spacy_ms", "classifier_ms", "classifier_score", "peak_rss_mb"}
     assert body["classifier_score"] == -1.0 and body["peak_rss_mb"] > 0
+    with TestClient(demo_mod.create_app(session_factory)) as client:
+        info = client.get("/diag/client", headers={"X-Forwarded-For": "203.0.113.9"}).json()
+    assert info["x_forwarded_for"] == "203.0.113.9" and info["peer"] == "testclient"
+    monkeypatch.delenv("DEMO_DIAGNOSTICS")
+    with TestClient(demo_mod.create_app(session_factory)) as client:
+        assert client.get("/diag/client").status_code == 404

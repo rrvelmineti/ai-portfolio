@@ -133,7 +133,7 @@ def create_app(
 
 
 def _add_diagnostics(app: FastAPI) -> None:
-    """``GET /diag/warmup``: load both guardrail models and report the cost.
+    """``GET /diag/warmup`` (model load cost) and ``GET /diag/client`` (proxy headers).
 
     Only for measuring cold starts on a new host (ADR 0008). Off unless
     ``DEMO_DIAGNOSTICS=true``; never enable it on the public demo, since every call is
@@ -142,6 +142,21 @@ def _add_diagnostics(app: FastAPI) -> None:
     from ai_platform_guardrails.injection.ml import get_prompt_classifier
     from ai_platform_guardrails.pii.config import GuardrailsPiiConfig
     from ai_platform_guardrails.pii.engine import detect
+
+    @app.get("/diag/client", include_in_schema=False)
+    def client_info(request: Request) -> dict[str, str | None]:
+        """What the platform's proxy sends: the TCP peer and the forwarding headers.
+
+        Used once to decide which proxy addresses to trust for X-Forwarded-For.
+        """
+        h = request.headers
+        return {
+            "peer": request.client.host if request.client else None,
+            "x_forwarded_for": h.get("x-forwarded-for"),
+            "x_real_ip": h.get("x-real-ip"),
+            "forwarded": h.get("forwarded"),
+            "x_forwarded_proto": h.get("x-forwarded-proto"),
+        }
 
     @app.get("/diag/warmup", include_in_schema=False)
     def warmup() -> dict[str, float]:
