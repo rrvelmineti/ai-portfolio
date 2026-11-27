@@ -38,15 +38,29 @@ STREET_SUFFIXES = (
     "Underpass|Upas|Unions?|Uns?|Valleys?|Vlys?|Viaduct|Via|Views?|Vws?|Villages?|Vlgs?|"
     "Ville|Vl|Vista|Vis|Walks?|Wall|Way|Ways|Wells?|Wls?"
 )
-_UNIT = r"(?:,?\s+(?:Apt\.?|Apartment|Suite|Ste\.?|Unit|#|Fl\.?|Floor|Rm\.?|Room)\s*[\w-]+)?"
-_CITY_STATE_ZIP = r"(?:,?\s*\n?\s*[A-Z][A-Za-z.' -]+,\s*[A-Z]{2}\s+\d{5}(?:-\d{4})?)?"
+_UNIT_WORDS = r"Apt\.?|Apartment|Suite|Ste\.?|Unit|#|Bldg\.?|Building|Fl\.?|Floor|Rm\.?|Room"
+_UNIT = rf"(?:,?\s+(?:{_UNIT_WORDS})\s*#?[\w-]+)?"
+# ", City, ST 12345" with the comma before the state optional ("Springfield MA 01103").
+CITY_STATE_ZIP = r"[A-Z][A-Za-z.' -]+?,?\s+[A-Z]{2},?\s+\d{5}(?:-\d{4})?"
+_CITY_STATE_ZIP = rf"(?:,?\s*\n?\s*{CITY_STATE_ZIP})?"
 ADDRESS_REGEX = (
     r"\b\d{1,6}\s+(?:[NSEW]\.?\s+)?(?:[A-Z][A-Za-z0-9'.-]*\s+){1,4}"
-    rf"(?:{STREET_SUFFIXES})\.?\b(?:\s+[NSEW]{{1,2}}\b)?{_UNIT}{_CITY_STATE_ZIP}"
+    rf"(?:{STREET_SUFFIXES})\b\.?(?:\s+[NSEW]{{1,2}}\b)?{_UNIT}{_CITY_STATE_ZIP}"
 )
-PO_BOX_REGEX = r"\b(?:P\.?\s?O\.?\s?Box|PSC\s+\d{4},\s+Box|USNS\s+\w+|USS\s+\w+)\s*\d*" + (
-    r"(?:,?\s*\n?\s*[A-Z][A-Za-z.' -]+,\s*[A-Z]{2}\s+\d{5}(?:-\d{4})?)"
+# PO boxes, rural/highway-contract routes and military addresses, each optionally followed
+# by city/state/ZIP (APO/FPO addresses carry their own pseudo state and ZIP).
+PO_BOX_REGEX = r"\b(?:P\.?\s?O\.?\s?Box|Post\s+Office\s+Box|POB)\s*#?\s*\d+" + _CITY_STATE_ZIP
+RURAL_ROUTE_REGEX = (
+    r"\b(?:RR|R\.R\.|Rural\s+Route|HC|Highway\s+Contract|Star\s+Route)\s*\d+,?\s+Box\s+\d+"
+    + _CITY_STATE_ZIP
 )
+MILITARY_REGEX = (
+    r"\b(?:PSC|CMR|Unit|USNS\s+\w+|USS\s+\w+)\s*\d*,?\s*(?:Box\s+\d+,?\s*)?"
+    r"(?:APO|FPO|DPO)\s+(?:AA|AE|AP)\s+\d{5}(?:-\d{4})?"
+)
+# Text right after a street/PO-box match that still belongs to the address. Used by the
+# engine's merge step so a city, state or ZIP is never left unmasked after the street.
+ADDRESS_TAIL_REGEX = rf"{_UNIT}(?:,?\s*\n?\s*{CITY_STATE_ZIP})"
 
 _DATE = (
     r"\b(?:\d{1,2}[/-]\d{1,2}[/-](?:\d{4}|\d{2})|\d{4}-\d{2}-\d{2}|"
@@ -54,6 +68,70 @@ _DATE = (
     r"Sep(?:t(?:ember)?)?|Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?)\.?\s+\d{1,2},?\s+\d{4}|"
     r"\d{1,2}\s+(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\.?\s+\d{4})\b"
 )
+
+_MONTHS_EN = (
+    r"(?:Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|June?|July?|Aug(?:ust)?|"
+    r"Sep(?:t(?:ember)?)?|Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?)"
+)
+_MONTHS_OTHER = (  # French, German, Spanish
+    r"(?:janvier|f[ée]vrier|mars|avril|mai|juin|juillet|ao[uû]t|septembre|octobre|novembre|"
+    r"d[ée]cembre|Januar|Februar|M[äa]rz|Juni|Juli|Oktober|Dezember|enero|febrero|marzo|"
+    r"abril|mayo|junio|julio|agosto|septiembre|setiembre|octubre|noviembre|diciembre)"
+)
+_ORDINAL_WORDS = (
+    r"(?:(?:twenty|thirty)[- ]?)?(?:first|second|third|fourth|fifth|sixth|seventh|eighth|"
+    r"ninth)|tenth|eleventh|twelfth|thirteenth|fourteenth|fifteenth|sixteenth|seventeenth|"
+    r"eighteenth|nineteenth|twentieth|thirtieth"
+)
+_DAY = rf"(?:\d{{1,2}}(?:st|nd|rd|th)?|{_ORDINAL_WORDS})"
+_YEAR = r"(?:\d{4}|['\u2019]\d{2})"
+WRITTEN_DATES = [
+    # "the 3rd of May 1961", "twelfth of March, 1948"
+    rf"\b(?:the\s+)?{_DAY}\s+(?:day\s+)?of\s+{_MONTHS_EN}\.?,?\s+{_YEAR}\b",
+    # "May 3rd, '61", "March 12th 1948"
+    rf"\b{_MONTHS_EN}\.?\s+{_DAY},?\s+{_YEAR}(?!\w)",
+    # "3 mai 1961", "3. Mai 1961", "3 de mayo de 1961"
+    rf"\b\d{{1,2}}\.?\s+(?:de\s+)?{_MONTHS_OTHER}\s+(?:de\s+)?\d{{4}}\b",
+]
+# Words near a date that make it a date of birth (English plus fr/de/es/hi forms).
+DOB_CONTEXT = [
+    "dob", "d.o.b", "birth", "birthdate", "birthday", "born", "bear",  # "bear": lemma of born
+    "geb", "geboren", "geburtsdatum", "né", "née", "naissance",
+    "nacido", "nacida", "nacimiento", "जन्म", "जन्मतिथि",
+]  # fmt: skip
+
+# Obfuscated emails: "kim dot park at example dot com", "dana.ruiz(at)example(dot)org".
+_AT = r"(?:\s*[\(\[\{<]\s*at\s*[\)\]\}>]\s*|\s+at\s+|\s*@\s*)"
+_DOT = r"(?:\s*[\(\[\{<]\s*dot\s*[\)\]\}>]\s*|\s+dot\s+|\.)"
+_TLDS = r"(?:com|org|net|edu|gov|mil|int|io|co|us|uk|ca|au|de|fr|es|it|nl|in|info|biz|me|app|dev)"
+OBFUSCATED_EMAIL_REGEX = (
+    rf"\b[a-z0-9_%+-]+(?:{_DOT}[a-z0-9_%+-]+){{0,3}}{_AT}"
+    rf"[a-z0-9-]+(?:{_DOT}[a-z0-9-]+){{0,3}}{_DOT}{_TLDS}\b"
+)
+_PLAIN_EMAIL = re.compile(r"[\w.%+-]+@[\w-]+(?:\.[\w-]+)+")
+_NOT_DOMAINS = {"the", "a", "an", "this", "that", "my", "your", "our", "their", "his", "her",
+                "its", "home", "work", "least", "last", "first", "once", "all"}  # fmt: skip
+
+
+class ObfuscatedEmailRecognizer(PatternRecognizer):
+    """Emails written to dodge scrapers. Plain ones are left to Presidio's recognizer."""
+
+    def __init__(self) -> None:
+        super().__init__(
+            supported_entity="EMAIL_ADDRESS",
+            name="ObfuscatedEmailRecognizer",
+            patterns=[Pattern("obfuscated_email", OBFUSCATED_EMAIL_REGEX, 0.8)],
+            context=["email", "mail", "contact", "reach", "reply", "write"],
+        )
+
+    def validate_result(self, pattern_text: str) -> bool | None:
+        if _PLAIN_EMAIL.fullmatch(pattern_text.strip()):
+            return False  # an ordinary email: the built-in recognizer handles it
+        domain = re.split(r"\s+at\s+|[\(\[\{<]\s*at\s*[\)\]\}>]|@", pattern_text,
+                          maxsplit=1, flags=re.I)[-1]  # fmt: skip
+        first_label = re.split(r"\s+dot\s+|[\(\[\{<]|\.", domain.strip(), flags=re.I)[0]
+        return None if first_label.lower() not in _NOT_DOMAINS else False
+
 
 TITLE_WORDS = (
     r"(?:Mr|Mrs|Ms|Mx|Dr|Prof)\.?|Patient|Member|Claimant|Insured|Subscriber|Beneficiary|"
@@ -160,6 +238,7 @@ def default_recognizers() -> list[PatternRecognizer]:
             ["phone", "tel", "telephone", "mobile", "cell", "call", "fax", "contact"],
         ),  # fmt: skip
         LuhnCardRecognizer(),
+        ObfuscatedEmailRecognizer(),
         # Bank account numbers: 8-17 digits, only next to account/bank context.
         _pattern(
             "US_BANK_NUMBER",
@@ -178,6 +257,28 @@ def default_recognizers() -> list[PatternRecognizer]:
             ["member", "mbr", "subscriber", "enrollee", "id", "card"],
             flags=CASE_SENSITIVE,
         ),  # fmt: skip
+        # House formats written with spaces or dashes, in either case (ADR 0007).
+        _pattern(
+            "MEMBER_ID",
+            "MemberIdSeparatedRecognizer",
+            [
+                (r"\b[A-Z]{3}[-\s]?\d{3}[-\s]?\d{3}[-\s]?\d{3}\b", 0.5),
+                (r"\bM[-\s]?\d{4}[-\s]?\d{4,6}\b", 0.5),
+            ],
+            ["member", "mbr", "subscriber", "enrollee", "id", "card"],
+        ),  # fmt: skip
+        _pattern(
+            "POLICY_NUMBER",
+            "PolicyNumberSeparatedRecognizer",
+            [(r"\bPOL[-\s#]?\d{6,10}\b", 0.7)],
+            ["policy", "pol", "number", "no"],
+        ),
+        _pattern(
+            "CLAIM_NUMBER",
+            "ClaimNumberSeparatedRecognizer",
+            [(r"\bCLM[-\s]?\d{4}[-\s]?\d{6,8}\b", 0.7)],
+            ["claim", "icn", "number", "no"],
+        ),
         _pattern(
             "CLAIM_NUMBER",
             "ClaimNumberRecognizer",
@@ -201,14 +302,18 @@ def default_recognizers() -> list[PatternRecognizer]:
         _pattern(
             "DATE_OF_BIRTH",
             "DateOfBirthRecognizer",
-            [(_DATE, 0.3)],
-            # "bear" is spaCy's lemma of "born"
-            ["dob", "birth", "birthdate", "birthday", "born", "bear"],
+            [(_DATE, 0.3), *((rx, 0.3) for rx in WRITTEN_DATES)],
+            DOB_CONTEXT,
         ),
         _pattern(
             "ADDRESS",
             "StreetAddressRecognizer",
-            [(ADDRESS_REGEX, 0.7), (PO_BOX_REGEX, 0.7)],
+            [
+                (ADDRESS_REGEX, 0.7),
+                (PO_BOX_REGEX, 0.7),
+                (RURAL_ROUTE_REGEX, 0.7),
+                (MILITARY_REGEX, 0.7),
+            ],  # fmt: skip
             ["address", "street", "live", "mail", "residence"],
             flags=CASE_SENSITIVE,
         ),  # fmt: skip

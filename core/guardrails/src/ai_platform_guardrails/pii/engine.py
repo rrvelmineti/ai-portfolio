@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import logging
+import re
 import threading
 from dataclasses import dataclass
 from functools import lru_cache
@@ -26,7 +27,7 @@ from ai_platform_guardrails.pii.config import (
     TenantConfig,
     spacy_model_name,
 )
-from ai_platform_guardrails.pii.recognizers import default_recognizers
+from ai_platform_guardrails.pii.recognizers import ADDRESS_TAIL_REGEX, default_recognizers
 
 _lock = threading.Lock()
 
@@ -130,4 +131,29 @@ def _select(text: str, results: list[RecognizerResult]) -> list[Detection]:
         if entity == "PERSON" and text[r.start : end].endswith(_POSSESSIVES):
             end -= 2  # "Ana Ruiz's" -> "Ana Ruiz", so the placeholder is reused
         chosen.append(Detection(entity, r.start, end, r.score))
-    return sorted(chosen, key=lambda d: d.start)
+    return _merge_addresses(text, sorted(chosen, key=lambda d: d.start))
+
+
+_ADDRESS_TAIL = re.compile(ADDRESS_TAIL_REGEX, re.M | re.S)
+
+
+def _merge_addresses(text: str, chosen: list[Detection]) -> list[Detection]:
+    """Never leave part of an address unmasked.
+
+    An ADDRESS span is extended over a unit or ", City, ST ZIP" that directly follows it,
+    and any other detection overlapping the (extended) address is absorbed into it.
+    """
+    addresses = [d for d in chosen if d.entity == "ADDRESS"]
+    if not addresses:
+        return chosen
+    merged: list[Detection] = []
+    for a in addresses:
+        tail = _ADDRESS_TAIL.match(text, a.end)
+        start, end = a.start, (tail.end() if tail and tail.end() > a.end else a.end)
+        for d in chosen:
+            if d is not a and d.start < end and start < d.end:
+                start, end = min(start, d.start), max(end, d.end)
+        merged.append(Detection("ADDRESS", start, end, a.score))
+    rest = [d for d in chosen if d.entity != "ADDRESS"
+            and not any(d.start < m.end and m.start < d.end for m in merged)]  # fmt: skip
+    return sorted(rest + merged, key=lambda d: d.start)
