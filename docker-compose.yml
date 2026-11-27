@@ -1,8 +1,13 @@
-# Local development services. Credentials come from .env (see .env.example);
-# nothing secret is written here.
+# Local services. Credentials come from .env (see .env.example); nothing secret is
+# written here.
 #
-#   docker compose up -d db
-#   then set DATABASE_URL / TEST_DATABASE_URL in .env (see .env.example)
+#   docker compose up -d db                  # just Postgres, for development and tests
+#   docker compose --profile demo up --build # Postgres + migrations job + demo app
+#
+# The demo profile mirrors the hosted setup (ADR 0008): a one-shot `migrate` job runs the
+# migrations, bootstraps the restricted app role and seeds the guests with the OWNER
+# credentials; the `app` then connects as `ai_portfolio_app`, which can't change the
+# schema or update/delete audit rows. Open http://127.0.0.1:8080/.
 services:
   db:
     # Postgres 16 with pgvector preinstalled (needed by later phases, e.g. Query Desk).
@@ -20,6 +25,48 @@ services:
       interval: 5s
       timeout: 3s
       retries: 20
+
+  migrate:
+    profiles: [demo]
+    build: .
+    image: ai-portfolio-demo:local
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      OWNER_DATABASE_URL: &owner_url postgresql+psycopg://${POSTGRES_USER:-portfolio}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-portfolio}
+      DATABASE_URL: *owner_url   # the seed script reads DATABASE_URL
+      APP_DB_PASSWORD: ${APP_DB_PASSWORD:?set APP_DB_PASSWORD in .env}
+      DEMO_ADMIN_PASSWORD: ${DEMO_ADMIN_PASSWORD:?set DEMO_ADMIN_PASSWORD in .env}
+      DEMO_ANALYST_PASSWORD: ${DEMO_ANALYST_PASSWORD:?}
+      DEMO_VIEWER_PASSWORD: ${DEMO_VIEWER_PASSWORD:?}
+      DEMO_REVIEWER_PASSWORD: ${DEMO_REVIEWER_PASSWORD:?}
+    command: ["sh", "-c", "python scripts/migrate_and_bootstrap.py && python scripts/seed_demo.py --reset-passwords"]
+    restart: "no"
+
+  app:
+    profiles: [demo]
+    image: ai-portfolio-demo:local
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    environment:
+      APP_ENV: demo
+      DATABASE_URL: postgresql+psycopg://ai_portfolio_app:${APP_DB_PASSWORD}@db:5432/${POSTGRES_DB:-portfolio}
+      JWT_SECRET: ${JWT_SECRET:?set JWT_SECRET in .env}
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      GROQ_API_KEY: ${GROQ_API_KEY:-}
+      # guests only: the admin password is never given to the app
+      DEMO_ANALYST_PASSWORD: ${DEMO_ANALYST_PASSWORD}
+      DEMO_VIEWER_PASSWORD: ${DEMO_VIEWER_PASSWORD}
+      DEMO_REVIEWER_PASSWORD: ${DEMO_REVIEWER_PASSWORD}
+    ports:
+      - "127.0.0.1:8080:8080"
+    read_only: true
+    tmpfs:
+      - /tmp
+    security_opt:
+      - no-new-privileges:true
 
 volumes:
   pgdata:

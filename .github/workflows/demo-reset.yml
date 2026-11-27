@@ -1,0 +1,44 @@
+# Nightly reset of the public demo (ADR 0008): removes visitors' changes, restores the
+# seeded guests, prunes demo-tenant audit rows older than 7 days (owner-only retention)
+# and writes a demo.reset audit row. Today's and the month's AI-usage counters are kept.
+#
+# DISABLED until a host is chosen: runs only when the repository variable
+# DEMO_RESET_ENABLED is "true".
+name: Demo reset
+
+on:
+  schedule:
+    - cron: "17 3 * * *"   # 03:17 UTC daily
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: demo-database   # never overlaps a deploy
+  cancel-in-progress: false
+
+jobs:
+  reset:
+    if: vars.DEMO_RESET_ENABLED == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v6
+
+      - name: Install dependencies
+        run: |
+          uv python install
+          uv sync --locked --no-dev
+
+      - name: Reset demo data (owner role)
+        env:
+          OWNER_DATABASE_URL: ${{ secrets.NEON_OWNER_DATABASE_URL }}
+          DEMO_ADMIN_PASSWORD: ${{ secrets.DEMO_ADMIN_PASSWORD }}
+          DEMO_ANALYST_PASSWORD: ${{ secrets.DEMO_ANALYST_PASSWORD }}
+          DEMO_VIEWER_PASSWORD: ${{ secrets.DEMO_VIEWER_PASSWORD }}
+          DEMO_REVIEWER_PASSWORD: ${{ secrets.DEMO_REVIEWER_PASSWORD }}
+        run: uv run --no-dev python scripts/reset_demo.py

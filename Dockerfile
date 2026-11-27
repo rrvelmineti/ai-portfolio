@@ -31,7 +31,8 @@ WORKDIR /app
 COPY --from=builder --chown=app:app /app/.venv /app/.venv
 COPY --from=builder --chown=app:app /app/.models /app/.models
 COPY --chown=app:app core/auth/demo_app.py core/auth/demo_app.py
-COPY --chown=app:app scripts/start_runtime.sh scripts/start_runtime.sh
+COPY --chown=app:app scripts/start_runtime.sh scripts/migrate_and_bootstrap.py \
+     scripts/seed_demo.py scripts/reset_demo.py scripts/
 ENV PATH=/app/.venv/bin:$PATH \
     PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
