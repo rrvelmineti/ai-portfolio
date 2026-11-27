@@ -5,6 +5,21 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Added — Held-out guardrails evaluation (ADR 0006)
+- `eval/heldout/`: frozen held-out set (60 PII lines with 83 values, 40 attacks, 40 benign
+  look-alikes), committed before any scoring, pinned by `MANIFEST.sha256` (checked by a
+  test). No human-written samples; see its README for the independence caveat.
+- `scripts/convert_tagged_samples.py` (`ai_platform_guardrails.eval_tags`): inline-tagged
+  samples (`[PERSON: …]`, `ATTACK:`, `BENIGN:`) to JSONL with exact, validated spans.
+- `scripts/download_public_eval.py`: `deepset/prompt-injections` test split, pinned by
+  revision and content SHA-256, written to the gitignored `eval/public/`.
+- `scripts/guardrails_report.py --heldout --public`: development, held-out and public
+  numbers side by side in `docs/guardrails-results.md`; misses listed by id only.
+  Report only: CI prints the held-out comparison but gates on the development set.
+- NPI-vs-phone overlap tests, including one known mislabel as `xfail(strict=True)`.
+- First results: injection detection 100% on development, 42.5% held-out, 10% public;
+  benign false positives 0%, 5% and 0%. No detector changes.
+
 ### Added — Phase 0.5: Guardrails
 - `ai_platform_guardrails` (`core/guardrails`):
   - **Fail closed:** if a guardrail errors, the AI call is blocked.

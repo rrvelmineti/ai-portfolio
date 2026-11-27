@@ -25,6 +25,8 @@ common utilities, CI and infrastructure.
   - 0.5 Guardrails (`ai_platform_guardrails`: Presidio PII masking with Safe Harbor
     mode, layered prompt-injection defence, topic policy, human approval gate,
     evaluation corpus with CI targets) — **Done**
+    - Follow-up: held-out and public guardrails evaluation, report only (ADR 0006)
+      — **Done**
 
 ## Claims Onboarding
 

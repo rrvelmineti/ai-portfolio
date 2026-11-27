@@ -41,7 +41,8 @@ Same detectors, same scoring rules, three sets:
 - **Public:** `deepset/prompt-injections` test split, injection only, downloaded by
   `scripts/download_public_eval.py` and never committed. The only independent check.
 
-Only the development set gates CI. Misses are listed by sample id, never by text.
+Only the development set gates CI. The generated miss lists give sample ids, never
+text; the notes below quote a few synthetic values to explain the patterns.
 """
 
 

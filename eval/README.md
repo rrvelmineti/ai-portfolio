@@ -14,3 +14,21 @@ All data is synthetic.
 The corpus was written and committed **before** the detectors were scored against it,
 and is not edited to make targets pass. Results: `docs/guardrails-results.md`, produced
 by `scripts/guardrails_report.py`.
+
+## Held-out and public sets (report only)
+
+- `heldout/`: a frozen second set (60 PII lines, 40 attacks, 40 benign) committed before
+  its first scoring run. See `heldout/README.md` for the freeze rule and its limits.
+  Samples are written in the inline-tag format and converted with
+  `scripts/convert_tagged_samples.py`. `context` there is `chat` or `document`; the
+  scorer treats every non-chat context like `untrusted`.
+- `public/`: `deepset/prompt-injections` (test split), downloaded by
+  `scripts/download_public_eval.py`. Gitignored and never committed.
+- `HELDOUT_NOTES.md`: what the gap between the sets means.
+
+```bash
+uv run python scripts/download_public_eval.py
+uv run python scripts/guardrails_report.py --check --heldout --public
+```
+
+Only the development corpus gates CI (ADR 0006).
