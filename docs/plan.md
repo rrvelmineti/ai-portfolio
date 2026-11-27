@@ -29,6 +29,11 @@ common utilities, CI and infrastructure.
       — **Done**
     - Follow-up: guardrails v2 (local ML injection classifier, per-layer thresholds,
       PII leak fixes, held-out v2; ADR 0007) — **Done**
+  - 0.6 Free deployment (ADR 0008): container image, compose demo profile,
+    least-privilege database roles, guest logins, AI usage caps, nightly reset, CI image
+    build + Trivy, Terraform AWS path validated in CI, gated deploy workflow
+    — **In progress** (everything except the hosted deploy is built; the host choice is
+    open because the Leapcell spike is paused)
 
 ## Claims Onboarding
 
