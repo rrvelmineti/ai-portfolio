@@ -33,3 +33,18 @@ def test_alembic_config_carries_url_and_version_table() -> None:
     assert cfg.get_main_option("script_location") == "/x/migrations"
     assert cfg.attributes["version_table"] == "v_tbl"
     assert cfg.attributes["database_url"].endswith("@h/d")
+
+
+@pytest.mark.parametrize(
+    "raw",
+    [
+        "postgresql://u:p@ep-x.neon.tech/db?sslmode=require",
+        "postgres://u:p@ep-x.neon.tech/db?sslmode=require",
+        "postgresql+psycopg://u:p@ep-x.neon.tech/db?sslmode=require",
+    ],
+)
+def test_provider_urls_use_psycopg(monkeypatch: pytest.MonkeyPatch, raw: str) -> None:
+    monkeypatch.setenv("DATABASE_URL", raw)
+    url = db.database_url()
+    assert url.drivername == "postgresql+psycopg"
+    assert url.query["sslmode"] == "require" and url.password == "p"

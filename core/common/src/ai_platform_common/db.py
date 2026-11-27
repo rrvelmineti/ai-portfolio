@@ -11,8 +11,9 @@ table, so components migrate independently against one database::
     with session_scope(Session) as session:
         ...
 
-Connection strings come only from the environment. Use the ``postgresql+psycopg://``
-driver (psycopg 3).
+Connection strings come only from the environment. ``postgresql://`` strings as given by
+hosted providers are accepted and switched to the ``postgresql+psycopg://`` driver
+(psycopg 3).
 """
 
 from __future__ import annotations
@@ -33,12 +34,24 @@ class DatabaseConfigError(RuntimeError):
     """Raised when no database URL is configured."""
 
 
+def normalize_url(raw: str | URL) -> URL:
+    """Parse a Postgres URL and select the psycopg 3 driver.
+
+    Hosted providers (Neon, Supabase) hand out ``postgresql://`` or ``postgres://``
+    strings; those are accepted as pasted and switched to ``postgresql+psycopg``.
+    """
+    url = make_url(raw)
+    if url.drivername in ("postgresql", "postgres"):
+        url = url.set(drivername="postgresql+psycopg")
+    return url
+
+
 def database_url(env_var: str = "DATABASE_URL") -> URL:
     """Return the database URL from ``env_var`` or raise ``DatabaseConfigError``."""
     raw = get_env(env_var)
     if raw is None:
         raise DatabaseConfigError(f"{env_var} is not set")
-    return make_url(raw)
+    return normalize_url(raw)
 
 
 def get_engine(url: str | URL | None = None, *, echo: bool = False) -> Engine:
