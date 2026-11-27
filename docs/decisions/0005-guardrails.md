@@ -94,7 +94,7 @@ contain the damage when one gets through:
 
 - Every product gets masking, injection defence and the approval gate by calling
   `install_guardrails`.
-- CI installs the 400 MB spaCy model (cached by `setup-uv`) and enforces the accuracy
+- CI installs the 400 MB spaCy model (downloaded each run, about 4 s) and enforces the accuracy
   targets.
 - `pii="off"` exists for public documents (e.g. 10-K filings in Query Desk), always with a
   logged reason.
