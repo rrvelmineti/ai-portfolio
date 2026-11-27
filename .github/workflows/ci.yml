@@ -36,6 +36,9 @@ jobs:
       # Alembic migrations into it. REQUIRE_DB_TESTS turns "skip" into "fail".
       TEST_DATABASE_URL: postgresql+psycopg://ci:ci-only-not-a-secret@localhost:5432/ci
       REQUIRE_DB_TESTS: "1"
+      # Local injection classifier (ADR 0007): pinned files, cached below, verified on load.
+      GUARD_MODEL_DIR: ${{ github.workspace }}/.models
+      REQUIRE_GUARD_MODEL: "1"
     steps:
       - uses: actions/checkout@v4
 
@@ -48,6 +51,23 @@ jobs:
         run: |
           uv python install
           uv sync --locked
+
+      # Cache key = the pinned Hub revision in injection/ml.py, so a new pin downloads once.
+      # The cache holds the model with its Apache-2.0 LICENSE and the mmBERT MIT NOTICE.
+      - name: Guard model cache key
+        id: guard-model
+        run: |
+          rev=$(grep -oP 'revision="\K[0-9a-f]{40}' core/guardrails/src/ai_platform_guardrails/injection/ml.py)
+          echo "rev=$rev" >> "$GITHUB_OUTPUT"
+
+      - name: Cache guard model
+        uses: actions/cache@v4
+        with:
+          path: .models
+          key: guard-model-${{ steps.guard-model.outputs.rev }}
+
+      - name: Download and verify guard model
+        run: uv run python scripts/download_guard_model.py
 
       - name: Ruff lint
         run: uv run ruff check --output-format=github .

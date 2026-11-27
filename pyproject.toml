@@ -126,3 +126,8 @@ files = [
     "core/observability/tests",
     "scripts",
 ]
+
+[[tool.mypy.overrides]]
+# onnxruntime ships no type information; its use is confined to injection/ml.py.
+module = ["onnxruntime", "onnxruntime.*"]
+ignore_missing_imports = true
