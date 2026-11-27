@@ -1,9 +1,14 @@
 """Download the public prompt-injection test set used as an independent check.
 
     uv run python scripts/download_public_eval.py
+    uv run python scripts/download_public_eval.py --split train
 
-Dataset: deepset/prompt-injections on Hugging Face, ``test`` split (116 rows; label 1 =
-injection, 0 = benign; English and German). Licence on the dataset card: Apache-2.0.
+Dataset: deepset/prompt-injections on Hugging Face (label 1 = injection, 0 = benign; mostly
+English and German). Licence on the dataset card: Apache-2.0.
+
+- ``--split test`` (default, 116 rows) -> eval/public/injection/: **reporting only**.
+- ``--split train`` (546 rows) -> eval/public/train/injection/: the only public data that
+  may be used for tuning rules and thresholds (guardrails-v2 onwards).
 
 Nothing from it is committed: rows are written to eval/public/ (gitignored). The script
 refuses to continue if the dataset has moved past the pinned revision, or if the rows'
@@ -24,12 +29,15 @@ from typing import Any
 
 ROOT = Path(__file__).resolve().parents[1]
 DATASET = "deepset/prompt-injections"
-SPLIT = "test"
 PINNED_REVISION = "4f61ecb038e9c3fb77e21034b22511b523772cdd"
-EXPECTED_ROWS = 116
-# sha256 of json.dumps(rows, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
-# where rows = [{"text": ..., "label": ...}] in row order.
-EXPECTED_SHA256 = "15927a81d0bac6659c08d55fe30085dcfd50485a840ec11f2d024ea44c670c80"
+# split -> (rows, sha256 of json.dumps(rows, ensure_ascii=False, sort_keys=True,
+# separators=(",", ":")) where rows = [{"text": ..., "label": ...}] in row order).
+EXPECTED: dict[str, tuple[int, str]] = {
+    "test": (116, "15927a81d0bac6659c08d55fe30085dcfd50485a840ec11f2d024ea44c670c80"),
+    "train": (546, "58264230040d84c379d3cefd9e3082aae9712ed1217e410ee971710301663ce0"),
+}
+# Where each split is written, relative to --out-dir. Test stays where Phase 0.5 put it.
+SUBDIR = {"test": ".", "train": "train"}
 HUB_API = "https://huggingface.co/api/datasets/"
 ROWS_API = "https://datasets-server.huggingface.co/rows"
 PAGE = 100
@@ -56,7 +64,7 @@ def rows_sha256(rows: list[dict[str, Any]]) -> str:
     return hashlib.sha256(blob.encode("utf-8")).hexdigest()
 
 
-def fetch_rows() -> list[dict[str, Any]]:
+def fetch_rows(split: str = "test") -> list[dict[str, Any]]:
     info = _get_json(HUB_API + DATASET)
     if info.get("sha") != PINNED_REVISION:
         raise DownloadError(
@@ -65,7 +73,7 @@ def fetch_rows() -> list[dict[str, Any]]:
         )
     rows: list[dict[str, Any]] = []
     while True:
-        query = urllib.parse.urlencode({"dataset": DATASET, "config": "default", "split": SPLIT,
+        query = urllib.parse.urlencode({"dataset": DATASET, "config": "default", "split": split,
                                         "offset": len(rows), "length": PAGE})  # fmt: skip
         page = _get_json(f"{ROWS_API}?{query}")["rows"]
         rows += [{"text": r["row"]["text"], "label": int(r["row"]["label"])} for r in page]
@@ -74,11 +82,13 @@ def fetch_rows() -> list[dict[str, Any]]:
     return rows
 
 
-def to_eval_files(rows: list[dict[str, Any]]) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
+def to_eval_files(
+    rows: list[dict[str, Any]], split: str = "test"
+) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
     """Split into the eval attack/benign JSONL shapes (all inputs are user chat prompts)."""
     attacks, benign = [], []
     for i, r in enumerate(rows):
-        sample = {"id": f"deepset-{SPLIT}-{i:03d}", "context": "chat", "text": r["text"]}
+        sample = {"id": f"deepset-{split}-{i:03d}", "context": "chat", "text": r["text"]}
         if r["label"] == 1:
             attacks.append({**sample, "category": "deepset"})
         else:
@@ -89,23 +99,29 @@ def to_eval_files(rows: list[dict[str, Any]]) -> tuple[list[dict[str, Any]], lis
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Download the public injection test set.")
     parser.add_argument("--out-dir", type=Path, default=ROOT / "eval" / "public")
+    parser.add_argument("--split", choices=sorted(EXPECTED), default="test")
     args = parser.parse_args(argv)
     try:
-        rows = fetch_rows()
+        rows = fetch_rows(args.split)
     except (OSError, DownloadError, KeyError, ValueError) as exc:
         print(f"download failed: {exc}", file=sys.stderr)
         return 1
     digest = rows_sha256(rows)
-    if len(rows) != EXPECTED_ROWS or digest != EXPECTED_SHA256:
+    n_expected, sha_expected = EXPECTED[args.split]
+    if len(rows) != n_expected or digest != sha_expected:
         print(f"content check failed: {len(rows)} rows, sha256 {digest}", file=sys.stderr)
         return 1
-    attacks, benign = to_eval_files(rows)
-    out = args.out_dir / "injection"
+    attacks, benign = to_eval_files(rows, args.split)
+    out = args.out_dir / SUBDIR[args.split] / "injection"
     out.mkdir(parents=True, exist_ok=True)
-    for name, items in (("attacks_deepset.jsonl", attacks), ("benign_deepset.jsonl", benign)):
+    suffix = "" if args.split == "test" else f"_{args.split}"
+    for name, items in (
+        (f"attacks_deepset{suffix}.jsonl", attacks),
+        (f"benign_deepset{suffix}.jsonl", benign),
+    ):
         body = "".join(json.dumps(x, ensure_ascii=False) + "\n" for x in items)
         (out / name).write_text(body, encoding="utf-8")
-    print(f"{DATASET}@{PINNED_REVISION[:7]} {SPLIT}: {len(attacks)} attacks, "
+    print(f"{DATASET}@{PINNED_REVISION[:7]} {args.split}: {len(attacks)} attacks, "
           f"{len(benign)} benign -> {out}")  # fmt: skip
     return 0
 

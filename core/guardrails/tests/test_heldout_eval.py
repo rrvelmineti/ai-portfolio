@@ -183,8 +183,12 @@ def test_download_paginates_checks_and_writes(
     rows = [{"text": f"t{i}", "label": i % 2} for i in range(150)]
     monkeypatch.setattr(dl, "_get_json", _fake_api(rows, dl.PINNED_REVISION))
     assert dl.fetch_rows() == rows
-    monkeypatch.setattr(dl, "EXPECTED_ROWS", 150)
-    monkeypatch.setattr(dl, "EXPECTED_SHA256", dl.rows_sha256(rows))
+    monkeypatch.setitem(dl.EXPECTED, "test", (150, dl.rows_sha256(rows)))
+    monkeypatch.setitem(dl.EXPECTED, "train", (150, dl.rows_sha256(rows)))
+    assert dl.main(["--out-dir", str(tmp_path), "--split", "train"]) == 0
+    train = load_corpus(tmp_path / "train" / "injection", "attacks")
+    assert train[0]["id"] == "deepset-train-001"
+    assert evaluate_public_paths_untouched(tmp_path)
     assert dl.main(["--out-dir", str(tmp_path)]) == 0
     attacks = load_corpus(tmp_path / "injection", "attacks")
     benign = load_corpus(tmp_path / "injection", "benign")
@@ -192,6 +196,11 @@ def test_download_paginates_checks_and_writes(
     assert attacks[0] == {"id": "deepset-test-001", "context": "chat", "text": "t1",
                           "category": "deepset"}  # fmt: skip
     assert "category" not in benign[0]
+
+
+def evaluate_public_paths_untouched(root: Path) -> bool:
+    """Train rows must never land where the test-split scorer reads."""
+    return not list((root / "injection").glob("*.jsonl")) if (root / "injection").exists() else True
 
 
 def test_download_refuses_changed_data(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
