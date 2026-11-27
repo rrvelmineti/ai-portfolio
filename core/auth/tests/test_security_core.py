@@ -40,13 +40,22 @@ def test_settings_require_jwt_secret() -> None:
 
 def test_settings_from_env_and_overrides() -> None:
     s = AuthSettings.from_env(
-        {"JWT_SECRET": SECRET, "LOCKOUT_MINUTES": "30", "TRUST_PROXY_HEADERS": "true"}
-    )
+        {"JWT_SECRET": SECRET, "LOCKOUT_MINUTES": "30", "TRUST_PROXY_HEADERS": "true",
+         "TRUSTED_PROXY_CIDRS": "10.0.0.0/8, 192.0.2.0/24"}
+    )  # fmt: skip
     assert s.access_token_ttl == timedelta(minutes=15)
     assert s.refresh_token_ttl == timedelta(days=7)
     assert s.max_failed_logins == 5
     assert s.lockout_duration == timedelta(minutes=30)
     assert s.trust_proxy_headers is True
+    assert [str(n) for n in s.trusted_proxies] == ["10.0.0.0/8", "192.0.2.0/24"]
+    with pytest.raises(ConfigError, match="needs TRUSTED_PROXY_CIDRS"):
+        AuthSettings.from_env({"JWT_SECRET": SECRET, "TRUST_PROXY_HEADERS": "true"})
+    with pytest.raises(ConfigError, match="TRUSTED_PROXY_CIDRS is invalid"):
+        AuthSettings.from_env({"JWT_SECRET": SECRET, "TRUST_PROXY_HEADERS": "true",
+                               "TRUSTED_PROXY_CIDRS": "10.0.0.0/33"})  # fmt: skip
+    off = AuthSettings.from_env({"JWT_SECRET": SECRET, "TRUSTED_PROXY_CIDRS": "10.0.0.0/8"})
+    assert off.trusted_proxies == ()  # ranges alone don't switch trust on
     with pytest.raises(ConfigError, match="integer"):
         AuthSettings.from_env({"JWT_SECRET": SECRET, "MAX_FAILED_LOGINS": "five"})
     with pytest.raises(ConfigError, match="positive"):

@@ -1,0 +1,90 @@
+# Deploy the public demo after CI passes on main (ADR 0008).
+#
+# DISABLED until a host is chosen: runs only when the repository variable
+# DEPLOY_ENABLED is "true". Pull requests never deploy (this only follows CI on main).
+#
+# Steps: migrate + bootstrap the app role + seed guests (OWNER credentials, which exist
+# only as Actions secrets) -> move the `deploy` branch to the tested commit (the host
+# builds from that branch) -> smoke-check /readyz, a guest login and one guarded AI call
+# -> on failure, move `deploy` back to the previous commit.
+#
+# Secrets: NEON_OWNER_DATABASE_URL, APP_DB_PASSWORD, DEMO_ADMIN_PASSWORD,
+#          DEMO_ANALYST_PASSWORD, DEMO_VIEWER_PASSWORD, DEMO_REVIEWER_PASSWORD
+# Variables: DEPLOY_ENABLED, DEMO_BASE_URL
+name: Deploy demo
+
+on:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write   # to move the deploy branch
+
+concurrency:
+  group: demo-database   # never overlaps the nightly reset
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    if: >-
+      vars.DEPLOY_ENABLED == 'true' &&
+      (github.event_name == 'workflow_dispatch' ||
+       (github.event.workflow_run.conclusion == 'success' &&
+        github.event.workflow_run.event == 'push'))
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.SHA }}
+          fetch-depth: 0
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v6
+
+      - name: Install dependencies
+        run: |
+          uv python install
+          uv sync --locked --no-dev
+
+      - name: Migrate, bootstrap app role, seed guests (owner role)
+        env:
+          OWNER_DATABASE_URL: ${{ secrets.NEON_OWNER_DATABASE_URL }}
+          DATABASE_URL: ${{ secrets.NEON_OWNER_DATABASE_URL }}
+          APP_DB_PASSWORD: ${{ secrets.APP_DB_PASSWORD }}
+          DEMO_ADMIN_PASSWORD: ${{ secrets.DEMO_ADMIN_PASSWORD }}
+          DEMO_ANALYST_PASSWORD: ${{ secrets.DEMO_ANALYST_PASSWORD }}
+          DEMO_VIEWER_PASSWORD: ${{ secrets.DEMO_VIEWER_PASSWORD }}
+          DEMO_REVIEWER_PASSWORD: ${{ secrets.DEMO_REVIEWER_PASSWORD }}
+        run: |
+          uv run --no-dev python scripts/migrate_and_bootstrap.py
+          uv run --no-dev python scripts/seed_demo.py --reset-passwords
+
+      - name: Move the deploy branch to this commit
+        id: move
+        run: |
+          prev=$(git ls-remote origin refs/heads/deploy | cut -f1)
+          echo "prev=$prev" >> "$GITHUB_OUTPUT"
+          git push origin "$SHA:refs/heads/deploy" --force
+          echo "deploy: ${prev:-none} -> $SHA"
+
+      - name: Smoke check
+        env:
+          DEMO_BASE_URL: ${{ vars.DEMO_BASE_URL }}
+          DEMO_VIEWER_PASSWORD: ${{ secrets.DEMO_VIEWER_PASSWORD }}
+        run: |
+          sleep 90   # let the host pick up the new commit before polling /readyz
+          uv run --no-dev python scripts/smoke_check.py
+
+      - name: Roll back on failure
+        if: failure() && steps.move.outputs.prev != ''
+        env:
+          PREV: ${{ steps.move.outputs.prev }}
+        run: |
+          git push origin "$PREV:refs/heads/deploy" --force
+          echo "::error::smoke check failed; deploy branch rolled back to $PREV"

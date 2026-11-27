@@ -5,6 +5,40 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Added — Free deployment, host pending (ADR 0008)
+- **Image:** multi-stage `Dockerfile` (`python:3.12-slim` Debian 13 and uv, both pinned
+  by digest; Debian security updates applied, no pip at runtime; non-root uid 10001,
+  healthcheck, models baked in, no secrets), built with the same `scripts/build_runtime.sh` a host's build
+  command runs; runtime `serve` group for uvicorn; `scripts/start_runtime.sh`.
+- **docker-compose `demo` profile:** Postgres, a one-shot migrate job (owner role) and the
+  app as the restricted `ai_portfolio_app` role on a read-only filesystem.
+- **Database roles** (`ai_platform_demo.roles`): idempotent bootstrap with exact grants;
+  the app role can only SELECT and INSERT on the audit log; refuses tables without a
+  privilege decision. `scripts/migrate_and_bootstrap.py`.
+- **Audit retention:** auth migration 0002 lets only the owner delete audit rows older
+  than 7 days inside a retention transaction; UPDATE and TRUNCATE stay blocked for all.
+- **Demo:** landing page with guest logins only (never the admin); `POST /demo/ask` with
+  per-user/per-IP rate limit, per-guest/global daily and monthly caps ("Demo limit
+  reached", 429 + `Retry-After`) and the free-only `demo-free` alias (Gemini, then Groq).
+- **Nightly reset** (`ai_platform_demo.reset`, `scripts/reset_demo.py`): clears visitor
+  data, restores guests, keeps today's and the month's counters, prunes old demo audit
+  rows and writes a `demo.reset` entry.
+- **Trusted proxies:** `TRUSTED_PROXY_CIDRS`; `X-Forwarded-For` is used only from those
+  ranges (right-most untrusted hop), so spoofed headers can't dodge rate limits.
+- **CI:** image build + Trivy (CRITICAL with a fix fails), container smoke test, compose
+  validation, Terraform fmt/validate/tflint/checkov. `deploy.yml` and `demo-reset.yml`
+  exist but are off until `DEPLOY_ENABLED` / `DEMO_RESET_ENABLED` are set.
+- **Dependabot:** weekly grouped updates for Docker base images, GitHub Actions and uv.
+- **`infra/terraform`:** AWS modules (network, ecr, database, secrets, service) and a
+  production composition. Never applied.
+- **Docs:** ADR 0008, `docs/architecture.md`, README "Live demo".
+
+### Changed
+- `scripts/seed_demo.py` logic moved to `ai_platform_demo.seed`; `--reset-passwords` now
+  also restores the role and active flag.
+- The demo app no longer runs migrations at startup unless `RUN_MIGRATIONS_ON_START=true`,
+  and loads the guardrail models on the first AI call.
+
 ### Added — Guardrails v2 (ADR 0007)
 - **Local ML injection classifier** behind a `PromptClassifier` interface:
   - Horizon-Labs `prompt-injection-guard-small` (int8 ONNX, Apache-2.0 with the mmBERT

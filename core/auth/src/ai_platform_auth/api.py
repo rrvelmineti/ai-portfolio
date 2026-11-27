@@ -118,7 +118,7 @@ class Auth:
         app.add_exception_handler(AuthError, auth_error_response)
         app.add_middleware(AuditMiddleware, session_factory=self.session_factory)
         # shared request context (request id, ip, user) as the outermost middleware
-        ensure_request_context(app, trust_proxy_headers=self.settings.trust_proxy_headers)
+        ensure_request_context(app, trusted_proxies=self.settings.trusted_proxies)
 
     # ------------------------------------------------------------------ dependencies
     def get_session(self) -> Iterator[Session]:

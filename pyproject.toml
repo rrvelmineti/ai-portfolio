@@ -7,6 +7,7 @@ requires-python = ">=3.12,<3.13"
 dependencies = [
     "ai-platform-auth",
     "ai-platform-common",
+    "ai-platform-demo",
     "ai-platform-gateway",
     "ai-platform-guardrails",
     "ai-platform-observability",
@@ -15,6 +16,8 @@ dependencies = [
 [dependency-groups]
 # Presidio NLP model (~400 MB). Installed by default (CI enforces accuracy targets on it).
 nlp-models = ["en-core-web-lg"]
+# Runtime server for deployed images (scripts/build_runtime.sh installs this, not dev).
+serve = ["uvicorn==0.54.0"]
 dev = [
     "boto3-stubs[bedrock-runtime]==1.44.12",
     "faker==40.63.0",
@@ -24,7 +27,7 @@ dev = [
     "pytest-cov>=6.0",
     "ruff>=0.8",
     "types-pyyaml==6.0.12.20261122",
-    "uvicorn==0.54.0",
+    {include-group = "serve"},
 ]
 
 [tool.uv]
@@ -35,6 +38,7 @@ default-groups = ["dev", "nlp-models"]
 members = [
     "core/auth",
     "core/common",
+    "core/demo",
     "core/gateway",
     "core/guardrails",
     "core/observability",
@@ -46,6 +50,7 @@ ai-platform-gateway = { workspace = true }
 ai-platform-auth = { workspace = true }
 ai-platform-observability = { workspace = true }
 ai-platform-guardrails = { workspace = true }
+ai-platform-demo = { workspace = true }
 # spaCy model for Presidio: not on PyPI, pinned by URL (hash recorded in uv.lock)
 en-core-web-lg = { url = "https://github.com/explosion/spacy-models/releases/download/en_core_web_lg-3.8.0/en_core_web_lg-3.8.0-py3-none-any.whl" }
 
@@ -109,6 +114,7 @@ namespace_packages = true
 mypy_path = [
     "core/auth/src",
     "core/common/src",
+    "core/demo/src",
     "core/gateway/src",
     "core/guardrails/src",
     "core/observability/src",
@@ -119,6 +125,8 @@ files = [
     "core/auth/tests",
     "core/common/src",
     "core/common/tests",
+    "core/demo/src",
+    "core/demo/tests",
     "core/gateway/src",
     "core/gateway/tests",
     "core/guardrails/src",

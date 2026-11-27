@@ -16,10 +16,11 @@ In web apps ``RequestContextMiddleware`` (pure ASGI) creates the context.
 
 from __future__ import annotations
 
+import ipaddress
 import re
 import time
 import uuid
-from collections.abc import Awaitable, Callable, Iterator, MutableMapping
+from collections.abc import Awaitable, Callable, Iterator, MutableMapping, Sequence
 from contextlib import contextmanager
 from contextvars import ContextVar
 from dataclasses import dataclass, field
@@ -115,14 +116,54 @@ def _header(scope: Scope, name: bytes) -> str | None:
     return None
 
 
-def client_ip(scope: Scope, trust_proxy_headers: bool) -> str | None:
-    """Client IP; ``X-Forwarded-For`` only when explicitly trusted."""
-    if trust_proxy_headers:
-        forwarded = _header(scope, b"x-forwarded-for")
-        if forwarded:
-            return forwarded.split(",")[0].strip()[:64]
+ProxyNetwork = ipaddress.IPv4Network | ipaddress.IPv6Network
+ProxyNetworks = tuple[ProxyNetwork, ...]
+
+
+def parse_proxy_cidrs(raw: str | Sequence[str] | None) -> ProxyNetworks:
+    """Parse ``TRUSTED_PROXY_CIDRS`` (comma or space separated). Raises ``ValueError``."""
+    if raw is None:
+        return ()
+    parts = raw.replace(",", " ").split() if isinstance(raw, str) else list(raw)
+    return tuple(ipaddress.ip_network(p.strip(), strict=False) for p in parts if p.strip())
+
+
+def _ip(value: str | None) -> ipaddress.IPv4Address | ipaddress.IPv6Address | None:
+    try:
+        return ipaddress.ip_address(value.strip()) if value else None
+    except ValueError:
+        return None
+
+
+def _trusted(ip: ipaddress.IPv4Address | ipaddress.IPv6Address | None,
+             proxies: ProxyNetworks) -> bool:  # fmt: skip
+    return ip is not None and any(ip.version == n.version and ip in n for n in proxies)
+
+
+def client_ip(scope: Scope, trusted_proxies: ProxyNetworks = ()) -> str | None:
+    """The client's IP address, resistant to spoofed ``X-Forwarded-For`` headers.
+
+    ``X-Forwarded-For`` is read only when the TCP peer itself is a trusted proxy. The
+    header is then walked from the right (the hop the proxy appended) and the first
+    address that is not a trusted proxy is the client. Anything a visitor writes into the
+    header themselves sits further left and is never reached. A malformed hop stops the
+    walk and the peer address is used instead.
+    """
     client = scope.get("client")
-    return str(client[0]) if client else None
+    peer = str(client[0]) if client else None
+    if not trusted_proxies or not _trusted(_ip(peer), trusted_proxies):
+        return peer
+    forwarded = _header(scope, b"x-forwarded-for")
+    hops = [h.strip() for h in forwarded.split(",") if h.strip()] if forwarded else []
+    if not hops:
+        return peer
+    for hop in reversed(hops):
+        ip = _ip(hop)
+        if ip is None:
+            return peer
+        if not _trusted(ip, trusted_proxies):
+            return str(ip)
+    return str(_ip(hops[0]))  # every hop is a trusted proxy
 
 
 def route_template(scope: Scope) -> str | None:
@@ -139,9 +180,9 @@ class RequestContextMiddleware:
     values set downstream (user, tenant) are visible to outer middleware afterwards.
     """
 
-    def __init__(self, app: ASGIApp, trust_proxy_headers: bool = False) -> None:
+    def __init__(self, app: ASGIApp, trusted_proxies: ProxyNetworks = ()) -> None:
         self.app = app
-        self.trust_proxy_headers = trust_proxy_headers
+        self.trusted_proxies = trusted_proxies
 
     async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
         if scope["type"] != "http":
@@ -151,7 +192,7 @@ class RequestContextMiddleware:
             request_id=clean_request_id(_header(scope, b"x-request-id")),
             method=scope.get("method"),
             path=scope.get("path"),
-            ip=client_ip(scope, self.trust_proxy_headers),
+            ip=client_ip(scope, self.trusted_proxies),
             user_agent=(_header(scope, b"user-agent") or "")[:500] or None,
         )
         token = _current.set(ctx)
@@ -170,7 +211,7 @@ class RequestContextMiddleware:
             _current.reset(token)
 
 
-def ensure_request_context(app: Any, *, trust_proxy_headers: bool = False) -> None:  # noqa: ANN401
+def ensure_request_context(app: Any, *, trusted_proxies: ProxyNetworks = ()) -> None:  # noqa: ANN401
     """Add ``RequestContextMiddleware`` as the outermost middleware, exactly once.
 
     Safe to call from several installers (auth, observability) in any order.
@@ -178,4 +219,4 @@ def ensure_request_context(app: Any, *, trust_proxy_headers: bool = False) -> No
     app.user_middleware = [
         m for m in app.user_middleware if getattr(m, "cls", None) is not RequestContextMiddleware
     ]
-    app.add_middleware(RequestContextMiddleware, trust_proxy_headers=trust_proxy_headers)
+    app.add_middleware(RequestContextMiddleware, trusted_proxies=trusted_proxies)

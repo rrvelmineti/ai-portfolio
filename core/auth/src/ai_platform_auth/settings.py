@@ -7,6 +7,7 @@ from dataclasses import dataclass, field
 from datetime import timedelta
 
 from ai_platform_common.config import get_bool, get_env
+from ai_platform_common.context import ProxyNetworks, parse_proxy_cidrs
 
 from ai_platform_auth.errors import ConfigError
 
@@ -38,11 +39,26 @@ class AuthSettings:
     login_rate_limit: int = 10
     login_rate_window_s: int = 60
     trust_proxy_headers: bool = False
+    trusted_proxy_cidrs: tuple[str, ...] = ()
     jwt_algorithm: str = "HS256"
 
     def __post_init__(self) -> None:
         if len(self.jwt_secret) < MIN_SECRET_BYTES:
             raise ConfigError(f"JWT_SECRET must be at least {MIN_SECRET_BYTES} bytes")
+        if self.trust_proxy_headers and not self.trusted_proxy_cidrs:
+            raise ConfigError(
+                "TRUST_PROXY_HEADERS=true needs TRUSTED_PROXY_CIDRS (the proxy's address "
+                "ranges); otherwise any visitor could fake X-Forwarded-For"
+            )
+        try:
+            parse_proxy_cidrs(self.trusted_proxy_cidrs)
+        except ValueError as exc:
+            raise ConfigError(f"TRUSTED_PROXY_CIDRS is invalid: {exc}") from exc
+
+    @property
+    def trusted_proxies(self) -> ProxyNetworks:
+        """Proxy networks whose X-Forwarded-For is honoured (empty unless enabled)."""
+        return parse_proxy_cidrs(self.trusted_proxy_cidrs) if self.trust_proxy_headers else ()
 
     @classmethod
     def from_env(cls, environ: Mapping[str, str] | None = None) -> AuthSettings:
@@ -59,4 +75,7 @@ class AuthSettings:
             login_rate_limit=_int("LOGIN_RATE_LIMIT", 10, environ),
             login_rate_window_s=_int("LOGIN_RATE_WINDOW_SECONDS", 60, environ),
             trust_proxy_headers=get_bool("TRUST_PROXY_HEADERS", False, environ),
+            trusted_proxy_cidrs=tuple(
+                (get_env("TRUSTED_PROXY_CIDRS", environ) or "").replace(",", " ").split()
+            ),
         )

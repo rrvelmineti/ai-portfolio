@@ -96,3 +96,10 @@ def test_kind_mismatch_rejected(tmp_path: Path) -> None:
     )
     with pytest.raises(ValidationError, match="is chat but"):
         load_config(p)
+
+
+def test_demo_free_alias_uses_only_free_tier_providers() -> None:
+    """The public demo must never reach a paid provider (ADR 0008)."""
+    chain = default_config().chain("demo-free")
+    assert [e.key for e in chain] == ["gemini/gemini-3.8-flash", "groq/llama-3.3-70b-versatile"]
+    assert {e.provider for e in chain} <= {"gemini", "groq"}
