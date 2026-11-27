@@ -96,6 +96,7 @@ def test_converter_writes_files_and_rejects_dev_overlap(tmp_path: Path) -> None:
 # ------------------------------------------------------------------ scoring plumbing
 
 
+@pytest.mark.real_classifier
 def test_heldout_scoring_counts_every_sample() -> None:
     pii, inj = evaluate_heldout(HELDOUT)
     gold = sum(len(s["entities"]) for s in load_corpus(HELDOUT / "pii", "texts"))
@@ -141,6 +142,7 @@ def test_render_comparison_side_by_side() -> None:
     assert "Dev: misses" not in md  # the development set's misses are listed elsewhere
 
 
+@pytest.mark.real_classifier
 def test_report_script_adds_comparison(tmp_path: Path) -> None:
     eval_dir = tmp_path / "eval"
     for sub in ("pii", "injection", "heldout"):

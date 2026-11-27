@@ -186,6 +186,7 @@ def test_override_and_disable(monkeypatch: pytest.MonkeyPatch) -> None:
 def test_enabled_but_missing_model_fails_closed(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
+    set_prompt_classifier(None)
     monkeypatch.setenv("GUARD_ML_CLASSIFIER", "true")
     monkeypatch.setenv("GUARD_MODEL_DIR", str(tmp_path))
     ml._default.cache_clear()
@@ -239,6 +240,7 @@ def test_real_model_rejects_a_config_without_the_injection_label(
 
 
 def test_default_factory_is_cached(real_model_dir: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    set_prompt_classifier(None)
     monkeypatch.setenv("GUARD_ML_CLASSIFIER", "true")
     monkeypatch.setenv("GUARD_MODEL_DIR", str(real_model_dir.parents[1]))
     ml._default.cache_clear()

@@ -87,6 +87,7 @@ addopts = [
 
 markers = [
     "live: calls real provider APIs (needs keys; excluded by default, run with -m live)",
+    "real_classifier: uses the real pinned ML injection classifier (scripts/download_guard_model.py)",
 ]
 
 [tool.coverage.run]

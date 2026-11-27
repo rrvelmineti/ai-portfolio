@@ -40,6 +40,7 @@ def test_corpus_size_requirements() -> None:
             "indirect_document", "indirect_csv"} <= cats  # fmt: skip
 
 
+@pytest.mark.real_classifier
 def test_targets_met_on_default_model() -> None:
     assert spacy_model_name() == "en_core_web_lg", "targets are enforced on the default model"
     pii = evaluate_pii(EVAL)
@@ -75,6 +76,7 @@ def _load_script() -> ModuleType:
     return mod
 
 
+@pytest.mark.real_classifier
 def test_report_script_writes_results(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
     out = tmp_path / "results.md"
     assert _load_script().main(["--check", "--out", str(out)]) == 0
