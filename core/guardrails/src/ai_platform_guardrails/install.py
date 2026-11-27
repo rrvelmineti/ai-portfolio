@@ -3,8 +3,16 @@
 from __future__ import annotations
 
 from collections.abc import Sequence
+from dataclasses import dataclass
+from pathlib import Path
+from typing import Any
 
-from ai_platform_guardrails.gateway_guard import GuardrailsGuard
+from ai_platform_auth import Auth
+from sqlalchemy.orm import Session, sessionmaker
+
+from ai_platform_guardrails.approvals.service import ApprovalService
+from ai_platform_guardrails.events import configure_events
+from ai_platform_guardrails.gateway_guard import GuardrailsGuard, install_guard
 from ai_platform_guardrails.injection.checks import (
     Classifier,
     add_canary_and_fence_rule,
@@ -48,3 +56,46 @@ def build_guard(
     )
     guard.policy = pol
     return guard
+
+
+@dataclass
+class Guardrails:
+    """Handles to what ``install_guardrails`` / ``configure_guardrails`` set up."""
+
+    guard: GuardrailsGuard
+    policy: ProductPolicy
+    approvals: ApprovalService
+
+
+def configure_guardrails(
+    session_factory: sessionmaker[Session] | None = None,
+    *,
+    policy: ProductPolicy | None = None,
+    policy_path: Path | str | None = None,
+    approvals: ApprovalService | None = None,
+    use_classifier: bool | None = None,
+) -> Guardrails:
+    """Install the guard on the gateway, the trace redactor and audit events (no web app)."""
+    pol = policy or load_policy(policy_path)
+    guard = install_guard(build_guard(policy=pol, use_classifier=use_classifier))
+    configure_events(session_factory)
+    return Guardrails(guard, pol, approvals or ApprovalService())
+
+
+def install_guardrails(
+    app: Any,  # noqa: ANN401 - a FastAPI app
+    auth: Auth,
+    session_factory: sessionmaker[Session],
+    *,
+    policy: ProductPolicy | None = None,
+    policy_path: Path | str | None = None,
+    approvals: ApprovalService | None = None,
+    use_classifier: bool | None = None,
+) -> Guardrails:
+    """``configure_guardrails`` plus the ``/approvals`` router (uses ``auth``'s roles)."""
+    from ai_platform_guardrails.approvals.router import build_approvals_router
+
+    g = configure_guardrails(session_factory, policy=policy, policy_path=policy_path,
+                             approvals=approvals, use_classifier=use_classifier)  # fmt: skip
+    app.include_router(build_approvals_router(auth, g.approvals))
+    return g

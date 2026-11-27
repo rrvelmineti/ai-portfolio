@@ -33,7 +33,9 @@ def _reset_pii_config() -> Iterator[None]:
 
 # ---------------------------------------------------------------- Postgres fixtures
 def _migrations() -> list[Callable[[URL], None]]:
-    return [migrate_auth]
+    from ai_platform_guardrails.db import migrate as migrate_guardrails
+
+    return [migrate_auth, migrate_guardrails]
 
 
 @pytest.fixture(scope="session")

@@ -19,7 +19,10 @@ from typing import Annotated
 from ai_platform_auth import Auth, Role, TenantScope, User
 from ai_platform_auth.db import migrate
 from ai_platform_common.db import database_url, get_engine, make_session_factory
+from ai_platform_guardrails import install_guardrails
+from ai_platform_guardrails.db import migrate as migrate_guardrails
 from ai_platform_observability import install_observability
+from ai_platform_observability.db import migrate as migrate_observability
 from fastapi import Depends, FastAPI
 from sqlalchemy.orm import Session, sessionmaker
 
@@ -32,6 +35,8 @@ def create_app(
         url = database_url()
         if run_migrations:
             migrate(url)
+            migrate_observability(url)
+            migrate_guardrails(url)
         session_factory = make_session_factory(get_engine(url))
     auth = Auth.from_env(session_factory)
 
@@ -61,6 +66,26 @@ def create_app(
     ) -> dict[str, str]:
         """Admins only."""
         return {"area": "admin", "user": user.username, "role": user.role.value}
+
+    # PII masking, injection defence and canary on every AI call; /approvals router
+    guardrails = install_guardrails(app, auth, session_factory)
+
+    @app.post("/demo/refunds", tags=["demo"], status_code=202)
+    def request_refund(
+        user: Annotated[User, Depends(auth.require_role(Role.VIEWER))],
+        session: Annotated[Session, Depends(auth.get_session, scope="function")],
+        member: str,
+        amount: float,
+    ) -> dict[str, str]:
+        """A risky action: creates an approval request instead of acting.
+
+        Another analyst or admin approves it via /approvals/{id}/approve.
+        """
+        req = guardrails.approvals.require_approval(
+            session, "issue_refund", f"Refund {amount:.2f} to {member}",
+            tenant_id=user.tenant_id, requester_id=user.id,
+        )  # fmt: skip
+        return {"approval_id": str(req.id), "status": req.status.value}
 
     @app.post("/demo/notes", tags=["demo"], status_code=201)
     def create_note(
