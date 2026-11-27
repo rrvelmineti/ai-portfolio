@@ -311,20 +311,44 @@ def test_login_rate_limited_per_ip(
     assert "auth.login_rate_limited" in [a.action for a in audit_rows(session)]
 
 
-def test_forwarded_for_ignored_unless_trusted(
+def test_forwarded_for_only_from_the_trusted_proxy(
     session_factory: sessionmaker[Session], session: Session, tenant_users: dict[str, User]
 ) -> None:
-    for trusted, expected in ((False, "testclient"), (True, "203.0.113.7")):
-        settings = AuthSettings(jwt_secret=TEST_SECRET, trust_proxy_headers=trusted)
+    """A visitor can't fake their IP: X-Forwarded-For counts only via the trusted proxy,
+    and only the hop the proxy appended (the right-most untrusted address)."""
+    cases = [
+        # (trust on?, TCP peer, header, ip recorded in the audit log)
+        (False, "10.0.0.2", "203.0.113.7", "10.0.0.2"),
+        (True, "198.51.100.4", "203.0.113.7", "198.51.100.4"),  # not via the proxy
+        (True, "10.0.0.2", "6.6.6.6, 203.0.113.7", "203.0.113.7"),  # spoof on the left
+    ]
+    for i, (trusted, peer, xff, expected) in enumerate(cases):
+        settings = AuthSettings(jwt_secret=TEST_SECRET, trust_proxy_headers=trusted,
+                                trusted_proxy_cidrs=("10.0.0.0/8",))  # fmt: skip
         app = FastAPI()
         Auth(settings, session_factory).install(app)
-        rid = f"req-xff-{trusted}"
-        with TestClient(app) as c:
-            headers = {"X-Forwarded-For": "203.0.113.7, 10.0.0.1", "X-Request-ID": rid}
-            c.post("/auth/login", headers=headers,
+        rid = f"req-xff-{i}"
+        with TestClient(app, client=(peer, 50000)) as c:
+            c.post("/auth/login", headers={"X-Forwarded-For": xff, "X-Request-ID": rid},
                    data={"username": "vic", "password": PASSWORD, "tenant": "acme"})  # fmt: skip
         row = session.scalar(select(AuditLog).where(AuditLog.request_id == rid))
-        assert row is not None and row.ip == expected
+        assert row is not None and row.ip == expected, (trusted, peer, xff)
+
+
+def test_spoofed_forwarded_for_cannot_dodge_the_login_rate_limit(
+    session_factory: sessionmaker[Session], tenant_users: dict[str, User]
+) -> None:
+    settings = AuthSettings(jwt_secret=TEST_SECRET, login_rate_limit=3, trust_proxy_headers=True,
+                            trusted_proxy_cidrs=("10.0.0.0/8",))  # fmt: skip
+    app = FastAPI()
+    Auth(settings, session_factory).install(app)
+    with TestClient(app, client=("10.0.0.2", 50000)) as c:
+        codes = [
+            c.post("/auth/login", headers={"X-Forwarded-For": f"9.9.9.{n}, 203.0.113.7"},
+                   data={"username": "x", "password": "y", "tenant": "acme"}).status_code
+            for n in range(5)
+        ]  # fmt: skip
+    assert codes[-1] == 429  # a new fake left-hand IP each time doesn't reset the limit
 
 
 # ------------------------------------------------------------------ secrets and config

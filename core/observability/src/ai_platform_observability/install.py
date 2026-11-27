@@ -5,7 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any
 
-from ai_platform_common.context import ensure_request_context
+from ai_platform_common.context import ProxyNetworks, ensure_request_context
 from ai_platform_common.logging import configure_logging
 from sqlalchemy.orm import Session, sessionmaker
 
@@ -52,7 +52,7 @@ def install_observability(
     settings: ObservabilitySettings | None = None,
     metrics: Metrics | None = None,
     tracer: LangSmithTracer | None = None,
-    trust_proxy_headers: bool = False,
+    trusted_proxies: ProxyNetworks = (),
 ) -> Observability:
     """Logging, request context, access log, metrics, health, AI-call tracing, Sentry.
 
@@ -62,6 +62,6 @@ def install_observability(
     obs = setup_tracing(session_factory, settings=settings, metrics=metrics, tracer=tracer)
     app.include_router(build_ops_router(obs.metrics, session_factory))
     app.add_middleware(ObservabilityMiddleware, metrics=obs.metrics, product=product)
-    ensure_request_context(app, trust_proxy_headers=trust_proxy_headers)  # stays outermost
+    ensure_request_context(app, trusted_proxies=trusted_proxies)  # stays outermost
     obs.sentry_enabled = init_sentry(obs.settings)
     return obs

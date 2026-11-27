@@ -78,7 +78,7 @@ def create_app(
         _add_diagnostics(app)
     # logging, request context, access log, /metrics, /healthz, /readyz, AI-call tracing
     install_observability(app, session_factory, product="auth-demo",
-                          trust_proxy_headers=auth.settings.trust_proxy_headers)  # fmt: skip
+                          trusted_proxies=auth.settings.trusted_proxies)  # fmt: skip
 
     @app.get("/demo/viewer", tags=["demo"])
     def viewer_area(

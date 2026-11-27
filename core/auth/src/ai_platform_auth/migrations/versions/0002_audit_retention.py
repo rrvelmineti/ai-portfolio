@@ -24,21 +24,22 @@ down_revision = "0001"
 branch_labels = None
 depends_on = None
 
-S = "auth"
-RETENTION_DAYS = 7
+RETENTION_DAYS = 7  # documented here; the SQL below spells it out
 
 
 def upgrade() -> None:
+    # Written out literally (schema "auth", 7 days) rather than formatted, so the SQL in
+    # the migration is exactly what runs.
     op.execute(
-        f"""
-        CREATE OR REPLACE FUNCTION {S}.audit_log_block_mutation() RETURNS trigger
+        """
+        CREATE OR REPLACE FUNCTION auth.audit_log_block_mutation() RETURNS trigger
         LANGUAGE plpgsql AS $$
         BEGIN
             IF TG_OP = 'DELETE'
                AND current_setting('ai_portfolio.audit_retention', true) = 'on'
                AND current_user = (SELECT pg_get_userbyid(relowner)
                                    FROM pg_class WHERE oid = TG_RELID)
-               AND OLD.created_at < now() - interval '{RETENTION_DAYS} days'
+               AND OLD.created_at < now() - interval '7 days'
             THEN
                 RETURN OLD;
             END IF;
@@ -52,8 +53,8 @@ def upgrade() -> None:
 
 def downgrade() -> None:
     op.execute(
-        f"""
-        CREATE OR REPLACE FUNCTION {S}.audit_log_block_mutation() RETURNS trigger
+        """
+        CREATE OR REPLACE FUNCTION auth.audit_log_block_mutation() RETURNS trigger
         LANGUAGE plpgsql AS $$
         BEGIN
             RAISE EXCEPTION 'audit_log is append-only: % is not allowed', TG_OP
