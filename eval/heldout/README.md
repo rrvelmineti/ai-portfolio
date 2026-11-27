@@ -1,4 +1,10 @@
-# Held-out guardrails evaluation set
+# Held-out guardrails evaluation set (v1): SEEN
+
+> **Status: seen.** From the `guardrails-v2` branch on, this set is **tuning data**: it is used
+> to extend rules and choose classifier thresholds. Its scores are no longer an honest estimate
+> of accuracy on new text. The honest held-out set is now `eval/heldout_v2/`. The data files
+> below are unchanged since the freeze (their hashes in `MANIFEST.sha256` are the originals);
+> only this README changed.
 
 A second, frozen test set for the guardrails. It exists to measure how well the detectors
 work on text they were **not** developed against. The development corpus (`eval/pii`,

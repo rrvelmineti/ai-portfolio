@@ -1,0 +1,60 @@
+{"id": "claude_v2-pii-000", "kind": "heldout_claude_v2", "text": "hi this is marcus feld calling back, my number is five five five, two oh one, four four eight two", "entities": [{"type": "PERSON", "start": 11, "end": 22}, {"type": "PHONE", "start": 50, "end": 97}], "line": 7}
+{"id": "claude_v2-pii-001", "kind": "heldout_claude_v2", "text": "Full name: O'Brien-Walsh, Siobhan M.   Relationship: self", "entities": [{"type": "PERSON", "start": 11, "end": 36}], "line": 8}
+{"id": "claude_v2-pii-002", "kind": "heldout_claude_v2", "text": "Applicant: J. R. Okoye; Tel: +44 20 7946 0321", "entities": [{"type": "PERSON", "start": 11, "end": 22}, {"type": "PHONE", "start": 29, "end": 45}], "line": 9}
+{"id": "claude_v2-pii-003", "kind": "heldout_claude_v2", "text": "ssn 512487731 per the member, no dashes", "entities": [{"type": "US_SSN", "start": 4, "end": 13}], "line": 10}
+{"id": "claude_v2-pii-004", "kind": "heldout_claude_v2", "text": "Card: 4242.4242.4242.4242 (entered with dots on the web form)", "entities": [{"type": "CREDIT_CARD", "start": 6, "end": 25}], "line": 11}
+{"id": "claude_v2-pii-005", "kind": "heldout_claude_v2", "text": "Mastercard 2223 0031 2200 3222 was declined twice.", "entities": [{"type": "CREDIT_CARD", "start": 11, "end": 30}], "line": 12}
+{"id": "claude_v2-pii-006", "kind": "heldout_claude_v2", "text": "Discover ending 9424, full number 6011000990139424, billing zip on file.", "entities": [{"type": "CREDIT_CARD", "start": 34, "end": 50}], "line": 13}
+{"id": "claude_v2-pii-007", "kind": "heldout_claude_v2", "text": "claim no. CLM 2025 0048817 needs a second look", "entities": [{"type": "CLAIM_NUMBER", "start": 10, "end": 26}], "line": 14}
+{"id": "claude_v2-pii-008", "kind": "heldout_claude_v2", "text": "Ref: clm-2024-0310099 (copied from the member's email)", "entities": [{"type": "CLAIM_NUMBER", "start": 5, "end": 21}], "line": 15}
+{"id": "claude_v2-pii-009", "kind": "heldout_claude_v2", "text": "Policy POL#00873399 renews on the first of the month.", "entities": [{"type": "POLICY_NUMBER", "start": 7, "end": 19}], "line": 16}
+{"id": "claude_v2-pii-010", "kind": "heldout_claude_v2", "text": "member zkr551208799 asked for a replacement card", "entities": [{"type": "MEMBER_ID", "start": 7, "end": 19}], "line": 17}
+{"id": "claude_v2-pii-011", "kind": "heldout_claude_v2", "text": "Member No. M 9081 7299 printed on the old card", "entities": [{"type": "MEMBER_ID", "start": 11, "end": 22}], "line": 18}
+{"id": "claude_v2-pii-012", "kind": "heldout_claude_v2", "text": "Referring NPI: 1642 093 854", "entities": [{"type": "NPI", "start": 15, "end": 27}], "line": 19}
+{"id": "claude_v2-pii-013", "kind": "heldout_claude_v2", "text": "DOB 1961-05-03", "entities": [{"type": "DATE_OF_BIRTH", "start": 4, "end": 14}], "line": 20}
+{"id": "claude_v2-pii-014", "kind": "heldout_claude_v2", "text": "date of birth: May 3rd, '61", "entities": [{"type": "DATE_OF_BIRTH", "start": 15, "end": 27}], "line": 21}
+{"id": "claude_v2-pii-015", "kind": "heldout_claude_v2", "text": "she was born on the twelfth of March, 1948", "entities": [{"type": "DATE_OF_BIRTH", "start": 20, "end": 42}], "line": 22}
+{"id": "claude_v2-pii-016", "kind": "heldout_claude_v2", "text": "D.O.B. 03-MAY-1961", "entities": [{"type": "DATE_OF_BIRTH", "start": 7, "end": 18}], "line": 23}
+{"id": "claude_v2-pii-017", "kind": "heldout_claude_v2", "text": "Office: 4410 Old Mill Rd, Suite 210, Austin, TX 78745", "entities": [{"type": "ADDRESS", "start": 8, "end": 53}], "line": 24}
+{"id": "claude_v2-pii-018", "kind": "heldout_claude_v2", "text": "Send the replacement card to 18 Harbor View Ct #5, Portland, ME 04101.", "entities": [{"type": "ADDRESS", "start": 29, "end": 69}], "line": 25}
+{"id": "claude_v2-pii-019", "kind": "heldout_claude_v2", "text": "Mail goes to PSC 1234, Box 5678, APO AE 09204 while deployed.", "entities": [{"type": "ADDRESS", "start": 13, "end": 45}], "line": 26}
+{"id": "claude_v2-pii-020", "kind": "heldout_claude_v2", "text": "Lives at 2700 W. 5th Ave Apt 12, Denver CO 80204 with two dependants.", "entities": [{"type": "ADDRESS", "start": 9, "end": 48}], "line": 27}
+{"id": "claude_v2-pii-021", "kind": "heldout_claude_v2", "text": "Remit to P.O. Box 330, Marfa, TX 79843", "entities": [{"type": "ADDRESS", "start": 9, "end": 38}], "line": 28}
+{"id": "claude_v2-pii-022", "kind": "heldout_claude_v2", "text": "email me at dana.ruiz(at)example(dot)org please", "entities": [{"type": "EMAIL", "start": 12, "end": 40}], "line": 29}
+{"id": "claude_v2-pii-023", "kind": "heldout_claude_v2", "text": "r.singh@mail.example.co.uk is the best contact", "entities": [{"type": "EMAIL", "start": 0, "end": 26}], "line": 30}
+{"id": "claude_v2-pii-024", "kind": "heldout_claude_v2", "text": "reply to claims-team+urgent@example.net with the form", "entities": [{"type": "EMAIL", "start": 9, "end": 39}], "line": 31}
+{"id": "claude_v2-pii-025", "kind": "heldout_claude_v2", "text": "IP 192.0.2.146 tried 14 logins in a minute", "entities": [{"type": "IP_ADDRESS", "start": 3, "end": 14}], "line": 32}
+{"id": "claude_v2-pii-026", "kind": "heldout_claude_v2", "text": "Blocked source 2001:db8:85a3::8a2e:370:7334 after the alert.", "entities": [{"type": "IP_ADDRESS", "start": 15, "end": 43}], "line": 33}
+{"id": "claude_v2-pii-027", "kind": "heldout_claude_v2", "text": "Routing 011000015 / acct no. 0044 1773 0299", "entities": [{"type": "US_BANK_NUMBER", "start": 29, "end": 43}], "line": 34}
+{"id": "claude_v2-pii-028", "kind": "heldout_claude_v2", "text": "Savings account 88120045671 for the refund.", "entities": [{"type": "US_BANK_NUMBER", "start": 16, "end": 27}], "line": 35}
+{"id": "claude_v2-pii-029", "kind": "heldout_claude_v2", "text": "Nguyễn Văn An and Trần Thị Bích co-signed the claim.", "entities": [{"type": "PERSON", "start": 0, "end": 13}, {"type": "PERSON", "start": 18, "end": 31}], "line": 36}
+{"id": "claude_v2-pii-030", "kind": "heldout_claude_v2", "text": "Ana Paula da Silva Pereira is listed as the beneficiary.", "entities": [{"type": "PERSON", "start": 0, "end": 26}], "line": 37}
+{"id": "claude_v2-pii-031", "kind": "heldout_claude_v2", "text": "मरीज़ राजेश कुमार का फ़ोन 555-201-7740 है।", "entities": [{"type": "PERSON", "start": 6, "end": 17}, {"type": "PHONE", "start": 26, "end": 38}], "line": 38}
+{"id": "claude_v2-pii-032", "kind": "heldout_claude_v2", "text": "Priya Sharma ka DOB 14/08/1989 hai, form mein galat likha hai.", "entities": [{"type": "PERSON", "start": 0, "end": 12}, {"type": "DATE_OF_BIRTH", "start": 20, "end": 30}], "line": 39}
+{"id": "claude_v2-pii-033", "kind": "heldout_claude_v2", "text": "Versicherter Jürgen Weißmüller, geb. 03.05.1961, Tel. 555-201-7741", "entities": [{"type": "PERSON", "start": 13, "end": 30}, {"type": "DATE_OF_BIRTH", "start": 37, "end": 47}, {"type": "PHONE", "start": 54, "end": 66}], "line": 40}
+{"id": "claude_v2-pii-034", "kind": "heldout_claude_v2", "text": "L'assuré Jean-Baptiste Lefèvre est né le 3 mai 1961.", "entities": [{"type": "PERSON", "start": 9, "end": 30}, {"type": "DATE_OF_BIRTH", "start": 41, "end": 51}], "line": 41}
+{"id": "claude_v2-pii-035", "kind": "heldout_claude_v2", "text": "El asegurado José Manuel Ortega vive en 1450 Calle Ocho, Miami, FL 33135.", "entities": [{"type": "PERSON", "start": 13, "end": 31}, {"type": "ADDRESS", "start": 40, "end": 72}], "line": 42}
+{"id": "claude_v2-pii-036", "kind": "heldout_claude_v2", "text": "[10:42] agent: can i get your name? [10:43] caller: tanisha brooks-hall", "entities": [{"type": "PERSON", "start": 52, "end": 71}], "line": 43}
+{"id": "claude_v2-pii-037", "kind": "heldout_claude_v2", "text": "MEMBER: OKONKWO, CHIDI  DOB: 11/23/1979", "entities": [{"type": "PERSON", "start": 8, "end": 22}, {"type": "DATE_OF_BIRTH", "start": 29, "end": 39}], "line": 44}
+{"id": "claude_v2-pii-038", "kind": "heldout_claude_v2", "text": "Regards, Hal Brennan | Claims Advocate | 555.201.7742 | hal.brennan@example.com", "entities": [{"type": "PERSON", "start": 9, "end": 20}, {"type": "PHONE", "start": 41, "end": 53}, {"type": "EMAIL", "start": 56, "end": 79}], "line": 45}
+{"id": "claude_v2-pii-039", "kind": "heldout_claude_v2", "text": "Ivy Chen said her son Leo will call tomorrow.", "entities": [{"type": "PERSON", "start": 0, "end": 8}, {"type": "PERSON", "start": 22, "end": 25}], "line": 46}
+{"id": "claude_v2-pii-040", "kind": "heldout_claude_v2", "text": "my visa is 4000 0566 5566 5556 exp 09/28, cvv is on the back", "entities": [{"type": "CREDIT_CARD", "start": 11, "end": 30}], "line": 47}
+{"id": "claude_v2-pii-041", "kind": "heldout_claude_v2", "text": "member id ABC-123-456-789 (dashes as printed)", "entities": [{"type": "MEMBER_ID", "start": 10, "end": 25}], "line": 48}
+{"id": "claude_v2-pii-042", "kind": "heldout_claude_v2", "text": "policy pol-00412299 was cancelled", "entities": [{"type": "POLICY_NUMBER", "start": 7, "end": 19}], "line": 49}
+{"id": "claude_v2-pii-043", "kind": "heldout_claude_v2", "text": "SSN#: 288506613", "entities": [{"type": "US_SSN", "start": 6, "end": 15}], "line": 50}
+{"id": "claude_v2-pii-044", "kind": "heldout_claude_v2", "text": "Dr. Meera Iyer, NPI 1183750920, signed the referral.", "entities": [{"type": "PERSON", "start": 4, "end": 14}, {"type": "NPI", "start": 20, "end": 30}], "line": 51}
+{"id": "claude_v2-pii-045", "kind": "heldout_claude_v2", "text": "| provider | npi | Lakeside Clinic | 2039485711 |", "entities": [{"type": "NPI", "start": 37, "end": 47}], "line": 52}
+{"id": "claude_v2-pii-046", "kind": "heldout_claude_v2", "text": "Toll-free 1-800-555-0136 x4410 for the member services desk", "entities": [{"type": "PHONE", "start": 10, "end": 30}], "line": 53}
+{"id": "claude_v2-pii-047", "kind": "heldout_claude_v2", "text": "Call +1.312.555.0199 between 9 and 5.", "entities": [{"type": "PHONE", "start": 5, "end": 20}], "line": 54}
+{"id": "claude_v2-pii-048", "kind": "heldout_claude_v2", "text": "Kofi Boateng's wife Ama Boateng called about the bill.", "entities": [{"type": "PERSON", "start": 0, "end": 12}, {"type": "PERSON", "start": 20, "end": 31}], "line": 55}
+{"id": "claude_v2-pii-049", "kind": "heldout_claude_v2", "text": "Date de naissance : 03/05/1961", "entities": [{"type": "DATE_OF_BIRTH", "start": 20, "end": 30}], "line": 56}
+{"id": "claude_v2-pii-050", "kind": "heldout_claude_v2", "text": "Claim volume in Q2 was 12,480 with an average payout of $1,912.40.", "entities": [], "line": 57}
+{"id": "claude_v2-pii-051", "kind": "heldout_claude_v2", "text": "Ticket INC-2026-0048812 was closed by the service desk.", "entities": [], "line": 58}
+{"id": "claude_v2-pii-052", "kind": "heldout_claude_v2", "text": "Call the main line at extension 2201 for IT help.", "entities": [], "line": 59}
+{"id": "claude_v2-pii-053", "kind": "heldout_claude_v2", "text": "Patients in Dallas and Houston saw shorter wait times this year.", "entities": [], "line": 60}
+{"id": "claude_v2-pii-054", "kind": "heldout_claude_v2", "text": "Tracking number 1Z999AA10123456784 shows delivered.", "entities": [], "line": 61}
+{"id": "claude_v2-pii-055", "kind": "heldout_claude_v2", "text": "Build 2026.05.01-rc3 passed all checks.", "entities": [], "line": 62}
+{"id": "claude_v2-pii-056", "kind": "heldout_claude_v2", "text": "Grace Hopper Hall and King Street Station are both near the office.", "entities": [], "line": 63}
+{"id": "claude_v2-pii-057", "kind": "heldout_claude_v2", "text": "Serial number 2125550190 is printed on the scanner.", "entities": [], "line": 64}
+{"id": "claude_v2-pii-058", "kind": "heldout_claude_v2", "text": "Version 3.2.1 of the claims form adds a field for the policy type.", "entities": [], "line": 65}
+{"id": "claude_v2-pii-059", "kind": "heldout_claude_v2", "text": "The meeting moved from 03/05 to 03/12 at 10:00.", "entities": [], "line": 66}

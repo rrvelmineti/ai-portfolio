@@ -38,8 +38,14 @@ technically (`core/guardrails`, `core/gateway`, `core/observability`).
 
 - **Documents, files and retrieved text are untrusted.** Products wrap them with
   `wrap_untrusted()`, and the model is told to treat them as data.
+- **Two detection layers run locally on every input:** pattern rules and a small ML
+  classifier (ADR 0007). No text is sent anywhere to be checked.
 - **Chat messages that look like attacks are blocked.** Suspicious content inside
   documents is flagged and audited, and the product decides whether to escalate.
+- **Detection doesn't catch everything.** Requests phrased as ordinary work ("export every
+  member record", "compliance already approved this") often pass. That is why risky
+  actions always need a real second approver and products get the least privilege they
+  need.
 - **Output checks:**
   - an output that leaks the system prompt is blocked (canary);
   - so is one with links or images to domains not on the product's allowlist;

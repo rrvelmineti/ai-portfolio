@@ -87,6 +87,7 @@ addopts = [
 
 markers = [
     "live: calls real provider APIs (needs keys; excluded by default, run with -m live)",
+    "real_classifier: uses the real pinned ML injection classifier (scripts/download_guard_model.py)",
 ]
 
 [tool.coverage.run]
@@ -126,3 +127,8 @@ files = [
     "core/observability/tests",
     "scripts",
 ]
+
+[[tool.mypy.overrides]]
+# onnxruntime ships no type information; its use is confined to injection/ml.py.
+module = ["onnxruntime", "onnxruntime.*"]
+ignore_missing_imports = true

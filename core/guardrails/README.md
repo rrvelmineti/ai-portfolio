@@ -65,15 +65,16 @@ Results carry counts and codes only:
   | Entity | How it's detected |
   |---|---|
   | `PERSON` | spaCy, plus names after a title or role ("Patient …", "Dear …") |
-  | `EMAIL`, `IP_ADDRESS`, `US_SSN` | Presidio |
+  | `EMAIL` | Presidio, plus obfuscated forms: `kim dot park at example dot com`, `name(at)domain(dot)org`, `[at]`/`{at}` |
+  | `IP_ADDRESS`, `US_SSN` | Presidio |
   | `PHONE` | Presidio, plus formatted US numbers and NANP-valid bare 10-digit numbers |
   | `CREDIT_CARD` | Presidio, plus a Luhn check on 12–19 digits next to card words |
   | `US_BANK_NUMBER` | 8–17 digits next to account or bank words |
-  | `DATE_OF_BIRTH` | dates next to DOB words only; dates of service are left alone |
-  | `ADDRESS` | USPS street suffixes, plus city, state and ZIP |
-  | `MEMBER_ID` | `ABC123456789`, `M12345678`, or a weak format plus context |
-  | `CLAIM_NUMBER` | `CLM-2024-0012345` |
-  | `POLICY_NUMBER` | `POL-00123456` |
+  | `DATE_OF_BIRTH` | dates next to DOB words only (English, plus `geb.`, `né`, `nacido`, `जन्मतिथि`); numeric and written-out forms (`the 3rd of May 1961`, `May 3rd, '61`, `twelfth of March, 1948`, `3 mai 1961`, `7. Oktober 1966`, `2 de abril de 1977`); dates of service are left alone |
+  | `ADDRESS` | USPS street suffixes with unit forms (Apt, Unit, Ste, #, Bldg, Fl), PO Box / POB, rural and highway-contract routes (RR, HC), military (PSC/CMR/Unit … APO/FPO/DPO), each with city, state and ZIP. A merge step extends the span over a following unit or city/state/ZIP and absorbs overlapping detections, so **no part of an address is left unmasked** |
+  | `MEMBER_ID` | `ABC123456789`, `M12345678`, also with spaces or dashes and in either case (`ABC-123-456-789`, `m 1234 5678`), or a weak format plus context |
+  | `CLAIM_NUMBER` | `CLM-2024-0012345`, also `CLM 2024 0012345` and lower case |
+  | `POLICY_NUMBER` | `POL-00123456`, also `POL 00123456`, `POL#00123456` and lower case |
   | `NPI` | 10 digits passing the Luhn check with the `80840` prefix |
 
   `LOCATION` (city or state names alone) is **off** by default; set
@@ -116,16 +117,58 @@ tenants:
 The tenant comes from the access token (via the request context), so another tenant's
 formats never apply.
 
+**Worked example: adding a house format.** Acme's member IDs look like `ACM-0012345` and
+their claim references like `AC/24/000123`; neither is a default format.
+
+1. Write the patterns. Give them a **low base score** (0.3 to 0.4) so they only count next
+   to a context word, unless the format is distinctive enough to stand alone (then 0.6 or
+   more). The default threshold is `pii.score_threshold: 0.5`, and a context word adds
+   about 0.35.
+2. Add them under the tenant's id in the `GUARDRAILS_CONFIG` file:
+
+   ```yaml
+   tenants:
+     "<acme tenant_id>":
+       recognizers:
+         - entity: MEMBER_ID
+           patterns: [{name: acme_member, regex: '\bACM-\d{7}\b', score: 0.6}]
+           context: [member, acme]
+         - entity: CLAIM_NUMBER
+           patterns: [{name: acme_claim, regex: '\bAC/\d{2}/\d{6}\b', score: 0.4}]
+           context: [claim, reference]
+   ```
+
+3. Test it the same way the defaults are tested: one positive sample per format, one look-alike
+   that must stay unmasked, and `mask_text(..., tenant_id=...)` in a request context. Use only
+   synthetic values.
+
+Use one-word context entries only (Presidio matches context per token and lemma), and the
+canonical entity names from the table above.
+
 ## Prompt injection: layered
 
 | Layer | What it does |
 |---|---|
 | Normalisation | NFKC, zero-width removal, Cyrillic/Greek look-alikes, letter spacing, leetspeak; decodes base64, hex, `\u` escapes, URL encoding and rot13, then scans again |
+| ML classifier | Local Horizon-Labs `prompt-injection-guard-small` (int8 ONNX, pinned and SHA-256 verified; ADR 0007) on every chat message and every `wrap_untrusted` block, in 512-token windows. Fail closed if enabled (`GUARD_ML_CLASSIFIER`, default on) but missing. Download: `uv run python scripts/download_guard_model.py` (into `GUARD_MODEL_DIR`). |
 | Rules | Weighted intent phrases: instruction override (EN/ES/FR/DE/PT/IT), jailbreak personas, system-prompt extraction, delimiter breaking, hidden instructions in data, exfiltration, tool abuse, skipping oversight, harvesting others' data. Score ≥ 0.7 blocks; 0.4–0.7 is borderline. |
 | LLM classifier | `GUARD_LLM_CLASSIFIER=true`: borderline only, via the `fast` alias with PII masked. If it fails, the call is blocked. |
 | `wrap_untrusted(text, source)` | Fences documents, files and CSV cells with random markers, neutralises fake fences, and adds a standing "data, not instructions" rule to the system prompt. Attacks inside fences are flagged and audited, not blocked. |
 | Canary | A random token in every system prompt; if it appears in the output, the call is blocked and audited. |
 | Output checks | Markdown or HTML links and images to domains not on the allowlist are blocked (exfiltration). `check_tool_calls(calls, allowlist)` checks tool names. |
+
+**Decision rule** (`injection/decision.py`, shared by the guard and the evaluation):
+
+| Layer | Block (chat only) | Flag |
+|---|---:|---:|
+| Rules | 0.70 | 0.40 |
+| ML classifier | 0.80 | 0.70 |
+
+Chat input is blocked when either layer reaches its block threshold and flagged and logged
+between flag and block (the optional LLM classifier may escalate a flag). Content inside
+`wrap_untrusted` fences is only flagged. Content longer than 64 windows is flagged as
+`untrusted_unscanned`. Thresholds were chosen on tuning data only
+(`docs/injection-thresholds.md`).
 
 Every block or flag writes `guardrail.blocked` or `guardrail.flagged` to the audit log.
 The row includes the request id, reasons, score, and a payload hash and length, never
@@ -176,5 +219,8 @@ and is audited as `guardrail.policy_blocked`. Examples are in `policies/`.
 | `GUARDRAILS_SPACY_MODEL` | `en_core_web_lg` | smaller models are faster but untested against the targets |
 | `GUARDRAILS_CONFIG` | none | PII settings and tenant recognizers |
 | `GUARDRAILS_POLICY` | none | product topic policy and allowlists |
-| `GUARD_LLM_CLASSIFIER` | `false` | LLM second opinion on borderline inputs |
+| `GUARD_ML_CLASSIFIER` | `true` | local ML injection classifier (fail closed if its files are missing) |
+| `GUARD_MODEL_DIR` | `~/.cache/ai-platform/models` | where `download_guard_model.py` puts and the guard loads the model |
+| `GUARD_ML_THREADS` | ONNX Runtime default | CPU threads per classifier session |
+| `GUARD_LLM_CLASSIFIER` | `false` | LLM second opinion on flagged chat inputs |
 | `APPROVAL_TTL_HOURS` | `168` | |

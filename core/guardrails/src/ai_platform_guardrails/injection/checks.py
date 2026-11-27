@@ -15,13 +15,14 @@ from ai_platform_guardrails.injection.classifier import (
     classifier_enabled,
     classify,
 )
+from ai_platform_guardrails.injection.decision import Decision, assess
+from ai_platform_guardrails.injection.ml import ModelUnavailable, get_prompt_classifier
 from ai_platform_guardrails.injection.output import (
     CANARY_LINE,
     canary_leaked,
     check_links,
     new_canary,
 )
-from ai_platform_guardrails.injection.scanner import BORDERLINE_THRESHOLD, ScanResult, scan
 from ai_platform_guardrails.injection.untrusted import STANDING_INSTRUCTION, split_untrusted
 
 Classifier = Callable[[str], InjectionVerdict]
@@ -30,7 +31,13 @@ Classifier = Callable[[str], InjectionVerdict]
 def make_injection_check(
     classifier: Classifier | None = None, *, use_classifier: bool | None = None
 ) -> Callable[..., None]:
-    """Input check: block attacks in chat text; flag attacks inside untrusted fences."""
+    """Input check: rules + ML classifier (``decision.assess``).
+
+    Chat text is blocked or flagged; content inside untrusted fences is only flagged.
+    ``classifier``/``use_classifier`` control the optional *LLM* second opinion for chat
+    input in the flag band; the local ML classifier is always on unless
+    ``GUARD_ML_CLASSIFIER=false``.
+    """
 
     def check(
         _guard: Any,  # noqa: ANN401
@@ -42,8 +49,13 @@ def make_injection_check(
     ) -> None:
         if mode == "off":
             return
+        try:
+            ml = get_prompt_classifier()
+        except ModelUnavailable as exc:  # fail closed: the guard can't run as configured
+            record_event("guardrail.blocked", reasons=["ml_classifier_unavailable"], score=None,
+                         payload="")  # fmt: skip
+            raise GuardrailError("injection classifier unavailable; call blocked") from exc
         enabled = classifier_enabled() if use_classifier is None else use_classifier
-        top = ScanResult(0.0)
         chat_texts: list[str] = []
         has_untrusted = False
         for text, is_user in [(system or "", False), *((m.text(), m.role == "user")
@@ -53,28 +65,35 @@ def make_injection_check(
             if is_user:
                 chat_texts.append(outside)
             for source, body in segments:
-                res = scan(body)
-                if res.score >= BORDERLINE_THRESHOLD:
+                res = assess(body, ml, "untrusted")
+                if res.truncated:
+                    prepared.flags.append(f"untrusted_unscanned:{source}")
+                if res.action != "none":
                     prepared.flags.append(f"untrusted_injection:{source}")
                     record_event("guardrail.flagged", reasons=res.reasons, score=res.score,
                                  payload=body, kind="untrusted", source=source)  # fmt: skip
         prepared.state["untrusted"] = has_untrusted
+        top: Decision | None = None
+        rank = {"none": 0, "flag": 1, "block": 2}
         for text in chat_texts:
-            res = scan(text)
-            if res.score > top.score:
+            res = assess(text, ml, "chat")
+            if top is None or (rank[res.action], res.score) > (rank[top.action], top.score):
                 top = res
+        if top is None:
+            return
         prepared.injection_score = top.score
-        if top.score < BORDERLINE_THRESHOLD:
+        if top.truncated:
+            prepared.flags.append("injection_unscanned_tail")
+        if top.action == "none":
             return
         payload = "\n".join(chat_texts)
-        if mode == "flag":
-            prepared.flags += [f"injection:{r}" for r in top.reasons]
-            record_event("guardrail.flagged", reasons=top.reasons, score=top.score,
-                         payload=payload)  # fmt: skip
-            return
-        blocked = top.blocked
         reasons = list(top.reasons)
-        if not blocked:  # borderline
+        if mode == "flag":
+            prepared.flags += [f"injection:{r}" for r in reasons]
+            record_event("guardrail.flagged", reasons=reasons, score=top.score, payload=payload)
+            return
+        if top.action == "flag":
+            blocked = False
             if enabled:
                 try:
                     verdict = (classifier or classify)(payload)

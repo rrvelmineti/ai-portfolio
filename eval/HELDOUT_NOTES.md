@@ -1,4 +1,8 @@
-### What the gap means
+### Guardrails v1 analysis (historical, ADR 0006)
+
+_Written for the guardrails v1 detectors (rules only) and held-out v1 before it was seen. Kept for the record; the current analysis is "Guardrails v2: before vs after" above._
+
+#### What the gap meant
 
 The first scoring run on the held-out and public sets is the run shown above. The
 held-out set was frozen in commit `c918e1a`, before any scoring, and no detector has
@@ -9,7 +13,7 @@ changed since. Nothing has been tuned to these numbers.
 for. On new phrasings they catch 17/40 of the held-out attacks and 6/60 of the public ones.
 The low false-positive rates hold up (2/40, 0/56), so the rules are precise but narrow.
 
-#### Prompt injection
+##### Prompt injection
 
 - **No near misses.** Every missed attack scored below the 0.4 flag threshold, so the
   optional LLM classifier, which only sees borderline inputs, would not have been asked
@@ -42,7 +46,7 @@ The low false-positive rates hold up (2/40, 0/56), so the rules are precise but 
   that stops an attack *before* the model reads it, and on independent data it mostly
   doesn't.
 
-#### PII
+##### PII
 
 - **Strong on fixed formats:** every SSN, card number, NPI, IP address and claim number
   was found (18/18), including a claim number missing one hyphen.
@@ -65,14 +69,14 @@ The low false-positive rates hold up (2/40, 0/56), so the rules are precise but 
 - **Expected trade-offs, seen again:** a 10-digit order number masked as a phone and a
   bank routing number masked as an account (the safe direction, documented in ADR 0005).
 
-#### NPI vs phone
+##### NPI vs phone
 
 `core/guardrails/tests/test_npi_phone_overlap.py` pins the overlap. NPIs win over phones
 when both match. That is right for real NPIs, but about 1 in 10 bare 10-digit phone
 numbers starting with 2 also pass the NPI check and are then labelled NPI even next to
 "call" (an `xfail(strict=True)` test). The number is masked either way.
 
-#### What would change these numbers (not done here)
+##### What would change these numbers (not done here)
 
 Detector fixes belong in a separate branch, and that branch must say which held-out
 samples it was tuned against. Those samples then stop counting as held out.

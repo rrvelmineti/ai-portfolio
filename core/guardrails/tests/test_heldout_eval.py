@@ -8,6 +8,7 @@ from __future__ import annotations
 import hashlib
 import importlib.util
 import json
+import shutil
 from pathlib import Path
 from types import ModuleType
 from typing import Any
@@ -47,6 +48,29 @@ def test_heldout_files_match_the_freeze_manifest() -> None:
         assert actual == digest, f"{name} changed after the freeze (see eval/heldout/README.md)"
 
 
+HELDOUT_V2 = ROOT / "eval" / "heldout_v2"
+V2_SOURCE_SHA256 = "b0649dec9fe63ca8f19ce68359f1e1ff8ef57272469f2bcf1ed542db9eebe3c3"
+
+
+def test_heldout_v2_matches_its_freeze_manifest_without_scoring() -> None:
+    """v2 is checked for integrity only; it must not be scored before the end of guardrails-v2."""
+    src = (HELDOUT_V2 / "claude_v2_samples.txt").read_bytes()
+    assert hashlib.sha256(src).hexdigest() == V2_SOURCE_SHA256
+    lines = (HELDOUT_V2 / "MANIFEST.sha256").read_text(encoding="utf-8").splitlines()
+    assert len(lines) == 5
+    for line in lines:
+        digest, name = line.split(maxsplit=1)
+        actual = hashlib.sha256((HELDOUT_V2 / name).read_bytes()).hexdigest()
+        assert actual == digest, f"{name} changed after the v2 freeze"
+
+
+def test_heldout_v2_jsonl_is_generated_from_the_source(capsys: pytest.CaptureFixture[str]) -> None:
+    convert = _load_script("convert_tagged_samples")
+    assert convert.main([str(HELDOUT_V2 / "claude_v2_samples.txt"), "--check",
+                         "--out-dir", str(HELDOUT_V2)]) == 0  # fmt: skip
+    assert "up to date" in capsys.readouterr().out
+
+
 def test_heldout_jsonl_is_generated_from_the_source(capsys: pytest.CaptureFixture[str]) -> None:
     convert = _load_script("convert_tagged_samples")
     assert convert.main([str(HELDOUT / "claude_samples.txt"), "--check"]) == 0
@@ -73,6 +97,7 @@ def test_converter_writes_files_and_rejects_dev_overlap(tmp_path: Path) -> None:
 # ------------------------------------------------------------------ scoring plumbing
 
 
+@pytest.mark.real_classifier
 def test_heldout_scoring_counts_every_sample() -> None:
     pii, inj = evaluate_heldout(HELDOUT)
     gold = sum(len(s["entities"]) for s in load_corpus(HELDOUT / "pii", "texts"))
@@ -118,6 +143,7 @@ def test_render_comparison_side_by_side() -> None:
     assert "Dev: misses" not in md  # the development set's misses are listed elsewhere
 
 
+@pytest.mark.real_classifier
 def test_report_script_adds_comparison(tmp_path: Path) -> None:
     eval_dir = tmp_path / "eval"
     for sub in ("pii", "injection", "heldout"):
@@ -135,7 +161,19 @@ def test_report_script_adds_comparison(tmp_path: Path) -> None:
     )
     text = out.read_text(encoding="utf-8")
     assert "## Held-out and public evaluation (report only)" in text
-    assert "Held-out (report only)" in text and "Public: deepset" not in text
+    assert "Held-out v1 (tuning data)" in text and "Public: deepset" not in text
+    assert "Held-out v2 (unseen)" not in text
+
+    # --heldout-v2 reads eval/heldout_v2 and appends the v2 notes. A COPY OF v1 stands in for
+    # v2 here: the real held-out v2 must not be scored before the end of guardrails-v2.
+    shutil.copytree(eval_dir / "heldout", eval_dir / "heldout_v2")
+    (eval_dir / "V2_NOTES.md").write_text("## V2 NOTES MARKER\n", encoding="utf-8")
+    (eval_dir / "CLASSIFIER_COMPARISON.md").write_text("## COMPARISON MARKER\n", "utf-8")
+    args = ["--heldout-v2", "--eval-dir", str(eval_dir), "--out", str(out)]
+    assert report.main(args) == 0
+    text = out.read_text(encoding="utf-8")
+    assert "Held-out v2 (unseen)" in text and "Held-out v1 (tuning data)" not in text
+    assert "## V2 NOTES MARKER" in text and "## COMPARISON MARKER" in text
 
 
 # ------------------------------------------------------------------ public download (offline)
@@ -160,8 +198,12 @@ def test_download_paginates_checks_and_writes(
     rows = [{"text": f"t{i}", "label": i % 2} for i in range(150)]
     monkeypatch.setattr(dl, "_get_json", _fake_api(rows, dl.PINNED_REVISION))
     assert dl.fetch_rows() == rows
-    monkeypatch.setattr(dl, "EXPECTED_ROWS", 150)
-    monkeypatch.setattr(dl, "EXPECTED_SHA256", dl.rows_sha256(rows))
+    monkeypatch.setitem(dl.EXPECTED, "test", (150, dl.rows_sha256(rows)))
+    monkeypatch.setitem(dl.EXPECTED, "train", (150, dl.rows_sha256(rows)))
+    assert dl.main(["--out-dir", str(tmp_path), "--split", "train"]) == 0
+    train = load_corpus(tmp_path / "train" / "injection", "attacks")
+    assert train[0]["id"] == "deepset-train-001"
+    assert evaluate_public_paths_untouched(tmp_path)
     assert dl.main(["--out-dir", str(tmp_path)]) == 0
     attacks = load_corpus(tmp_path / "injection", "attacks")
     benign = load_corpus(tmp_path / "injection", "benign")
@@ -169,6 +211,11 @@ def test_download_paginates_checks_and_writes(
     assert attacks[0] == {"id": "deepset-test-001", "context": "chat", "text": "t1",
                           "category": "deepset"}  # fmt: skip
     assert "category" not in benign[0]
+
+
+def evaluate_public_paths_untouched(root: Path) -> bool:
+    """Train rows must never land where the test-split scorer reads."""
+    return not list((root / "injection").glob("*.jsonl")) if (root / "injection").exists() else True
 
 
 def test_download_refuses_changed_data(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
