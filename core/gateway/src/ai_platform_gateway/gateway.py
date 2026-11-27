@@ -24,6 +24,15 @@ from ai_platform_gateway.errors import (
     NotSupported,
     SchemaValidationError,
 )
+from ai_platform_gateway.guards import (
+    Guard,
+    InjectionMode,
+    PiiMode,
+    PreparedCall,
+    PreparedTexts,
+    get_guard,
+    run_guarded,
+)
 from ai_platform_gateway.providers.base import (
     CompletionRequest,
     EmbeddingRequest,
@@ -85,8 +94,10 @@ class Gateway:
         registry: ProviderRegistry | None = None,
         retry_policy: RetryPolicy | None = None,
         environ: Mapping[str, str] | None = None,
+        guard: Guard | None = None,
     ) -> None:
         self.config = config or default_config()
+        self.guard = guard  # None: the process-wide guardrails guard (loaded lazily)
         self.registry = registry or ProviderRegistry()
         self.retry_policy = retry_policy or RetryPolicy()
         self.environ = environ  # None means os.environ, read at call time
@@ -104,19 +115,40 @@ class Gateway:
         timeout_s: float = 30,
         metadata: dict[str, Any] | None = None,
         request_id: str | None = None,
+        pii: PiiMode = "mask",
+        pii_reason: str | None = None,
+        injection: InjectionMode = "block",
     ) -> CompletionResult:
-        """Run a chat completion through ``model``'s fallback chain."""
+        """Run a chat completion through ``model``'s fallback chain.
+
+        Guardrails run first (fail closed): ``pii`` = ``"mask"`` (default), ``"block"``
+        (raise if PII is found) or ``"off"`` (requires ``pii_reason``, which is logged);
+        ``injection`` = ``"block"`` (default), ``"flag"`` or ``"off"``.
+        """
         rid = request_id or current_request_id() or str(uuid.uuid4())
         start = time.perf_counter()
         messages = [Message(role="user", content=prompt)] if isinstance(prompt, str) else prompt
         records: list[AttemptRecord] = []
+        sent_system, sent_messages = system, messages
+        guard_log: dict[str, Any] = {"pii_mode": pii, "injection_mode": injection}
         try:
             self._check_alias(model, "chat")
             if not messages:
                 raise InvalidRequest("prompt must not be empty")
-            full_system = structured.merge_system(system, response_schema)
+            _check_pii_reason(pii, pii_reason, guard_log)
+            guard = self.guard or get_guard()
+            meta = dict(metadata or {})
+            prepared = run_guarded(
+                "before_complete",
+                lambda: guard.before_complete(
+                    messages, system, pii=pii, injection=injection, metadata=meta
+                ),
+            )
+            sent_system, sent_messages = prepared.system, prepared.messages
+            guard_log.update(_prepared_log(prepared))
+            full_system = structured.merge_system(prepared.system, response_schema)
             outcome = self._run_completion(
-                model, messages, full_system, max_tokens, temperature, timeout_s,
+                model, sent_messages, full_system, max_tokens, temperature, timeout_s,
                 json_mode=response_schema is not None,
             )  # fmt: skip
             records.extend(outcome.records)
@@ -130,7 +162,7 @@ class Gateway:
                     parsed = structured.parse(resp.text, response_schema)
                 except ValidationError as first_error:
                     retry_messages = [
-                        *messages,
+                        *sent_messages,
                         Message(role="assistant", content=resp.text or "{}"),
                         Message(role="user", content=structured.repair_prompt(first_error)),
                     ]
@@ -156,14 +188,21 @@ class Gateway:
                             ),
                             [],
                         ) from second_error
+            final_text = resp.text
+            output_flags = run_guarded(
+                "after_complete", lambda: guard.after_complete(prepared, final_text)
+            )
+            guard_log["output_flags"] = output_flags
         except _ChainError as exc:
             records.extend(exc.records)
             self._finish("complete", rid, model, start, records, metadata, error=exc.error,
-                         content=(system, messages, None))  # fmt: skip
+                         content=(sent_system, sent_messages, None),
+                         guard_log=guard_log)  # fmt: skip
             raise exc.error from exc.error.__cause__
         except GatewayError as exc:
             self._finish("complete", rid, model, start, records, metadata, error=exc,
-                         content=(system, messages, None))  # fmt: skip
+                         content=(sent_system, sent_messages, None),
+                         guard_log=guard_log)  # fmt: skip
             raise
 
         latency = self._finish(
@@ -171,7 +210,8 @@ class Gateway:
             provider=outcome.entry.provider, model_id=outcome.model_id,
             input_tokens=in_tok, output_tokens=out_tok, cost=cost,
             fallback_used=fallback_used,
-            content=(system, messages, resp.text),
+            content=(sent_system, sent_messages, resp.text),
+            guard_log=guard_log,
         )  # fmt: skip
         return CompletionResult(
             text=resp.text,
@@ -188,6 +228,12 @@ class Gateway:
             attempts=sum(r.attempts for r in records),
             finish_reason=resp.finish_reason,
             attempt_records=records,
+            pii_mode=pii,
+            mapping_id=prepared.mapping_id,
+            pii_entities=prepared.pii_entities,
+            injection_score=prepared.injection_score,
+            guard_flags=prepared.flags,
+            output_flags=output_flags,
         )
 
     def embed(
@@ -198,16 +244,31 @@ class Gateway:
         timeout_s: float = 30,
         metadata: dict[str, Any] | None = None,
         request_id: str | None = None,
+        pii: PiiMode = "mask",
+        pii_reason: str | None = None,
     ) -> EmbeddingResult:
-        """Embed one or more texts through ``model``'s fallback chain."""
+        """Embed one or more texts through ``model``'s fallback chain.
+
+        Texts are PII-masked first unless ``pii="off"`` (which requires ``pii_reason``).
+        """
         rid = request_id or current_request_id() or str(uuid.uuid4())
         start = time.perf_counter()
-        items = [texts] if isinstance(texts, str) else list(texts)
+        raw_items = [texts] if isinstance(texts, str) else list(texts)
+        items = raw_items
         records: list[AttemptRecord] = []
+        guard_log: dict[str, Any] = {"pii_mode": pii}
+        prepared_texts: PreparedTexts | None = None
         try:
             alias = self._check_alias(model, "embed")
-            if not items:
+            if not raw_items:
                 raise InvalidRequest("texts must not be empty")
+            _check_pii_reason(pii, pii_reason, guard_log)
+            guard = self.guard or get_guard()
+            prepared_texts = run_guarded(
+                "before_embed", lambda: guard.before_embed(raw_items, pii=pii)
+            )
+            items = prepared_texts.texts
+            guard_log["pii_entities"] = prepared_texts.pii_entities
             dims = alias.dimensions
 
             def call(provider: Provider, entry: ModelEntry, model_id: str) -> ProviderEmbedding:
@@ -224,11 +285,11 @@ class Gateway:
             records = outcome.records
         except _ChainError as exc:
             self._finish("embed", rid, model, start, exc.records, metadata, error=exc.error,
-                         content=(None, items, None))  # fmt: skip
+                         content=(None, items, None), guard_log=guard_log)  # fmt: skip
             raise exc.error from exc.error.__cause__
         except GatewayError as exc:
             self._finish("embed", rid, model, start, records, metadata, error=exc,
-                         content=(None, items, None))  # fmt: skip
+                         content=(None, items, None), guard_log=guard_log)  # fmt: skip
             raise
 
         resp = outcome.value
@@ -238,6 +299,7 @@ class Gateway:
             provider=outcome.entry.provider, model_id=outcome.model_id,
             input_tokens=resp.tokens, cost=cost, fallback_used=outcome.fallback_used,
             content=(None, items, None),
+            guard_log=guard_log,
         )  # fmt: skip
         return EmbeddingResult(
             vectors=resp.vectors,
@@ -252,6 +314,9 @@ class Gateway:
             fallback_used=outcome.fallback_used,
             attempts=outcome.attempts,
             attempt_records=records,
+            pii_mode=pii,
+            mapping_id=prepared_texts.mapping_id if prepared_texts else None,
+            pii_entities=prepared_texts.pii_entities if prepared_texts else {},
         )
 
     # ------------------------------------------------------------------ internals
@@ -405,6 +470,7 @@ class Gateway:
         cost: float | None = None,
         fallback_used: bool = False,
         content: tuple[str | None, list[Message] | list[str], str | None] | None = None,
+        guard_log: dict[str, Any] | None = None,
     ) -> float:
         """Emit the single structured log line and run hooks. Returns latency in ms."""
         latency = round((time.perf_counter() - start) * 1000, 2)
@@ -451,6 +517,8 @@ class Gateway:
                 {"provider": r.provider, "outcome": r.outcome, "reason": r.reason} for r in records
             ],
         }
+        if guard_log:
+            fields.update(guard_log)
         if content is not None and debug_log_prompts(self.environ):
             _system, msgs, output = content
             fields["prompt"] = [m.text() if isinstance(m, Message) else m for m in msgs]
@@ -463,6 +531,23 @@ class Gateway:
             except Exception:  # never let a hook break a call
                 log.exception("gateway.hook_failed", extra={"fields": {"request_id": request_id}})
         return latency
+
+
+def _check_pii_reason(pii: str, reason: str | None, guard_log: dict[str, Any]) -> None:
+    """``pii="off"`` is an explicit, documented opt-out: a reason is required and logged."""
+    if pii == "off":
+        if not reason or not reason.strip():
+            raise InvalidRequest('pii="off" requires pii_reason (e.g. "public SEC filing")')
+        guard_log["pii_reason"] = reason.strip()[:200]
+        log.warning("gateway.pii_off", extra={"fields": {"pii_reason": guard_log["pii_reason"]}})
+
+
+def _prepared_log(prepared: PreparedCall) -> dict[str, Any]:
+    return {
+        "pii_entities": prepared.pii_entities,
+        "injection_score": prepared.injection_score,
+        "guard_flags": prepared.flags,
+    }
 
 
 def _context_fields(

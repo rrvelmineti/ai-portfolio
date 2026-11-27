@@ -44,6 +44,9 @@ class RequestContext:
     product: str | None = None
     audited: bool = False  # an explicit audit row was written for this request
     started_at: float = field(default_factory=time.perf_counter)
+    # Request-scoped secrets (e.g. PII unmask mappings). Never logged, traced or
+    # persisted; dropped with the context at the end of the request.
+    vault: dict[str, Any] = field(default_factory=dict, repr=False)
 
     def log_fields(self) -> dict[str, str | None]:
         """Fields every log line carries."""

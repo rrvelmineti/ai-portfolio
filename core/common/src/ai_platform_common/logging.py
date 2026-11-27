@@ -108,7 +108,9 @@ class JsonFormatter(logging.Formatter):
 # by the observability access line (one per request, with the route template).
 _ROUTED = ("uvicorn", "uvicorn.error", "fastapi", "sqlalchemy", "alembic")
 _QUIET = {"sqlalchemy.engine": logging.WARNING, "sqlalchemy.pool": logging.WARNING,
-          "httpx": logging.WARNING, "httpx2": logging.WARNING}  # fmt: skip
+          "httpx": logging.WARNING, "httpx2": logging.WARNING,
+          # presidio-analyzer DEBUG lines contain the analysed text's context words (PII)
+          "presidio-analyzer": logging.WARNING, "presidio-anonymizer": logging.WARNING}  # fmt: skip
 
 
 def _install_context_record_factory() -> None:

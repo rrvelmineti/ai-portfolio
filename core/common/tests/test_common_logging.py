@@ -118,3 +118,8 @@ def test_context_is_stamped_at_record_creation() -> None:
     out = json.loads(JsonFormatter().format(rec))  # formatted after the context ended
     assert out["request_id"] == "req-stamped"
     assert "tenant_id" not in out  # None values are omitted
+
+
+def test_presidio_debug_logs_are_silenced() -> None:
+    configure_logging("DEBUG")
+    assert logging.getLogger("presidio-analyzer").level == logging.WARNING

@@ -20,6 +20,7 @@ PASSWORDS = {
     "DEMO_ADMIN_PASSWORD": "demo-admin-passphrase",
     "DEMO_ANALYST_PASSWORD": "demo-analyst-passphrase",
     "DEMO_VIEWER_PASSWORD": "demo-viewer-passphrase",
+    "DEMO_REVIEWER_PASSWORD": "demo-reviewer-passphrase",
 }
 
 
@@ -34,13 +35,16 @@ def load(path: Path, name: str) -> ModuleType:
 @pytest.fixture(autouse=True)
 def _restore_gateway_hooks() -> Iterator[None]:
     """The demo app registers the observability recorder process-wide; undo it."""
-    from ai_platform_gateway import hooks
+    from ai_platform_gateway import hooks, set_guard
     from ai_platform_observability.recorder import unregister_recorders
+    from ai_platform_observability.redaction import set_content_redactor
 
     saved = list(hooks.on_call_complete)
     yield
     unregister_recorders()
     hooks.on_call_complete[:] = saved
+    set_guard(None)  # the demo app installs the guardrails guard process-wide
+    set_content_redactor(None)
 
 
 @pytest.fixture(scope="module")
@@ -62,17 +66,19 @@ def test_seed_requires_password_env_vars(seed_mod: Any) -> None:
 def test_seed_creates_demo_tenant_and_is_idempotent(seed_mod: Any, session: Session) -> None:
     pw = seed_mod.read_passwords(PASSWORDS)
     first = seed_mod.seed(session, pw)
-    assert first[0] == "created tenant demo" and len(first) == 4
+    assert first[0] == "created tenant demo" and len(first) == 5
     tenant = session.scalar(select(Tenant).where(Tenant.slug == "demo"))
     assert tenant is not None
     users = {
         u.username: u.role for u in session.scalars(select(User).where(User.tenant_id == tenant.id))
     }
     assert users == {"demo-admin": Role.ADMIN, "demo-analyst": Role.ANALYST,
-                     "demo-viewer": Role.VIEWER}  # fmt: skip
+                     "demo-viewer": Role.VIEWER, "demo-reviewer": Role.ANALYST}  # fmt: skip
+    approvers = [u for u, r in users.items() if r in (Role.ANALYST, Role.ADMIN)]
+    assert len(approvers) >= 3  # any requester still leaves two people who can decide
     again = seed_mod.seed(session, pw)
     assert again == ["kept existing demo-admin", "kept existing demo-analyst",
-                     "kept existing demo-viewer"]  # fmt: skip
+                     "kept existing demo-viewer", "kept existing demo-reviewer"]  # fmt: skip
     reset = seed_mod.seed(session, pw, reset_passwords=True)
     assert reset[0] == "reset password for demo-admin"
     dump = str([r.details for r in session.scalars(select(AuditLog))])
@@ -123,8 +129,24 @@ def test_demo_app_role_endpoints(
             assert got == codes, username
             note = client.post("/demo/notes", headers={**h, "X-Request-ID": f"note-{username}"})
             assert note.status_code == (403 if username == "demo-viewer" else 201)
+        # risky action -> approval request; the requester can't approve it, a reviewer can
+        h_viewer = login_header(client, "demo-viewer")
+        r = client.post("/demo/refunds?member=Ana%20Ruiz&amount=42", headers=h_viewer)
+        assert r.status_code == 202 and r.json()["status"] == "pending"
+        aid = r.json()["approval_id"]
+        h_reviewer = login_header(client, "demo-reviewer")
+        r = client.post(f"/approvals/{aid}/approve", headers=h_reviewer, json={"reason": "ok"})
+        assert r.status_code == 200 and r.json()["status"] == "approved"
+        assert "Ana Ruiz" not in r.json()["payload_summary"]
         assert client.get("/healthz").json() == {"status": "ok"}
         assert client.get("/readyz").status_code == 200
         assert b"http_requests_total" in client.get("/metrics").content
     row = session.scalar(select(AuditLog).where(AuditLog.request_id == "note-demo-analyst"))
     assert row is not None and row.action == "http.post" and row.details == {"status": 201}
+
+
+def login_header(client: TestClient, username: str) -> dict[str, str]:
+    pw = PASSWORDS[f"DEMO_{username.split('-')[1].upper()}_PASSWORD"]
+    r = client.post("/auth/login", data={"username": f"demo/{username}", "password": pw})
+    assert r.status_code == 200, r.text
+    return {"Authorization": f"Bearer {r.json()['access_token']}"}

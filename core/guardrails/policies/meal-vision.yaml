@@ -1,0 +1,18 @@
+# Example product policy for Meal Vision.
+product: meal-vision
+link_allowlist: []
+tool_allowlist: []
+blocked_topics:
+  - name: medical_advice
+    applies_to: both
+    refusal: >-
+      I can estimate what's on the plate and its nutrition, but I can't give medical advice.
+      Please ask a doctor or registered dietitian about diagnoses, medication or treatment.
+    phrases:
+      - medical advice
+      - should i stop taking
+      - insulin dose
+      - how much insulin
+    patterns:
+      - '\b(?:diagnose|cure|treat)\b.{0,40}\b(?:diabetes|cancer|disease|condition|disorder)\b'
+      - '\b(?:change|adjust|stop|skip)\s+(?:my|the)\s+(?:medication|meds|insulin|dose|prescription)\b'

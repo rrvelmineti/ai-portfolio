@@ -48,10 +48,29 @@ e = embed(["chunk one", "chunk two"])  # alias "default-embed", 1536 dims
 e.vectors, e.dimensions, e.cost_usd
 ```
 
+### Guardrails (fail closed)
+
+Every call passes through a guard before and after the provider (see
+`core/guardrails/README.md`). If the guard can't load or errors, the call is blocked
+with `GuardrailError`.
+
+```python
+complete(text)  # pii="mask", injection="block" (defaults)
+complete(text, pii="block")  # refuse if any PII is present
+complete(filing, pii="off", pii_reason="public SEC filing")  # reason is required, logged
+```
+
+Results add `mapping_id`, `pii_entities`, `injection_score`, `guard_flags` and
+`output_flags`. Unit tests (and `fake_gateway()`) use `PassthroughGuard`, so they don't
+load the spaCy model.
+
 ### Errors
 
 | Exception | Meaning |
 |---|---|
+| `GuardrailError` | A guardrail couldn't run; the call was blocked (fail closed). |
+| `GuardrailBlocked` | Blocked by a guardrail (`.reasons`, `.score`): PII in block mode, injection, canary leak, exfiltration link. |
+| `PolicyViolation` | A product topic policy matched; show `.refusal` to the user. |
 | `InvalidRequest` | Bad request or parameters (400/422), unknown alias. Raised immediately. |
 | `NoProvidersConfigured` | No provider in the alias's chain has its env vars set. The message lists the variables to set. |
 | `AllProvidersFailed` | Every configured provider failed. `.attempts` holds one `AttemptRecord` per entry (provider, model, outcome, error type, reason, attempts). |

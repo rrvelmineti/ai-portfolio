@@ -1,7 +1,8 @@
 """Create a demo tenant with one admin, one analyst and one viewer.
 
 Passwords come only from env vars (never hard-coded):
-DEMO_ADMIN_PASSWORD, DEMO_ANALYST_PASSWORD, DEMO_VIEWER_PASSWORD (12+ chars each).
+DEMO_ADMIN_PASSWORD, DEMO_ANALYST_PASSWORD, DEMO_VIEWER_PASSWORD, DEMO_REVIEWER_PASSWORD
+(12+ chars each).
 Runs the auth migrations first. Safe to re-run: existing users are left alone
 unless --reset-passwords is given.
 
@@ -32,6 +33,9 @@ DEMO_USERS: list[tuple[str, Role, str]] = [
     ("demo-admin", Role.ADMIN, "DEMO_ADMIN_PASSWORD"),
     ("demo-analyst", Role.ANALYST, "DEMO_ANALYST_PASSWORD"),
     ("demo-viewer", Role.VIEWER, "DEMO_VIEWER_PASSWORD"),
+    # A second analyst, so every approval request has at least two people who may decide
+    # it (nobody may approve their own request).
+    ("demo-reviewer", Role.ANALYST, "DEMO_REVIEWER_PASSWORD"),
 ]
 
 

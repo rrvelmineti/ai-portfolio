@@ -1,0 +1,18 @@
+# Example product policy for Rewards Advisor (synthetic programme names).
+product: rewards-advisor
+link_allowlist: []
+tool_allowlist: [lookup_offer, list_programmes, estimate_points]
+blocked_topics:
+  - name: investment_advice
+    applies_to: both
+    refusal: >-
+      I can explain how rewards programmes work, but I can't give investment advice.
+      For decisions about stocks, funds or crypto, please speak to a licensed financial adviser.
+    phrases:
+      - investment advice
+      - which stocks should i buy
+      - best stocks to buy
+      - should i invest
+    patterns:
+      - '\bshould\s+i\s+(?:buy|sell|invest\s+in|put\s+my\s+(?:money|savings)\s+in)\b.{0,40}\b(?:stocks?|shares|crypto|bitcoin|etfs?|index\s+funds?|bonds?)\b'
+      - '\b(?:you\s+should|i\s+recommend(?:\s+that\s+you)?)\s+(?:buy|sell|invest\s+in)\b.{0,40}\b(?:stocks?|shares|crypto|bitcoin|etfs?|funds?)\b'
