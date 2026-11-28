@@ -5,6 +5,28 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Added — Claims Onboarding, Spec 1 Phase 1: multi-tenant data model (ADR 0009)
+- `products/claims-onboarding` (package `claims_onboarding`), a new uv workspace member.
+- **Schema `claims`** (own Alembic env, migration 0001): clients, data_dictionaries
+  (versioned), files (status lifecycle), file_columns, mappings (suggested / approved /
+  rejected, confidence, model, approver), rule_definitions (versioned, built-in vs
+  analyst), rule_results, issue_letters, go_live_signoffs.
+- **Tenant isolation** in the service (TenantScope; other tenants' IDs are 404) and in
+  the database (composite `(tenant_id, …, id)` foreign keys; a mapping's column must
+  belong to its file, and a resubmission must follow a file of the same client).
+- **File status machine** with send-back (reason required) and guards:
+  - no undecided mappings before `rules_run`;
+  - zero failed blocker rules before `ready_for_signoff`, otherwise only `issues_sent`;
+  - `live` only via sign-off.
+- **Roles:** viewer read-only, analyst maps and reviews, manager (admin) signs off.
+  Four-eyes: whoever approved a file's mappings can't sign it off.
+- **Audit:** a `claims.*` audit row for every change, in the same transaction.
+- **FastAPI app** mounting auth, observability and guardrails, with minimal endpoints.
+- **Docs:** `products/claims-onboarding/docs/current-state.md` (the old app: reuse vs
+  replace), ADR 0009, the Spec 1 phase list in `docs/plan.md` and the product README.
+- **Issues:** rrvelmineti/ai-portfolio#15 (audit hash chaining, platform-backlog);
+  rrvelmineti/claims-onboarding-platform#14 (wrong "Deploy to Render" link).
+
 ### Added — Free deployment, host pending (ADR 0008)
 - **Image:** multi-stage `Dockerfile` (`python:3.12-slim` Debian 13 and uv, both pinned
   by digest; Debian security updates applied, no pip at runtime; non-root uid 10001,

@@ -35,12 +35,51 @@ common utilities, CI and infrastructure.
     — **In progress** (everything except the hosted deploy is built; the host choice is
     open because the Leapcell spike is paused)
 
-## Claims Onboarding
+## Claims Onboarding (Spec 1)
 
-AI-assisted claims intake: guided submission, structured field extraction from
-free text and documents, PII redaction. Synthetic claims data only.
+Takes each new health plan client's claims extract from first file to go-live: AI
+column mapping (headings only), privacy masking, versioned rules checked by code,
+issue letters and resubmissions, and a four-eyes go-live sign-off. Rebuilds
+[`claims-onboarding-platform`](https://github.com/rrvelmineti/claims-onboarding-platform)
+on the shared platform. Synthetic claims data only.
 
-- Status: **Not started**
+- Status: **In progress**
+- Phases:
+
+  1. **Multi-tenant data model** — **In progress** (this phase)
+     - Tables in schema `claims` (Alembic, `tenant_id` on everything, composite
+       `(tenant_id, id)` foreign keys): clients, data_dictionaries (versioned), files
+       (status lifecycle), file_columns, mappings (suggested / approved / rejected,
+       confidence, model, approver), rule_definitions (versioned, built-in vs
+       analyst-built), rule_results, issue_letters, go_live_signoffs.
+     - File status machine: received → masked → mapped → under_review → rules_run →
+       issues_sent | ready_for_signoff → live; send-back under_review → mapped with a
+       required reason; invalid transitions raise. ready_for_signoff only with zero
+       blocker rule results. A corrected file is a new file with `previous_file_id`.
+     - Roles: analyst maps and reviews; manager (admin) signs off; viewer read-only;
+       four-eyes: whoever approved a file's mappings can't sign off its go-live.
+     - Every state change writes to the audit log.
+     - FastAPI app mounting auth, observability and guardrails; minimal endpoints to
+       create a client, register a file, decide mappings, move status and sign off.
+     - ADR 0009; [current state of the old app](../products/claims-onboarding/docs/current-state.md).
+  2. **Synthetic data:** 10 client claims files with different headers and formats and
+     planted errors, each with an answer key — Not started
+  3. **Ingestion:** upload, SFTP drop and S3-compatible watch folder; duplicate and format
+     checks — Not started
+  4. **Privacy:** Presidio masking before any model call, `hipaa_safe_harbor` profile,
+     privacy report per file — Not started
+  5. **RAG mapping:** data dictionaries + approved mappings in pgvector; compare Gemini vs
+     Groq (free tiers only) on accuracy, cost and speed — Not started
+  6. **Rules:** built-in claims rule library (ported from the old engine and its 52-error
+     answer key) + no-code rule builder with AI-suggested rules — Not started
+  7. **Integrations:** issue letters, Slack webhook, HubSpot free CRM sync, an automation
+     flow via free n8n / GitHub Actions, and a chat assistant ("what's blocking client
+     X?") on our own gateway. Power Automate / Copilot Studio / Azure OpenAI only if a
+     free developer tenant is available; otherwise documented as the enterprise path
+     — Not started
+  8. **Recurring feeds:** reapply approved mappings and rules to the next file, flag only
+     changes — Not started
+  9. **Showcase:** metrics dashboard, implementation kit, demo video, case study — Not started
 
 ## Query Desk
 
