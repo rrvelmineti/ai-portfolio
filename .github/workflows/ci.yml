@@ -40,10 +40,10 @@ jobs:
       GUARD_MODEL_DIR: ${{ github.workspace }}/.models
       REQUIRE_GUARD_MODEL: "1"
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Set up uv
-        uses: astral-sh/setup-uv@v6
+        uses: astral-sh/setup-uv@v7
         with:
           enable-cache: true
 
@@ -61,7 +61,7 @@ jobs:
           echo "rev=$rev" >> "$GITHUB_OUTPUT"
 
       - name: Cache guard model
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: .models
           key: guard-model-${{ steps.guard-model.outputs.rev }}
@@ -95,14 +95,14 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       # Third-party actions are pinned to full commit SHAs (tags can be moved).
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@594f3bf4285d9ea8dc53c9a0c9c4092420091003 # v4.4.0
 
       - name: Build image
-        uses: docker/build-push-action@53b7df96c91f9c12dcc8a07bcb9ccacbed38856a # v7.3.0
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
         with:
           context: .
           load: true
@@ -131,7 +131,7 @@ jobs:
 
       # Fails on CRITICAL vulnerabilities that have a fix available.
       - name: Trivy scan
-        uses: aquasecurity/trivy-action@57a97c7e7821a5776cebc9bb87c984fa69cba8f1 # v0.35.0
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
         with:
           image-ref: ai-portfolio-demo:ci
           version: v0.76.1
@@ -150,10 +150,10 @@ jobs:
       run:
         working-directory: infra/terraform
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Set up Terraform
-        uses: hashicorp/setup-terraform@5e8dbf3c6d9deaf4193ca7a8fb23f2ac83bb6c85 # v4.0.0
+        uses: hashicorp/setup-terraform@dfe3c3f87815947d99a8997f908cb6525fc44e9e # v4.0.1
         with:
           terraform_version: 1.17.1
           terraform_wrapper: false
@@ -168,7 +168,7 @@ jobs:
           terraform validate
 
       - name: Set up TFLint
-        uses: terraform-linters/setup-tflint@1cf010d3c7aef302051ccdb68c14c5dc2efa34ef # v6.3.1
+        uses: terraform-linters/setup-tflint@6ffdbaa3be476b3431f7275c26966ef32ff60337 # v6.3.2
         with:
           tflint_version: v0.65.0
 
@@ -180,7 +180,7 @@ jobs:
           tflint --recursive --config "$PWD/.tflint.hcl" --format compact
 
       - name: Set up uv
-        uses: astral-sh/setup-uv@v6
+        uses: astral-sh/setup-uv@v7
 
       - name: checkov
         run: uvx --python 3.12 checkov==3.4.10 -d . --framework terraform --quiet --compact
