@@ -11,6 +11,7 @@ dependencies = [
     "ai-platform-gateway",
     "ai-platform-guardrails",
     "ai-platform-observability",
+    "claims-onboarding",
 ]
 
 [dependency-groups]
@@ -42,6 +43,7 @@ members = [
     "core/gateway",
     "core/guardrails",
     "core/observability",
+    "products/claims-onboarding",
 ]
 
 [tool.uv.sources]
@@ -51,6 +53,7 @@ ai-platform-auth = { workspace = true }
 ai-platform-observability = { workspace = true }
 ai-platform-guardrails = { workspace = true }
 ai-platform-demo = { workspace = true }
+claims-onboarding = { workspace = true }
 # spaCy model for Presidio: not on PyPI, pinned by URL (hash recorded in uv.lock)
 en-core-web-lg = { url = "https://github.com/explosion/spacy-models/releases/download/en_core_web_lg-3.8.0/en_core_web_lg-3.8.0-py3-none-any.whl" }
 
@@ -118,6 +121,7 @@ mypy_path = [
     "core/gateway/src",
     "core/guardrails/src",
     "core/observability/src",
+    "products/claims-onboarding/src",
 ]
 files = [
     "core/auth/demo_app.py",
@@ -133,6 +137,8 @@ files = [
     "core/guardrails/tests",
     "core/observability/src",
     "core/observability/tests",
+    "products/claims-onboarding/src",
+    "products/claims-onboarding/tests",
     "scripts",
 ]
 
