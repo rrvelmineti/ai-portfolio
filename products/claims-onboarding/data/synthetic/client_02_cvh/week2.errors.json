@@ -1,0 +1,202 @@
+{
+  "file": "week2.txt",
+  "as_of": "2026-11-08",
+  "errors": [
+    {
+      "row": 133,
+      "line": 134,
+      "field": "paid_amount",
+      "rule": "number",
+      "severity": "blocker"
+    },
+    {
+      "row": 151,
+      "line": 152,
+      "field": "diagnosis_code",
+      "rule": "ICD-10 format",
+      "severity": "blocker"
+    },
+    {
+      "row": 156,
+      "line": 157,
+      "field": "diagnosis_code",
+      "rule": "ICD-10 format",
+      "severity": "blocker"
+    },
+    {
+      "row": 166,
+      "line": 167,
+      "field": "paid_amount",
+      "rule": "number",
+      "severity": "blocker"
+    },
+    {
+      "row": 177,
+      "line": 178,
+      "field": "allowed_amount",
+      "rule": "not negative",
+      "severity": "blocker"
+    },
+    {
+      "row": 187,
+      "line": 188,
+      "field": "member_id",
+      "rule": "required",
+      "severity": "blocker"
+    },
+    {
+      "row": 198,
+      "line": 199,
+      "field": "allowed_amount",
+      "rule": "not negative",
+      "severity": "blocker"
+    },
+    {
+      "row": 205,
+      "line": 206,
+      "field": "allowed_amount",
+      "rule": "not negative",
+      "severity": "blocker"
+    },
+    {
+      "row": 211,
+      "line": 212,
+      "field": "allowed_amount",
+      "rule": "not negative",
+      "severity": "blocker"
+    },
+    {
+      "row": 219,
+      "line": 220,
+      "field": "service_date",
+      "rule": "not in the future",
+      "severity": "blocker"
+    },
+    {
+      "row": 234,
+      "line": 235,
+      "field": "service_date",
+      "rule": "not in the future",
+      "severity": "blocker"
+    },
+    {
+      "row": 236,
+      "line": 237,
+      "field": "paid_amount",
+      "rule": "number",
+      "severity": "blocker"
+    },
+    {
+      "row": 241,
+      "line": 242,
+      "field": "paid_amount",
+      "rule": "not negative",
+      "severity": "blocker"
+    },
+    {
+      "row": 253,
+      "line": 254,
+      "field": "allowed_amount",
+      "rule": "not negative",
+      "severity": "blocker"
+    },
+    {
+      "row": 257,
+      "line": 258,
+      "field": "diagnosis_code",
+      "rule": "ICD-10 format",
+      "severity": "blocker"
+    },
+    {
+      "row": 264,
+      "line": 265,
+      "field": "diagnosis_code",
+      "rule": "ICD-10 format",
+      "severity": "blocker"
+    },
+    {
+      "row": 295,
+      "line": 296,
+      "field": "billed_amount",
+      "rule": "number",
+      "severity": "blocker"
+    },
+    {
+      "row": 307,
+      "line": 308,
+      "field": "member_id",
+      "rule": "required",
+      "severity": "blocker"
+    },
+    {
+      "row": 338,
+      "line": 339,
+      "field": "allowed_amount",
+      "rule": "not negative",
+      "severity": "blocker"
+    },
+    {
+      "row": 348,
+      "line": 349,
+      "field": "service_date",
+      "rule": "not in the future",
+      "severity": "blocker"
+    },
+    {
+      "row": 353,
+      "line": 354,
+      "field": "service_date",
+      "rule": "not in the future",
+      "severity": "blocker"
+    },
+    {
+      "row": 355,
+      "line": 356,
+      "field": "allowed_amount",
+      "rule": "not negative",
+      "severity": "blocker"
+    },
+    {
+      "row": 374,
+      "line": 375,
+      "field": "billed_amount",
+      "rule": "number",
+      "severity": "blocker"
+    },
+    {
+      "row": 376,
+      "line": 377,
+      "field": "diagnosis_code",
+      "rule": "ICD-10 format",
+      "severity": "blocker"
+    },
+    {
+      "row": 378,
+      "line": 379,
+      "field": "billed_amount",
+      "rule": "number",
+      "severity": "blocker"
+    },
+    {
+      "row": 384,
+      "line": 385,
+      "field": "allowed_amount",
+      "rule": "not negative",
+      "severity": "blocker"
+    },
+    {
+      "row": 398,
+      "line": 399,
+      "field": "billed_amount",
+      "rule": "number",
+      "severity": "blocker"
+    },
+    {
+      "row": 407,
+      "line": 408,
+      "field": "service_date",
+      "rule": "not in the future",
+      "severity": "blocker"
+    }
+  ]
+}

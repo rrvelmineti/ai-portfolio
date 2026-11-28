@@ -1,0 +1,41 @@
+{
+  "file": "week1.tsv",
+  "as_of": "2026-11-01",
+  "errors": [
+    {
+      "row": 94,
+      "line": 95,
+      "field": "claim_status",
+      "rule": "one of paid / denied / pending / adjusted",
+      "severity": "blocker"
+    },
+    {
+      "row": 120,
+      "line": 121,
+      "field": "diagnosis_code",
+      "rule": "ICD-10 format",
+      "severity": "blocker"
+    },
+    {
+      "row": 269,
+      "line": 270,
+      "field": "paid_amount",
+      "rule": "not negative",
+      "severity": "blocker"
+    },
+    {
+      "row": 313,
+      "line": 314,
+      "field": "diagnosis_code",
+      "rule": "ICD-10 format",
+      "severity": "blocker"
+    },
+    {
+      "row": 332,
+      "line": 333,
+      "field": "member_dob",
+      "rule": "required",
+      "severity": "blocker"
+    }
+  ]
+}

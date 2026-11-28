@@ -1,0 +1,62 @@
+{
+  "file": "week1.csv",
+  "as_of": "2026-11-01",
+  "errors": [
+    {
+      "row": 167,
+      "line": 168,
+      "field": "paid_amount",
+      "rule": "not greater than billed_amount",
+      "severity": "blocker"
+    },
+    {
+      "row": 207,
+      "line": 208,
+      "field": "claim_status",
+      "rule": "one of paid / denied / pending / adjusted",
+      "severity": "blocker"
+    },
+    {
+      "row": 244,
+      "line": 245,
+      "field": "member_id",
+      "rule": "required",
+      "severity": "blocker"
+    },
+    {
+      "row": 256,
+      "line": 257,
+      "field": "claim_status",
+      "rule": "one of paid / denied / pending / adjusted",
+      "severity": "blocker"
+    },
+    {
+      "row": 268,
+      "line": 269,
+      "field": "paid_amount",
+      "rule": "not greater than billed_amount",
+      "severity": "blocker"
+    },
+    {
+      "row": 324,
+      "line": 325,
+      "field": "member_id",
+      "rule": "required",
+      "severity": "blocker"
+    },
+    {
+      "row": 334,
+      "line": 335,
+      "field": "procedure_code",
+      "rule": "exactly 5 characters",
+      "severity": "blocker"
+    },
+    {
+      "row": 378,
+      "line": 379,
+      "field": "procedure_code",
+      "rule": "exactly 5 characters",
+      "severity": "blocker"
+    }
+  ]
+}

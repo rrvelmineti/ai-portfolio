@@ -1,0 +1,65 @@
+{
+  "file": "week1.csv",
+  "columns": [
+    {
+      "header": "Número_Reclamo",
+      "target": "claim_id"
+    },
+    {
+      "header": "ID_Afiliado",
+      "target": "member_id"
+    },
+    {
+      "header": "Nombre_Afiliado",
+      "target": "unmapped"
+    },
+    {
+      "header": "Dirección",
+      "target": "unmapped"
+    },
+    {
+      "header": "Fecha_Nacimiento",
+      "target": "member_dob"
+    },
+    {
+      "header": "NPI_Proveedor",
+      "target": "provider_npi"
+    },
+    {
+      "header": "Fecha_Servicio",
+      "target": "service_date"
+    },
+    {
+      "header": "Fecha_Pago",
+      "target": "paid_date"
+    },
+    {
+      "header": "Código_Diagnóstico",
+      "target": "diagnosis_code"
+    },
+    {
+      "header": "Código_Procedimiento",
+      "target": "procedure_code"
+    },
+    {
+      "header": "Lugar_Servicio",
+      "target": "place_of_service"
+    },
+    {
+      "header": "Monto_Facturado",
+      "target": "billed_amount"
+    },
+    {
+      "header": "Monto_Permitido",
+      "target": "allowed_amount"
+    },
+    {
+      "header": "Monto_Pagado",
+      "target": "paid_amount"
+    },
+    {
+      "header": "Estado",
+      "target": "claim_status"
+    }
+  ]
+}

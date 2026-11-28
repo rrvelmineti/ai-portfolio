@@ -1,0 +1,90 @@
+{
+  "file": "week1.csv",
+  "as_of": "2026-11-01",
+  "errors": [
+    {
+      "row": 100,
+      "line": 103,
+      "field": "diagnosis_code",
+      "rule": "required",
+      "severity": "blocker"
+    },
+    {
+      "row": 124,
+      "line": 127,
+      "field": "service_date",
+      "rule": "date MM-DD-YYYY",
+      "severity": "blocker"
+    },
+    {
+      "row": 128,
+      "line": 131,
+      "field": "claim_status",
+      "rule": "one of paid / denied / pending / adjusted",
+      "severity": "blocker"
+    },
+    {
+      "row": 162,
+      "line": 165,
+      "field": "service_date",
+      "rule": "date MM-DD-YYYY",
+      "severity": "blocker"
+    },
+    {
+      "row": 186,
+      "line": 189,
+      "field": "paid_date",
+      "rule": "date MM-DD-YYYY",
+      "severity": "blocker"
+    },
+    {
+      "row": 221,
+      "line": 224,
+      "field": "paid_amount",
+      "rule": "number",
+      "severity": "blocker"
+    },
+    {
+      "row": 229,
+      "line": 232,
+      "field": "diagnosis_code",
+      "rule": "required",
+      "severity": "blocker"
+    },
+    {
+      "row": 238,
+      "line": 241,
+      "field": "claim_status",
+      "rule": "one of paid / denied / pending / adjusted",
+      "severity": "blocker"
+    },
+    {
+      "row": 247,
+      "line": 250,
+      "field": "service_date",
+      "rule": "date MM-DD-YYYY",
+      "severity": "blocker"
+    },
+    {
+      "row": 263,
+      "line": 266,
+      "field": "paid_amount",
+      "rule": "number",
+      "severity": "blocker"
+    },
+    {
+      "row": 273,
+      "line": 276,
+      "field": "paid_amount",
+      "rule": "number",
+      "severity": "blocker"
+    },
+    {
+      "row": 290,
+      "line": 293,
+      "field": "paid_date",
+      "rule": "date MM-DD-YYYY",
+      "severity": "blocker"
+    }
+  ]
+}

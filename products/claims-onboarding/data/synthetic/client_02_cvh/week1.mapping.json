@@ -1,0 +1,69 @@
+{
+  "file": "week1.txt",
+  "columns": [
+    {
+      "header": "CLM_NBR",
+      "target": "claim_id"
+    },
+    {
+      "header": "MBR_ID",
+      "target": "member_id"
+    },
+    {
+      "header": "MBR_NM",
+      "target": "unmapped"
+    },
+    {
+      "header": "MBR_DOB",
+      "target": "member_dob"
+    },
+    {
+      "header": "GRP_NBR",
+      "target": "unmapped"
+    },
+    {
+      "header": "BILL_NPI",
+      "target": "unmapped"
+    },
+    {
+      "header": "REND_NPI",
+      "target": "provider_npi"
+    },
+    {
+      "header": "SVC_DT",
+      "target": "service_date"
+    },
+    {
+      "header": "PD_DT",
+      "target": "paid_date"
+    },
+    {
+      "header": "DIAG_CD_1",
+      "target": "diagnosis_code"
+    },
+    {
+      "header": "PROC_CD",
+      "target": "procedure_code"
+    },
+    {
+      "header": "POS_CD",
+      "target": "place_of_service"
+    },
+    {
+      "header": "BILLED_AMT",
+      "target": "billed_amount"
+    },
+    {
+      "header": "ALLOW_AMT",
+      "target": "allowed_amount"
+    },
+    {
+      "header": "PAID_AMT",
+      "target": "paid_amount"
+    },
+    {
+      "header": "CLM_STAT",
+      "target": "claim_status"
+    }
+  ]
+}

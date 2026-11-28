@@ -4,7 +4,8 @@
     APP_DB_PASSWORD=... uv run python scripts/migrate_and_bootstrap.py
 
 Uses the OWNER role (only CI holds its credentials). Steps:
-1. run every component's migrations and create the demo tables;
+1. run every component's migrations (including the claims product) and create the demo
+   tables;
 2. create or update the app role ``ai_portfolio_app`` with ``APP_DB_PASSWORD`` and set its
    privileges exactly (SELECT/INSERT only on the audit log; see ai_platform_demo.roles).
 
@@ -18,6 +19,8 @@ import sys
 from ai_platform_common.config import get_env
 from ai_platform_common.logging import configure_logging
 from ai_platform_demo.roles import APP_ROLE, BootstrapError, bootstrap_app_role, migrate_all
+from claims_onboarding.db import CLAIMS_GRANTS
+from claims_onboarding.db import migrate as migrate_claims
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -33,7 +36,8 @@ def main(argv: list[str] | None = None) -> int:
     role = get_env("APP_DB_ROLE") or APP_ROLE
     try:
         migrate_all(owner_url)
-        bootstrap_app_role(owner_url, password, role=role)
+        migrate_claims(owner_url)
+        bootstrap_app_role(owner_url, password, role=role, extra_grants=CLAIMS_GRANTS)
     except BootstrapError as exc:
         print(f"bootstrap refused: {exc}", file=sys.stderr)
         return 1

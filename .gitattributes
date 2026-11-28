@@ -1,0 +1,6 @@
+# Synthetic claims extracts are byte-exact (SHA-256 in their manifest): no line-ending or
+# text conversion, ever. Their JSON keys and README stay normal text.
+products/claims-onboarding/data/synthetic/**/week*.csv -text
+products/claims-onboarding/data/synthetic/**/week*.tsv -text
+products/claims-onboarding/data/synthetic/**/week*.txt -text
+products/claims-onboarding/data/synthetic/**/week*.xlsx binary

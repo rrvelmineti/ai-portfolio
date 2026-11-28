@@ -1,0 +1,286 @@
+{
+  "file": "week1.xlsx",
+  "as_of": "2026-11-01",
+  "errors": [
+    {
+      "row": 306,
+      "line": 307,
+      "field": "claim_id",
+      "rule": "unique",
+      "severity": "blocker"
+    },
+    {
+      "row": 331,
+      "line": 332,
+      "field": "allowed_amount",
+      "rule": "not negative",
+      "severity": "blocker"
+    },
+    {
+      "row": 355,
+      "line": 356,
+      "field": "provider_npi",
+      "rule": "exactly 10 digits",
+      "severity": "blocker"
+    },
+    {
+      "row": 393,
+      "line": 394,
+      "field": "provider_npi",
+      "rule": "exactly 10 digits",
+      "severity": "blocker"
+    },
+    {
+      "row": 406,
+      "line": 407,
+      "field": "diagnosis_code",
+      "rule": "ICD-10 format",
+      "severity": "blocker"
+    },
+    {
+      "row": 437,
+      "line": 438,
+      "field": "claim_status",
+      "rule": "one of paid / denied / pending / adjusted",
+      "severity": "blocker"
+    },
+    {
+      "row": 448,
+      "line": 449,
+      "field": "provider_npi",
+      "rule": "exactly 10 digits",
+      "severity": "blocker"
+    },
+    {
+      "row": 480,
+      "line": 481,
+      "field": "claim_status",
+      "rule": "one of paid / denied / pending / adjusted",
+      "severity": "blocker"
+    },
+    {
+      "row": 493,
+      "line": 494,
+      "field": "claim_id",
+      "rule": "unique",
+      "severity": "blocker"
+    },
+    {
+      "row": 514,
+      "line": 515,
+      "field": "billed_amount",
+      "rule": "required",
+      "severity": "blocker"
+    },
+    {
+      "row": 530,
+      "line": 531,
+      "field": "claim_status",
+      "rule": "one of paid / denied / pending / adjusted",
+      "severity": "blocker"
+    },
+    {
+      "row": 548,
+      "line": 549,
+      "field": "claim_status",
+      "rule": "one of paid / denied / pending / adjusted",
+      "severity": "blocker"
+    },
+    {
+      "row": 620,
+      "line": 621,
+      "field": "claim_id",
+      "rule": "unique",
+      "severity": "blocker"
+    },
+    {
+      "row": 621,
+      "line": 622,
+      "field": "claim_status",
+      "rule": "one of paid / denied / pending / adjusted",
+      "severity": "blocker"
+    },
+    {
+      "row": 643,
+      "line": 644,
+      "field": "paid_amount",
+      "rule": "not negative",
+      "severity": "blocker"
+    },
+    {
+      "row": 652,
+      "line": 653,
+      "field": "service_date",
+      "rule": "not before member_dob",
+      "severity": "blocker"
+    },
+    {
+      "row": 708,
+      "line": 709,
+      "field": "diagnosis_code",
+      "rule": "ICD-10 format",
+      "severity": "blocker"
+    },
+    {
+      "row": 769,
+      "line": 770,
+      "field": "allowed_amount",
+      "rule": "not negative",
+      "severity": "blocker"
+    },
+    {
+      "row": 771,
+      "line": 772,
+      "field": "paid_amount",
+      "rule": "not negative",
+      "severity": "blocker"
+    },
+    {
+      "row": 783,
+      "line": 784,
+      "field": "provider_npi",
+      "rule": "exactly 10 digits",
+      "severity": "blocker"
+    },
+    {
+      "row": 788,
+      "line": 789,
+      "field": "claim_id",
+      "rule": "unique",
+      "severity": "blocker"
+    },
+    {
+      "row": 802,
+      "line": 803,
+      "field": "service_date",
+      "rule": "not before member_dob",
+      "severity": "blocker"
+    },
+    {
+      "row": 805,
+      "line": 806,
+      "field": "service_date",
+      "rule": "not before member_dob",
+      "severity": "blocker"
+    },
+    {
+      "row": 812,
+      "line": 813,
+      "field": "provider_npi",
+      "rule": "exactly 10 digits",
+      "severity": "blocker"
+    },
+    {
+      "row": 827,
+      "line": 828,
+      "field": "billed_amount",
+      "rule": "required",
+      "severity": "blocker"
+    },
+    {
+      "row": 830,
+      "line": 831,
+      "field": "diagnosis_code",
+      "rule": "ICD-10 format",
+      "severity": "blocker"
+    },
+    {
+      "row": 887,
+      "line": 888,
+      "field": "diagnosis_code",
+      "rule": "ICD-10 format",
+      "severity": "blocker"
+    },
+    {
+      "row": 892,
+      "line": 893,
+      "field": "diagnosis_code",
+      "rule": "ICD-10 format",
+      "severity": "blocker"
+    },
+    {
+      "row": 904,
+      "line": 905,
+      "field": "paid_amount",
+      "rule": "not negative",
+      "severity": "blocker"
+    },
+    {
+      "row": 905,
+      "line": 906,
+      "field": "paid_amount",
+      "rule": "not negative",
+      "severity": "blocker"
+    },
+    {
+      "row": 935,
+      "line": 936,
+      "field": "member_dob",
+      "rule": "required",
+      "severity": "blocker"
+    },
+    {
+      "row": 967,
+      "line": 968,
+      "field": "diagnosis_code",
+      "rule": "ICD-10 format",
+      "severity": "blocker"
+    },
+    {
+      "row": 1015,
+      "line": 1016,
+      "field": "billed_amount",
+      "rule": "required",
+      "severity": "blocker"
+    },
+    {
+      "row": 1016,
+      "line": 1017,
+      "field": "member_dob",
+      "rule": "required",
+      "severity": "blocker"
+    },
+    {
+      "row": 1039,
+      "line": 1040,
+      "field": "provider_npi",
+      "rule": "exactly 10 digits",
+      "severity": "blocker"
+    },
+    {
+      "row": 1102,
+      "line": 1103,
+      "field": "allowed_amount",
+      "rule": "not negative",
+      "severity": "blocker"
+    },
+    {
+      "row": 1130,
+      "line": 1131,
+      "field": "member_dob",
+      "rule": "required",
+      "severity": "blocker"
+    },
+    {
+      "row": 1138,
+      "line": 1139,
+      "field": "provider_npi",
+      "rule": "exactly 10 digits",
+      "severity": "blocker"
+    },
+    {
+      "row": 1184,
+      "line": 1185,
+      "field": "member_dob",
+      "rule": "required",
+      "severity": "blocker"
+    },
+    {
+      "row": 1188,
+      "line": 1189,
+      "field": "claim_id",
+      "rule": "unique",
+      "severity": "blocker"
+    }
+  ]
+}

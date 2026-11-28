@@ -1,0 +1,216 @@
+{
+  "file": "week1.csv",
+  "as_of": "2026-11-01",
+  "errors": [
+    {
+      "row": 180,
+      "line": 181,
+      "field": "member_dob",
+      "rule": "date DD-MM-YYYY",
+      "severity": "blocker"
+    },
+    {
+      "row": 241,
+      "line": 242,
+      "field": "claim_id",
+      "rule": "required",
+      "severity": "blocker"
+    },
+    {
+      "row": 252,
+      "line": 253,
+      "field": "service_date",
+      "rule": "not in the future",
+      "severity": "blocker"
+    },
+    {
+      "row": 257,
+      "line": 258,
+      "field": "paid_date",
+      "rule": "not before service_date",
+      "severity": "blocker"
+    },
+    {
+      "row": 259,
+      "line": 260,
+      "field": "diagnosis_code",
+      "rule": "ICD-10 format",
+      "severity": "blocker"
+    },
+    {
+      "row": 278,
+      "line": 279,
+      "field": "claim_id",
+      "rule": "required",
+      "severity": "blocker"
+    },
+    {
+      "row": 281,
+      "line": 282,
+      "field": "diagnosis_code",
+      "rule": "ICD-10 format",
+      "severity": "blocker"
+    },
+    {
+      "row": 282,
+      "line": 283,
+      "field": "place_of_service",
+      "rule": "exactly 2 digits",
+      "severity": "warning"
+    },
+    {
+      "row": 300,
+      "line": 301,
+      "field": "paid_date",
+      "rule": "not before service_date",
+      "severity": "blocker"
+    },
+    {
+      "row": 364,
+      "line": 365,
+      "field": "member_dob",
+      "rule": "date DD-MM-YYYY",
+      "severity": "blocker"
+    },
+    {
+      "row": 365,
+      "line": 366,
+      "field": "claim_id",
+      "rule": "unique",
+      "severity": "blocker"
+    },
+    {
+      "row": 384,
+      "line": 385,
+      "field": "diagnosis_code",
+      "rule": "ICD-10 format",
+      "severity": "blocker"
+    },
+    {
+      "row": 386,
+      "line": 387,
+      "field": "billed_amount",
+      "rule": "number",
+      "severity": "blocker"
+    },
+    {
+      "row": 398,
+      "line": 399,
+      "field": "diagnosis_code",
+      "rule": "ICD-10 format",
+      "severity": "blocker"
+    },
+    {
+      "row": 407,
+      "line": 408,
+      "field": "billed_amount",
+      "rule": "number",
+      "severity": "blocker"
+    },
+    {
+      "row": 410,
+      "line": 411,
+      "field": "billed_amount",
+      "rule": "number",
+      "severity": "blocker"
+    },
+    {
+      "row": 447,
+      "line": 448,
+      "field": "paid_date",
+      "rule": "not before service_date",
+      "severity": "blocker"
+    },
+    {
+      "row": 471,
+      "line": 472,
+      "field": "member_dob",
+      "rule": "date DD-MM-YYYY",
+      "severity": "blocker"
+    },
+    {
+      "row": 482,
+      "line": 483,
+      "field": "claim_id",
+      "rule": "unique",
+      "severity": "blocker"
+    },
+    {
+      "row": 491,
+      "line": 492,
+      "field": "billed_amount",
+      "rule": "number",
+      "severity": "blocker"
+    },
+    {
+      "row": 538,
+      "line": 539,
+      "field": "claim_id",
+      "rule": "required",
+      "severity": "blocker"
+    },
+    {
+      "row": 555,
+      "line": 556,
+      "field": "place_of_service",
+      "rule": "exactly 2 digits",
+      "severity": "warning"
+    },
+    {
+      "row": 559,
+      "line": 560,
+      "field": "service_date",
+      "rule": "not in the future",
+      "severity": "blocker"
+    },
+    {
+      "row": 567,
+      "line": 568,
+      "field": "place_of_service",
+      "rule": "exactly 2 digits",
+      "severity": "warning"
+    },
+    {
+      "row": 568,
+      "line": 569,
+      "field": "place_of_service",
+      "rule": "exactly 2 digits",
+      "severity": "warning"
+    },
+    {
+      "row": 597,
+      "line": 598,
+      "field": "member_dob",
+      "rule": "date DD-MM-YYYY",
+      "severity": "blocker"
+    },
+    {
+      "row": 600,
+      "line": 601,
+      "field": "claim_id",
+      "rule": "unique",
+      "severity": "blocker"
+    },
+    {
+      "row": 602,
+      "line": 603,
+      "field": "claim_id",
+      "rule": "unique",
+      "severity": "blocker"
+    },
+    {
+      "row": 620,
+      "line": 621,
+      "field": "paid_date",
+      "rule": "not before service_date",
+      "severity": "blocker"
+    },
+    {
+      "row": 647,
+      "line": 648,
+      "field": "service_date",
+      "rule": "not in the future",
+      "severity": "blocker"
+    }
+  ]
+}

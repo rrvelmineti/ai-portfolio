@@ -1,0 +1,279 @@
+{
+  "file": "week2.csv",
+  "as_of": "2026-11-08",
+  "errors": [
+    {
+      "row": 259,
+      "line": 260,
+      "field": "billed_amount",
+      "rule": "number",
+      "severity": "blocker"
+    },
+    {
+      "row": 281,
+      "line": 282,
+      "field": "paid_date",
+      "rule": "not before service_date",
+      "severity": "blocker"
+    },
+    {
+      "row": 286,
+      "line": 287,
+      "field": "paid_amount",
+      "rule": "not greater than billed_amount",
+      "severity": "blocker"
+    },
+    {
+      "row": 300,
+      "line": 301,
+      "field": "paid_amount",
+      "rule": "not negative",
+      "severity": "blocker"
+    },
+    {
+      "row": 344,
+      "line": 345,
+      "field": "paid_amount",
+      "rule": "not greater than billed_amount",
+      "severity": "blocker"
+    },
+    {
+      "row": 352,
+      "line": 353,
+      "field": "paid_date",
+      "rule": "not before service_date",
+      "severity": "blocker"
+    },
+    {
+      "row": 353,
+      "line": 354,
+      "field": "billed_amount",
+      "rule": "number",
+      "severity": "blocker"
+    },
+    {
+      "row": 355,
+      "line": 356,
+      "field": "billed_amount",
+      "rule": "required",
+      "severity": "blocker"
+    },
+    {
+      "row": 365,
+      "line": 366,
+      "field": "allowed_amount",
+      "rule": "not greater than billed_amount",
+      "severity": "warning"
+    },
+    {
+      "row": 395,
+      "line": 396,
+      "field": "paid_amount",
+      "rule": "not negative",
+      "severity": "blocker"
+    },
+    {
+      "row": 408,
+      "line": 409,
+      "field": "paid_amount",
+      "rule": "not greater than billed_amount",
+      "severity": "blocker"
+    },
+    {
+      "row": 414,
+      "line": 415,
+      "field": "billed_amount",
+      "rule": "number",
+      "severity": "blocker"
+    },
+    {
+      "row": 416,
+      "line": 417,
+      "field": "paid_amount",
+      "rule": "not greater than billed_amount",
+      "severity": "blocker"
+    },
+    {
+      "row": 421,
+      "line": 422,
+      "field": "paid_date",
+      "rule": "not before service_date",
+      "severity": "blocker"
+    },
+    {
+      "row": 427,
+      "line": 428,
+      "field": "paid_amount",
+      "rule": "not negative",
+      "severity": "blocker"
+    },
+    {
+      "row": 430,
+      "line": 431,
+      "field": "billed_amount",
+      "rule": "number",
+      "severity": "blocker"
+    },
+    {
+      "row": 464,
+      "line": 465,
+      "field": "billed_amount",
+      "rule": "number",
+      "severity": "blocker"
+    },
+    {
+      "row": 473,
+      "line": 474,
+      "field": "paid_amount",
+      "rule": "not negative",
+      "severity": "blocker"
+    },
+    {
+      "row": 483,
+      "line": 484,
+      "field": "paid_amount",
+      "rule": "not negative",
+      "severity": "blocker"
+    },
+    {
+      "row": 536,
+      "line": 537,
+      "field": "paid_amount",
+      "rule": "number",
+      "severity": "blocker"
+    },
+    {
+      "row": 580,
+      "line": 581,
+      "field": "paid_amount",
+      "rule": "not negative",
+      "severity": "blocker"
+    },
+    {
+      "row": 645,
+      "line": 646,
+      "field": "paid_amount",
+      "rule": "not greater than billed_amount",
+      "severity": "blocker"
+    },
+    {
+      "row": 679,
+      "line": 680,
+      "field": "paid_amount",
+      "rule": "number",
+      "severity": "blocker"
+    },
+    {
+      "row": 709,
+      "line": 710,
+      "field": "billed_amount",
+      "rule": "number",
+      "severity": "blocker"
+    },
+    {
+      "row": 739,
+      "line": 740,
+      "field": "paid_amount",
+      "rule": "not greater than billed_amount",
+      "severity": "blocker"
+    },
+    {
+      "row": 761,
+      "line": 762,
+      "field": "allowed_amount",
+      "rule": "not greater than billed_amount",
+      "severity": "warning"
+    },
+    {
+      "row": 795,
+      "line": 796,
+      "field": "paid_amount",
+      "rule": "not negative",
+      "severity": "blocker"
+    },
+    {
+      "row": 816,
+      "line": 817,
+      "field": "paid_amount",
+      "rule": "not greater than billed_amount",
+      "severity": "blocker"
+    },
+    {
+      "row": 834,
+      "line": 835,
+      "field": "billed_amount",
+      "rule": "required",
+      "severity": "blocker"
+    },
+    {
+      "row": 875,
+      "line": 876,
+      "field": "paid_amount",
+      "rule": "not greater than billed_amount",
+      "severity": "blocker"
+    },
+    {
+      "row": 883,
+      "line": 884,
+      "field": "paid_date",
+      "rule": "not before service_date",
+      "severity": "blocker"
+    },
+    {
+      "row": 895,
+      "line": 896,
+      "field": "billed_amount",
+      "rule": "number",
+      "severity": "blocker"
+    },
+    {
+      "row": 903,
+      "line": 904,
+      "field": "billed_amount",
+      "rule": "number",
+      "severity": "blocker"
+    },
+    {
+      "row": 909,
+      "line": 910,
+      "field": "paid_amount",
+      "rule": "number",
+      "severity": "blocker"
+    },
+    {
+      "row": 917,
+      "line": 918,
+      "field": "allowed_amount",
+      "rule": "not greater than billed_amount",
+      "severity": "warning"
+    },
+    {
+      "row": 957,
+      "line": 958,
+      "field": "allowed_amount",
+      "rule": "not greater than billed_amount",
+      "severity": "warning"
+    },
+    {
+      "row": 966,
+      "line": 967,
+      "field": "billed_amount",
+      "rule": "required",
+      "severity": "blocker"
+    },
+    {
+      "row": 979,
+      "line": 980,
+      "field": "billed_amount",
+      "rule": "required",
+      "severity": "blocker"
+    },
+    {
+      "row": 984,
+      "line": 985,
+      "field": "paid_date",
+      "rule": "not before service_date",
+      "severity": "blocker"
+    }
+  ]
+}

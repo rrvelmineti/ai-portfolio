@@ -1,0 +1,272 @@
+{
+  "file": "week2.tsv",
+  "as_of": "2026-11-08",
+  "errors": [
+    {
+      "row": 79,
+      "line": 80,
+      "field": "paid_date",
+      "rule": "date DD/MM/YYYY",
+      "severity": "blocker"
+    },
+    {
+      "row": 88,
+      "line": 89,
+      "field": "claim_id",
+      "rule": "unique",
+      "severity": "blocker"
+    },
+    {
+      "row": 90,
+      "line": 91,
+      "field": "diagnosis_code",
+      "rule": "ICD-10 format",
+      "severity": "blocker"
+    },
+    {
+      "row": 92,
+      "line": 93,
+      "field": "billed_amount",
+      "rule": "number",
+      "severity": "blocker"
+    },
+    {
+      "row": 100,
+      "line": 101,
+      "field": "paid_amount",
+      "rule": "not negative",
+      "severity": "blocker"
+    },
+    {
+      "row": 102,
+      "line": 103,
+      "field": "claim_id",
+      "rule": "unique",
+      "severity": "blocker"
+    },
+    {
+      "row": 106,
+      "line": 107,
+      "field": "member_dob",
+      "rule": "date DD/MM/YYYY",
+      "severity": "blocker"
+    },
+    {
+      "row": 107,
+      "line": 108,
+      "field": "member_dob",
+      "rule": "required",
+      "severity": "blocker"
+    },
+    {
+      "row": 121,
+      "line": 122,
+      "field": "billed_amount",
+      "rule": "number",
+      "severity": "blocker"
+    },
+    {
+      "row": 136,
+      "line": 137,
+      "field": "member_dob",
+      "rule": "required",
+      "severity": "blocker"
+    },
+    {
+      "row": 139,
+      "line": 140,
+      "field": "member_dob",
+      "rule": "date DD/MM/YYYY",
+      "severity": "blocker"
+    },
+    {
+      "row": 144,
+      "line": 145,
+      "field": "diagnosis_code",
+      "rule": "ICD-10 format",
+      "severity": "blocker"
+    },
+    {
+      "row": 145,
+      "line": 146,
+      "field": "paid_date",
+      "rule": "date DD/MM/YYYY",
+      "severity": "blocker"
+    },
+    {
+      "row": 155,
+      "line": 156,
+      "field": "diagnosis_code",
+      "rule": "ICD-10 format",
+      "severity": "blocker"
+    },
+    {
+      "row": 158,
+      "line": 159,
+      "field": "diagnosis_code",
+      "rule": "ICD-10 format",
+      "severity": "blocker"
+    },
+    {
+      "row": 175,
+      "line": 176,
+      "field": "member_dob",
+      "rule": "required",
+      "severity": "blocker"
+    },
+    {
+      "row": 177,
+      "line": 178,
+      "field": "member_dob",
+      "rule": "date DD/MM/YYYY",
+      "severity": "blocker"
+    },
+    {
+      "row": 178,
+      "line": 179,
+      "field": "claim_id",
+      "rule": "unique",
+      "severity": "blocker"
+    },
+    {
+      "row": 180,
+      "line": 181,
+      "field": "member_dob",
+      "rule": "required",
+      "severity": "blocker"
+    },
+    {
+      "row": 188,
+      "line": 189,
+      "field": "claim_id",
+      "rule": "unique",
+      "severity": "blocker"
+    },
+    {
+      "row": 197,
+      "line": 198,
+      "field": "billed_amount",
+      "rule": "number",
+      "severity": "blocker"
+    },
+    {
+      "row": 204,
+      "line": 205,
+      "field": "member_dob",
+      "rule": "required",
+      "severity": "blocker"
+    },
+    {
+      "row": 231,
+      "line": 232,
+      "field": "member_dob",
+      "rule": "date DD/MM/YYYY",
+      "severity": "blocker"
+    },
+    {
+      "row": 234,
+      "line": 235,
+      "field": "member_dob",
+      "rule": "date DD/MM/YYYY",
+      "severity": "blocker"
+    },
+    {
+      "row": 237,
+      "line": 238,
+      "field": "member_dob",
+      "rule": "date DD/MM/YYYY",
+      "severity": "blocker"
+    },
+    {
+      "row": 265,
+      "line": 266,
+      "field": "member_dob",
+      "rule": "date DD/MM/YYYY",
+      "severity": "blocker"
+    },
+    {
+      "row": 267,
+      "line": 268,
+      "field": "member_dob",
+      "rule": "date DD/MM/YYYY",
+      "severity": "blocker"
+    },
+    {
+      "row": 269,
+      "line": 270,
+      "field": "paid_date",
+      "rule": "date DD/MM/YYYY",
+      "severity": "blocker"
+    },
+    {
+      "row": 273,
+      "line": 274,
+      "field": "claim_id",
+      "rule": "unique",
+      "severity": "blocker"
+    },
+    {
+      "row": 275,
+      "line": 276,
+      "field": "claim_id",
+      "rule": "unique",
+      "severity": "blocker"
+    },
+    {
+      "row": 279,
+      "line": 280,
+      "field": "claim_id",
+      "rule": "unique",
+      "severity": "blocker"
+    },
+    {
+      "row": 284,
+      "line": 285,
+      "field": "member_dob",
+      "rule": "required",
+      "severity": "blocker"
+    },
+    {
+      "row": 285,
+      "line": 286,
+      "field": "paid_date",
+      "rule": "date DD/MM/YYYY",
+      "severity": "blocker"
+    },
+    {
+      "row": 286,
+      "line": 287,
+      "field": "diagnosis_code",
+      "rule": "ICD-10 format",
+      "severity": "blocker"
+    },
+    {
+      "row": 293,
+      "line": 294,
+      "field": "billed_amount",
+      "rule": "number",
+      "severity": "blocker"
+    },
+    {
+      "row": 295,
+      "line": 296,
+      "field": "member_dob",
+      "rule": "required",
+      "severity": "blocker"
+    },
+    {
+      "row": 299,
+      "line": 300,
+      "field": "diagnosis_code",
+      "rule": "ICD-10 format",
+      "severity": "blocker"
+    },
+    {
+      "row": 300,
+      "line": 301,
+      "field": "member_dob",
+      "rule": "required",
+      "severity": "blocker"
+    }
+  ]
+}

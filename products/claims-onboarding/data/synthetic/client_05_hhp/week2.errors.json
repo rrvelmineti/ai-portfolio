@@ -1,0 +1,160 @@
+{
+  "file": "week2.csv",
+  "as_of": "2026-11-08",
+  "errors": [
+    {
+      "row": 69,
+      "line": 72,
+      "field": "claim_status",
+      "rule": "one of paid / denied / pending / adjusted",
+      "severity": "blocker"
+    },
+    {
+      "row": 70,
+      "line": 73,
+      "field": "service_date",
+      "rule": "not before member_dob",
+      "severity": "blocker"
+    },
+    {
+      "row": 74,
+      "line": 77,
+      "field": "service_date",
+      "rule": "not before member_dob",
+      "severity": "blocker"
+    },
+    {
+      "row": 76,
+      "line": 79,
+      "field": "paid_amount",
+      "rule": "not negative",
+      "severity": "blocker"
+    },
+    {
+      "row": 81,
+      "line": 84,
+      "field": "claim_status",
+      "rule": "one of paid / denied / pending / adjusted",
+      "severity": "blocker"
+    },
+    {
+      "row": 88,
+      "line": 91,
+      "field": "paid_amount",
+      "rule": "not negative",
+      "severity": "blocker"
+    },
+    {
+      "row": 103,
+      "line": 106,
+      "field": "claim_status",
+      "rule": "one of paid / denied / pending / adjusted",
+      "severity": "blocker"
+    },
+    {
+      "row": 113,
+      "line": 116,
+      "field": "claim_status",
+      "rule": "one of paid / denied / pending / adjusted",
+      "severity": "blocker"
+    },
+    {
+      "row": 118,
+      "line": 121,
+      "field": "billed_amount",
+      "rule": "required",
+      "severity": "blocker"
+    },
+    {
+      "row": 123,
+      "line": 126,
+      "field": "claim_status",
+      "rule": "one of paid / denied / pending / adjusted",
+      "severity": "blocker"
+    },
+    {
+      "row": 133,
+      "line": 136,
+      "field": "service_date",
+      "rule": "not before member_dob",
+      "severity": "blocker"
+    },
+    {
+      "row": 139,
+      "line": 142,
+      "field": "claim_status",
+      "rule": "one of paid / denied / pending / adjusted",
+      "severity": "blocker"
+    },
+    {
+      "row": 140,
+      "line": 143,
+      "field": "paid_amount",
+      "rule": "not negative",
+      "severity": "blocker"
+    },
+    {
+      "row": 152,
+      "line": 155,
+      "field": "service_date",
+      "rule": "not before member_dob",
+      "severity": "blocker"
+    },
+    {
+      "row": 160,
+      "line": 163,
+      "field": "paid_amount",
+      "rule": "not negative",
+      "severity": "blocker"
+    },
+    {
+      "row": 164,
+      "line": 167,
+      "field": "service_date",
+      "rule": "not before member_dob",
+      "severity": "blocker"
+    },
+    {
+      "row": 173,
+      "line": 176,
+      "field": "paid_amount",
+      "rule": "not negative",
+      "severity": "blocker"
+    },
+    {
+      "row": 189,
+      "line": 192,
+      "field": "claim_status",
+      "rule": "one of paid / denied / pending / adjusted",
+      "severity": "blocker"
+    },
+    {
+      "row": 190,
+      "line": 193,
+      "field": "paid_amount",
+      "rule": "not negative",
+      "severity": "blocker"
+    },
+    {
+      "row": 205,
+      "line": 208,
+      "field": "service_date",
+      "rule": "not before member_dob",
+      "severity": "blocker"
+    },
+    {
+      "row": 207,
+      "line": 210,
+      "field": "claim_status",
+      "rule": "one of paid / denied / pending / adjusted",
+      "severity": "blocker"
+    },
+    {
+      "row": 217,
+      "line": 220,
+      "field": "paid_amount",
+      "rule": "not negative",
+      "severity": "blocker"
+    }
+  ]
+}

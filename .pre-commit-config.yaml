@@ -3,8 +3,11 @@ repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v5.0.0
     hooks:
+      # Synthetic claims extracts are byte-exact (hashes in their manifest): never rewrite.
       - id: trailing-whitespace
+        exclude: ^products/claims-onboarding/data/synthetic/
       - id: end-of-file-fixer
+        exclude: ^products/claims-onboarding/data/synthetic/
       - id: check-yaml
       - id: check-toml
       - id: check-added-large-files

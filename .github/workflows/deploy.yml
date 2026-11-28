@@ -64,6 +64,7 @@ jobs:
         run: |
           uv run --no-dev python scripts/migrate_and_bootstrap.py
           uv run --no-dev python scripts/seed_demo.py --reset-passwords
+          uv run --no-dev python -m claims_onboarding.synthetic seed
 
       - name: Move the deploy branch to this commit
         id: move

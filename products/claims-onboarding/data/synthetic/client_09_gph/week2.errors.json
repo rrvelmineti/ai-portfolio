@@ -1,0 +1,181 @@
+{
+  "file": "week2.txt",
+  "as_of": "2026-11-08",
+  "errors": [
+    {
+      "row": 107,
+      "line": 108,
+      "field": "place_of_service",
+      "rule": "exactly 2 digits",
+      "severity": "warning"
+    },
+    {
+      "row": 117,
+      "line": 118,
+      "field": "allowed_amount",
+      "rule": "not greater than billed_amount",
+      "severity": "warning"
+    },
+    {
+      "row": 123,
+      "line": 124,
+      "field": "place_of_service",
+      "rule": "exactly 2 digits",
+      "severity": "warning"
+    },
+    {
+      "row": 155,
+      "line": 156,
+      "field": "service_date",
+      "rule": "date YYYY-MM-DD",
+      "severity": "blocker"
+    },
+    {
+      "row": 158,
+      "line": 159,
+      "field": "place_of_service",
+      "rule": "exactly 2 digits",
+      "severity": "warning"
+    },
+    {
+      "row": 180,
+      "line": 181,
+      "field": "service_date",
+      "rule": "date YYYY-MM-DD",
+      "severity": "blocker"
+    },
+    {
+      "row": 184,
+      "line": 185,
+      "field": "place_of_service",
+      "rule": "exactly 2 digits",
+      "severity": "warning"
+    },
+    {
+      "row": 192,
+      "line": 193,
+      "field": "allowed_amount",
+      "rule": "not greater than billed_amount",
+      "severity": "warning"
+    },
+    {
+      "row": 213,
+      "line": 214,
+      "field": "place_of_service",
+      "rule": "exactly 2 digits",
+      "severity": "warning"
+    },
+    {
+      "row": 220,
+      "line": 221,
+      "field": "claim_id",
+      "rule": "required",
+      "severity": "blocker"
+    },
+    {
+      "row": 268,
+      "line": 269,
+      "field": "allowed_amount",
+      "rule": "not greater than billed_amount",
+      "severity": "warning"
+    },
+    {
+      "row": 269,
+      "line": 270,
+      "field": "claim_id",
+      "rule": "required",
+      "severity": "blocker"
+    },
+    {
+      "row": 300,
+      "line": 301,
+      "field": "allowed_amount",
+      "rule": "not greater than billed_amount",
+      "severity": "warning"
+    },
+    {
+      "row": 305,
+      "line": 306,
+      "field": "claim_id",
+      "rule": "required",
+      "severity": "blocker"
+    },
+    {
+      "row": 317,
+      "line": 318,
+      "field": "service_date",
+      "rule": "date YYYY-MM-DD",
+      "severity": "blocker"
+    },
+    {
+      "row": 325,
+      "line": 326,
+      "field": "claim_id",
+      "rule": "required",
+      "severity": "blocker"
+    },
+    {
+      "row": 339,
+      "line": 340,
+      "field": "claim_id",
+      "rule": "required",
+      "severity": "blocker"
+    },
+    {
+      "row": 349,
+      "line": 350,
+      "field": "place_of_service",
+      "rule": "exactly 2 digits",
+      "severity": "warning"
+    },
+    {
+      "row": 350,
+      "line": 351,
+      "field": "allowed_amount",
+      "rule": "not greater than billed_amount",
+      "severity": "warning"
+    },
+    {
+      "row": 373,
+      "line": 374,
+      "field": "place_of_service",
+      "rule": "exactly 2 digits",
+      "severity": "warning"
+    },
+    {
+      "row": 383,
+      "line": 384,
+      "field": "allowed_amount",
+      "rule": "not greater than billed_amount",
+      "severity": "warning"
+    },
+    {
+      "row": 387,
+      "line": 388,
+      "field": "claim_id",
+      "rule": "required",
+      "severity": "blocker"
+    },
+    {
+      "row": 388,
+      "line": 389,
+      "field": "service_date",
+      "rule": "date YYYY-MM-DD",
+      "severity": "blocker"
+    },
+    {
+      "row": 401,
+      "line": 402,
+      "field": "service_date",
+      "rule": "date YYYY-MM-DD",
+      "severity": "blocker"
+    },
+    {
+      "row": 412,
+      "line": 413,
+      "field": "place_of_service",
+      "rule": "exactly 2 digits",
+      "severity": "warning"
+    }
+  ]
+}

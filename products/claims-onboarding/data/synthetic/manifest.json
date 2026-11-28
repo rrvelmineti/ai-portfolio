@@ -1,0 +1,698 @@
+{
+  "note": "Synthetic claims extracts for 10 fictional health plans. Every value is invented; procedure codes are synthetic (Z + 4 digits). See README.md.",
+  "generator": {
+    "module": "claims_onboarding.synthetic.generate",
+    "seed_base": 2026,
+    "faker": "40.63.0",
+    "openpyxl": "3.1.5"
+  },
+  "dictionary": "../dictionary/claims_v1.json",
+  "files": [
+    {
+      "client": 1,
+      "code": "NWH",
+      "name": "Northwind Health Plan",
+      "week": 1,
+      "path": "client_01_nwh/week1.csv",
+      "sha256": "5e5934cb8fee0653910dda07a923e074cbf964c7fabaa6b979ed647c3dec5700",
+      "bytes": 251814,
+      "format": {
+        "kind": "csv",
+        "delimiter": ",",
+        "encoding": "utf-8",
+        "bom": false,
+        "preamble": [],
+        "footer_total": false,
+        "extension": ".csv",
+        "header_line": 1,
+        "footer_lines": 0
+      },
+      "date_format": "YYYY-MM-DD",
+      "amount_style": "plain",
+      "as_of": "2026-11-15",
+      "rows": 2000,
+      "planted_errors": 56,
+      "mapping_key": {
+        "path": "client_01_nwh/week1.mapping.json",
+        "sha256": "bd8ecfdf5658bd3123fe77b0f880a884f6684ef0e150570b4de56d80b1974dba"
+      },
+      "error_key": {
+        "path": "client_01_nwh/week1.errors.json",
+        "sha256": "ec48a195a0bbd5b52c8bff319885f0f5b6b34a8e6b595cb68a856824c2275bfc"
+      },
+      "legacy": true
+    },
+    {
+      "client": 1,
+      "code": "NWH",
+      "name": "Northwind Health Plan",
+      "week": 2,
+      "path": "client_01_nwh/week2.csv",
+      "sha256": "1144e26a172eb007d2e5026499653e4e1ec92938601096db9f5c8a9ef39f23ec",
+      "bytes": 131265,
+      "format": {
+        "kind": "csv",
+        "delimiter": ",",
+        "encoding": "utf-8",
+        "bom": false,
+        "preamble": [],
+        "footer_total": false,
+        "extension": ".csv",
+        "header_line": 1,
+        "footer_lines": 0
+      },
+      "date_format": "YYYY-MM-DD",
+      "amount_style": "plain",
+      "as_of": "2026-11-08",
+      "rows": 1000,
+      "planted_errors": 39,
+      "mapping_key": {
+        "path": "client_01_nwh/week2.mapping.json",
+        "sha256": "5c70e57d37a9c59608bfa7dca1576dd64c9597e68a71c4978469b49c489c1b69"
+      },
+      "error_key": {
+        "path": "client_01_nwh/week2.errors.json",
+        "sha256": "59658375c7a41d3fe344356865ab34ed5ebee9552526fc96531c008b48bd8d79"
+      },
+      "legacy": false
+    },
+    {
+      "client": 2,
+      "code": "CVH",
+      "name": "Cedar Valley Health",
+      "week": 1,
+      "path": "client_02_cvh/week1.txt",
+      "sha256": "d9af8592aff6c7c468f6588819cf095411c7f4feecd27a0cde7693bc144c0fff",
+      "bytes": 117495,
+      "format": {
+        "kind": "csv",
+        "delimiter": "|",
+        "encoding": "utf-8",
+        "bom": false,
+        "preamble": [],
+        "footer_total": false,
+        "extension": ".txt",
+        "header_line": 1,
+        "footer_lines": 0
+      },
+      "date_format": "MM/DD/YYYY",
+      "amount_style": "currency",
+      "as_of": "2026-11-01",
+      "rows": 800,
+      "planted_errors": 25,
+      "mapping_key": {
+        "path": "client_02_cvh/week1.mapping.json",
+        "sha256": "8c964404e9c7155d91b6238802f50267668bfc3b4562cd46b732aff62008fffd"
+      },
+      "error_key": {
+        "path": "client_02_cvh/week1.errors.json",
+        "sha256": "97acde9ada757d26337ee0820c0e7b1ab5dfe1a045fe6ed830f55284a98ee868"
+      },
+      "legacy": false
+    },
+    {
+      "client": 2,
+      "code": "CVH",
+      "name": "Cedar Valley Health",
+      "week": 2,
+      "path": "client_02_cvh/week2.txt",
+      "sha256": "9dfbcd9d0b877cd278fbbb7356fabb8621d27f6b492f192d6d744820d54ca0e5",
+      "bytes": 68148,
+      "format": {
+        "kind": "csv",
+        "delimiter": "|",
+        "encoding": "utf-8",
+        "bom": false,
+        "preamble": [],
+        "footer_total": false,
+        "extension": ".txt",
+        "header_line": 1,
+        "footer_lines": 0
+      },
+      "date_format": "MM/DD/YYYY",
+      "amount_style": "currency",
+      "as_of": "2026-11-08",
+      "rows": 450,
+      "planted_errors": 28,
+      "mapping_key": {
+        "path": "client_02_cvh/week2.mapping.json",
+        "sha256": "36bafed8fd49b1f62ea0e2ab815156e282e046a61a60617a499ceb80641c6aab"
+      },
+      "error_key": {
+        "path": "client_02_cvh/week2.errors.json",
+        "sha256": "bed16259b34db04617ecd95efdba13d9a203398447b7d63e687b12f7c15c609d"
+      },
+      "legacy": false
+    },
+    {
+      "client": 3,
+      "code": "LSM",
+      "name": "Lakeshore Mutual",
+      "week": 1,
+      "path": "client_03_lsm/week1.tsv",
+      "sha256": "31f3d31b92c87d466bcd06656a6001bf13437ee80b49f2938b0b102136b69c43",
+      "bytes": 82249,
+      "format": {
+        "kind": "csv",
+        "delimiter": "\t",
+        "encoding": "utf-8",
+        "bom": false,
+        "preamble": [],
+        "footer_total": false,
+        "extension": ".tsv",
+        "header_line": 1,
+        "footer_lines": 0
+      },
+      "date_format": "DD/MM/YYYY",
+      "amount_style": "plain",
+      "as_of": "2026-11-01",
+      "rows": 500,
+      "planted_errors": 18,
+      "mapping_key": {
+        "path": "client_03_lsm/week1.mapping.json",
+        "sha256": "827e0b39049eec953c2b80826049503c57ebf8eb360b64ebd23bbba09ea953aa"
+      },
+      "error_key": {
+        "path": "client_03_lsm/week1.errors.json",
+        "sha256": "97b4ef7f73c6e993bf6c76a8fa22e8f7f7b7b61e83be22a96208f10dfcd0ef00"
+      },
+      "legacy": false
+    },
+    {
+      "client": 3,
+      "code": "LSM",
+      "name": "Lakeshore Mutual",
+      "week": 2,
+      "path": "client_03_lsm/week2.tsv",
+      "sha256": "9e00ab309e23aec18f4e703a9601e4d0d65db855f953e78c33265d765d8538f7",
+      "bytes": 52084,
+      "format": {
+        "kind": "csv",
+        "delimiter": "\t",
+        "encoding": "utf-8",
+        "bom": false,
+        "preamble": [],
+        "footer_total": false,
+        "extension": ".tsv",
+        "header_line": 1,
+        "footer_lines": 0
+      },
+      "date_format": "DD/MM/YYYY",
+      "amount_style": "plain",
+      "as_of": "2026-11-08",
+      "rows": 300,
+      "planted_errors": 38,
+      "mapping_key": {
+        "path": "client_03_lsm/week2.mapping.json",
+        "sha256": "a1e52f52b906fe9c1d63169c6a09c9b1fcdca041f416365a4307da1abceb6bdf"
+      },
+      "error_key": {
+        "path": "client_03_lsm/week2.errors.json",
+        "sha256": "b4f538bce2e41ac4537cadef3053cac14c2ae8cc9bb9bfd862df41b2d4724b37"
+      },
+      "legacy": false
+    },
+    {
+      "client": 4,
+      "code": "SRH",
+      "name": "Summit Ridge Health",
+      "week": 1,
+      "path": "client_04_srh/week1.xlsx",
+      "sha256": "3c3a08272f27166c21928f752cb363a462c90ca582d79e27788d77a8a67a1d8a",
+      "bytes": 138873,
+      "format": {
+        "kind": "xlsx",
+        "delimiter": ",",
+        "encoding": "utf-8",
+        "bom": false,
+        "preamble": [],
+        "footer_total": false,
+        "extension": ".xlsx",
+        "header_line": 1,
+        "footer_lines": 0
+      },
+      "date_format": "YYYY-MM-DD",
+      "amount_style": "plain",
+      "as_of": "2026-11-01",
+      "rows": 1200,
+      "planted_errors": 40,
+      "mapping_key": {
+        "path": "client_04_srh/week1.mapping.json",
+        "sha256": "3b3759096241fe1bd5fcb1f30d3525d314f01a8bc3272add9480605d5e90e68c"
+      },
+      "error_key": {
+        "path": "client_04_srh/week1.errors.json",
+        "sha256": "129c14b481457f7813790f125db989dc2424665eaf27d8ca49dd3666c3dff638"
+      },
+      "legacy": false
+    },
+    {
+      "client": 4,
+      "code": "SRH",
+      "name": "Summit Ridge Health",
+      "week": 2,
+      "path": "client_04_srh/week2.xlsx",
+      "sha256": "6b23e8545d6ed6c5374034f7c12e8e0c4162238857ba66cc7ead2a02e0b1d463",
+      "bytes": 86176,
+      "format": {
+        "kind": "xlsx",
+        "delimiter": ",",
+        "encoding": "utf-8",
+        "bom": false,
+        "preamble": [],
+        "footer_total": false,
+        "extension": ".xlsx",
+        "header_line": 1,
+        "footer_lines": 0
+      },
+      "date_format": "YYYY-MM-DD",
+      "amount_style": "plain",
+      "as_of": "2026-11-08",
+      "rows": 700,
+      "planted_errors": 28,
+      "mapping_key": {
+        "path": "client_04_srh/week2.mapping.json",
+        "sha256": "b22950f4a33bf5077a4e0b11cb22ce7c4e140b9cdd5b642d5d0d8ecad358bfc8"
+      },
+      "error_key": {
+        "path": "client_04_srh/week2.errors.json",
+        "sha256": "57df02acfc6f03b46d35d937d27575a86f4bcb2cec441383c73c3fa4daaf573b"
+      },
+      "legacy": false
+    },
+    {
+      "client": 5,
+      "code": "HHP",
+      "name": "Harborview Health Plan",
+      "week": 1,
+      "path": "client_05_hhp/week1.csv",
+      "sha256": "9bd517656e2ab05d504fa7007c387e9c80cac1b561d9d3a418412032d3a71b69",
+      "bytes": 34308,
+      "format": {
+        "kind": "csv",
+        "delimiter": ",",
+        "encoding": "utf-8",
+        "bom": false,
+        "preamble": [
+          "Harborview Health Plan - monthly claims extract",
+          "Generated for onboarding (synthetic data)"
+        ],
+        "footer_total": true,
+        "extension": ".csv",
+        "header_line": 3,
+        "footer_lines": 1
+      },
+      "date_format": "MM-DD-YYYY",
+      "amount_style": "plain",
+      "as_of": "2026-11-01",
+      "rows": 300,
+      "planted_errors": 12,
+      "mapping_key": {
+        "path": "client_05_hhp/week1.mapping.json",
+        "sha256": "f469520c846f181f9da9b2f1a42b20e637c16c5c8738a89dadb82afbac15733f"
+      },
+      "error_key": {
+        "path": "client_05_hhp/week1.errors.json",
+        "sha256": "d0058cbbc0851693d8c2569c0e0cf5ba74c9aaeedadfd3fef609b11fea8bd669"
+      },
+      "legacy": false
+    },
+    {
+      "client": 5,
+      "code": "HHP",
+      "name": "Harborview Health Plan",
+      "week": 2,
+      "path": "client_05_hhp/week2.csv",
+      "sha256": "b27af880564eca40306dbfbc5766504a586b3774ce3d39b1c0388abb1bd53d0b",
+      "bytes": 26487,
+      "format": {
+        "kind": "csv",
+        "delimiter": ",",
+        "encoding": "utf-8",
+        "bom": false,
+        "preamble": [
+          "Harborview Health Plan - monthly claims extract",
+          "Generated for onboarding (synthetic data)"
+        ],
+        "footer_total": true,
+        "extension": ".csv",
+        "header_line": 3,
+        "footer_lines": 1
+      },
+      "date_format": "MM-DD-YYYY",
+      "amount_style": "plain",
+      "as_of": "2026-11-08",
+      "rows": 220,
+      "planted_errors": 22,
+      "mapping_key": {
+        "path": "client_05_hhp/week2.mapping.json",
+        "sha256": "cc13434bd098f76824bf6b30a7f8c99c97c7e76d640e6dc17e3eae3e9d527aa7"
+      },
+      "error_key": {
+        "path": "client_05_hhp/week2.errors.json",
+        "sha256": "0987ae4ed8c8a3a8aa4faa0148b304f86501806f799a902140289d1c9712efc1"
+      },
+      "legacy": false
+    },
+    {
+      "client": 6,
+      "code": "SNS",
+      "name": "Sierra Norte Salud",
+      "week": 1,
+      "path": "client_06_sns/week1.csv",
+      "sha256": "034f9ee7f38674e0626b8b6584d533b39f195ed36b9c787bf400183f00ab2edf",
+      "bytes": 124745,
+      "format": {
+        "kind": "csv",
+        "delimiter": ",",
+        "encoding": "latin-1",
+        "bom": false,
+        "preamble": [],
+        "footer_total": false,
+        "extension": ".csv",
+        "header_line": 1,
+        "footer_lines": 0
+      },
+      "date_format": "DD-MM-YYYY",
+      "amount_style": "plain",
+      "as_of": "2026-11-01",
+      "rows": 650,
+      "planted_errors": 30,
+      "mapping_key": {
+        "path": "client_06_sns/week1.mapping.json",
+        "sha256": "312df434ff7dbff50ec6d16e85c2ab522d0078aef940bde16b4ae547adf20ed0"
+      },
+      "error_key": {
+        "path": "client_06_sns/week1.errors.json",
+        "sha256": "d464d20792d74d7f337d5bd49289757c57d5976cbe9bf43cf5d3f32d5367fb7c"
+      },
+      "legacy": false
+    },
+    {
+      "client": 6,
+      "code": "SNS",
+      "name": "Sierra Norte Salud",
+      "week": 2,
+      "path": "client_06_sns/week2.csv",
+      "sha256": "1b801b81a80693e734ec423bf56a3997f2e57c9d2e1850568f045bdf17bdb0c7",
+      "bytes": 78178,
+      "format": {
+        "kind": "csv",
+        "delimiter": ",",
+        "encoding": "latin-1",
+        "bom": false,
+        "preamble": [],
+        "footer_total": false,
+        "extension": ".csv",
+        "header_line": 1,
+        "footer_lines": 0
+      },
+      "date_format": "DD-MM-YYYY",
+      "amount_style": "plain",
+      "as_of": "2026-11-08",
+      "rows": 400,
+      "planted_errors": 32,
+      "mapping_key": {
+        "path": "client_06_sns/week2.mapping.json",
+        "sha256": "394c3860acfa845b3cc9c589548e676f1233ed3bd152af05111ad65707a829b8"
+      },
+      "error_key": {
+        "path": "client_06_sns/week2.errors.json",
+        "sha256": "c2e333f05b8ece1843d653e5c3656496a947eb608b14f542a45a07b32a502274"
+      },
+      "legacy": false
+    },
+    {
+      "client": 7,
+      "code": "BWB",
+      "name": "Bluewater Benefits",
+      "week": 1,
+      "path": "client_07_bwb/week1.csv",
+      "sha256": "d068b9e2d796162f95881d184eda30fcf5400ff17432159e209492b945f4334e",
+      "bytes": 54308,
+      "format": {
+        "kind": "csv",
+        "delimiter": ",",
+        "encoding": "utf-8",
+        "bom": true,
+        "preamble": [],
+        "footer_total": false,
+        "extension": ".csv",
+        "header_line": 1,
+        "footer_lines": 0
+      },
+      "date_format": "YYYY/MM/DD",
+      "amount_style": "currency",
+      "as_of": "2026-11-01",
+      "rows": 400,
+      "planted_errors": 8,
+      "mapping_key": {
+        "path": "client_07_bwb/week1.mapping.json",
+        "sha256": "0f07c7bc963cd4d514a28b9d8d0f42d434adcc88d2faf3687c9624950ebe5490"
+      },
+      "error_key": {
+        "path": "client_07_bwb/week1.errors.json",
+        "sha256": "465b35fceffa17678f6701978ef1745c6dcc8773ff99aac4ad34b7ffbc56ff37"
+      },
+      "legacy": false
+    },
+    {
+      "client": 7,
+      "code": "BWB",
+      "name": "Bluewater Benefits",
+      "week": 2,
+      "path": "client_07_bwb/week2.csv",
+      "sha256": "d43992cab808aeb7c09a014dfaf6e21d369788a5c4ebb9f43ce3e5f5421bdb93",
+      "bytes": 35777,
+      "format": {
+        "kind": "csv",
+        "delimiter": ",",
+        "encoding": "utf-8",
+        "bom": true,
+        "preamble": [],
+        "footer_total": false,
+        "extension": ".csv",
+        "header_line": 1,
+        "footer_lines": 0
+      },
+      "date_format": "YYYY/MM/DD",
+      "amount_style": "currency",
+      "as_of": "2026-11-08",
+      "rows": 260,
+      "planted_errors": 35,
+      "mapping_key": {
+        "path": "client_07_bwb/week2.mapping.json",
+        "sha256": "42bf12cb2f315523c476cf56a4be5b28348c6550369be4097cc4819b8bdece7d"
+      },
+      "error_key": {
+        "path": "client_07_bwb/week2.errors.json",
+        "sha256": "abbabb6e511bd4fae006e8a80439564fb146b021429d6b47c795e98e93fa1dc6"
+      },
+      "legacy": false
+    },
+    {
+      "client": 8,
+      "code": "PCH",
+      "name": "Prairie Crest Health",
+      "week": 1,
+      "path": "client_08_pch/week1.csv",
+      "sha256": "315358d114cd8f3078c3a85e69df947e2ed4d40bee7703aecc3dd03eaa722d90",
+      "bytes": 136257,
+      "format": {
+        "kind": "csv",
+        "delimiter": ",",
+        "encoding": "utf-8",
+        "bom": false,
+        "preamble": [],
+        "footer_total": false,
+        "extension": ".csv",
+        "header_line": 1,
+        "footer_lines": 0
+      },
+      "date_format": "MM/DD/YYYY",
+      "amount_style": "plain",
+      "as_of": "2026-11-01",
+      "rows": 1000,
+      "planted_errors": 55,
+      "mapping_key": {
+        "path": "client_08_pch/week1.mapping.json",
+        "sha256": "bebe3d1df6dee3880de2383d8bf2120a2c74876976560922e3c8ff239dd6a3d8"
+      },
+      "error_key": {
+        "path": "client_08_pch/week1.errors.json",
+        "sha256": "40bdbc97aebfdfa39c2b1f83f59016a4c2fbe18c40090cbd6c0f77ba2d8a6c5a"
+      },
+      "legacy": false
+    },
+    {
+      "client": 8,
+      "code": "PCH",
+      "name": "Prairie Crest Health",
+      "week": 2,
+      "path": "client_08_pch/week2.csv",
+      "sha256": "d936545cd020ec45a0ee000221a271a5b3e4b8b97a1b714a0cc1db4f26fe276f",
+      "bytes": 83044,
+      "format": {
+        "kind": "csv",
+        "delimiter": ",",
+        "encoding": "utf-8",
+        "bom": false,
+        "preamble": [],
+        "footer_total": false,
+        "extension": ".csv",
+        "header_line": 1,
+        "footer_lines": 0
+      },
+      "date_format": "MM/DD/YYYY",
+      "amount_style": "plain",
+      "as_of": "2026-11-08",
+      "rows": 600,
+      "planted_errors": 25,
+      "mapping_key": {
+        "path": "client_08_pch/week2.mapping.json",
+        "sha256": "cd2c0bb05bfbd58b4c5d9b5413f0ae405fe588326af26c562bffd5137179c240"
+      },
+      "error_key": {
+        "path": "client_08_pch/week2.errors.json",
+        "sha256": "0f41e6d91f35fdda3cb3e284886bda90fa95589924d729283dd233ab271f3111"
+      },
+      "legacy": false
+    },
+    {
+      "client": 9,
+      "code": "GPH",
+      "name": "Granite Peak Health",
+      "week": 1,
+      "path": "client_09_gph/week1.txt",
+      "sha256": "c97155360edfa0dee263918997fc6171a67a7e8fb8cbe268328d23e1075a1d58",
+      "bytes": 84512,
+      "format": {
+        "kind": "csv",
+        "delimiter": "|",
+        "encoding": "utf-8",
+        "bom": false,
+        "preamble": [],
+        "footer_total": false,
+        "extension": ".txt",
+        "header_line": 1,
+        "footer_lines": 0
+      },
+      "date_format": "YYYY-MM-DD",
+      "amount_style": "plain",
+      "as_of": "2026-11-01",
+      "rows": 700,
+      "planted_errors": 20,
+      "mapping_key": {
+        "path": "client_09_gph/week1.mapping.json",
+        "sha256": "1d5ce66ccd0077dbc4865ed12e8f4f4065b8c448fd2af6724653a161a38c2a26"
+      },
+      "error_key": {
+        "path": "client_09_gph/week1.errors.json",
+        "sha256": "a222bed6eea273b77febe8105f6534d4c1a6a12644d5d3b592b7610ee20b556b"
+      },
+      "legacy": false
+    },
+    {
+      "client": 9,
+      "code": "GPH",
+      "name": "Granite Peak Health",
+      "week": 2,
+      "path": "client_09_gph/week2.txt",
+      "sha256": "e1c282c22d5cf8edbcf483407ea12e62c3472ce33d5d98171fd250adc17f55db",
+      "bytes": 52761,
+      "format": {
+        "kind": "csv",
+        "delimiter": "|",
+        "encoding": "utf-8",
+        "bom": false,
+        "preamble": [],
+        "footer_total": false,
+        "extension": ".txt",
+        "header_line": 1,
+        "footer_lines": 0
+      },
+      "date_format": "YYYY-MM-DD",
+      "amount_style": "plain",
+      "as_of": "2026-11-08",
+      "rows": 420,
+      "planted_errors": 25,
+      "mapping_key": {
+        "path": "client_09_gph/week2.mapping.json",
+        "sha256": "c239cfa0f50b04aaf2ba4ae37e7a4ec9ff7bca79cff26defa04833738ba589d6"
+      },
+      "error_key": {
+        "path": "client_09_gph/week2.errors.json",
+        "sha256": "0e0a653f7755abc1bde859325b89a1106fcb653f67a4e0112464f5a30e940c0e"
+      },
+      "legacy": false
+    },
+    {
+      "client": 10,
+      "code": "RHP",
+      "name": "Riverbend Health Partners",
+      "week": 1,
+      "path": "client_10_rhp/week1.tsv",
+      "sha256": "1ae186b518b42f53d896955434eaa7673de2df6d2696ea45048cee1bdee1702a",
+      "bytes": 55838,
+      "format": {
+        "kind": "csv",
+        "delimiter": "\t",
+        "encoding": "utf-8",
+        "bom": false,
+        "preamble": [],
+        "footer_total": false,
+        "extension": ".tsv",
+        "header_line": 1,
+        "footer_lines": 0
+      },
+      "date_format": "DD/MM/YYYY",
+      "amount_style": "currency",
+      "as_of": "2026-11-01",
+      "rows": 350,
+      "planted_errors": 5,
+      "mapping_key": {
+        "path": "client_10_rhp/week1.mapping.json",
+        "sha256": "993e0a119c5ad53f6b9cbdb920a7d2986914db9b17b272f8865b7fe0e2db393c"
+      },
+      "error_key": {
+        "path": "client_10_rhp/week1.errors.json",
+        "sha256": "ef76db4ca74c4c9af7b4a11247a008ea7cc636263fdf9437b6dcbfa6f607553a"
+      },
+      "legacy": false
+    },
+    {
+      "client": 10,
+      "code": "RHP",
+      "name": "Riverbend Health Partners",
+      "week": 2,
+      "path": "client_10_rhp/week2.tsv",
+      "sha256": "a2aebf8d2fc522205b7242b3c570b6452f910351ac1f0f46f8594602cd447c5c",
+      "bytes": 38641,
+      "format": {
+        "kind": "csv",
+        "delimiter": "\t",
+        "encoding": "utf-8",
+        "bom": false,
+        "preamble": [],
+        "footer_total": false,
+        "extension": ".tsv",
+        "header_line": 1,
+        "footer_lines": 0
+      },
+      "date_format": "DD/MM/YYYY",
+      "amount_style": "currency",
+      "as_of": "2026-11-08",
+      "rows": 240,
+      "planted_errors": 16,
+      "mapping_key": {
+        "path": "client_10_rhp/week2.mapping.json",
+        "sha256": "9e3435c258764d56238d6213fa0469b0705aa3e9692f1090d7f217fdc32db805"
+      },
+      "error_key": {
+        "path": "client_10_rhp/week2.errors.json",
+        "sha256": "8179932916b83dc286411e968b553bdf5c4f8203681f5da1e09618410ccc97e6"
+      },
+      "legacy": false
+    }
+  ]
+}

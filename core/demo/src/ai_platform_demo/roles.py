@@ -58,12 +58,24 @@ def migrate_all(owner_url: str | URL) -> None:
     migrate_usage(url)
 
 
-def bootstrap_app_role(owner_url: str | URL, app_password: str, role: str = APP_ROLE) -> None:
+def bootstrap_app_role(
+    owner_url: str | URL,
+    app_password: str,
+    role: str = APP_ROLE,
+    *,
+    extra_grants: Mapping[str, tuple[str, ...]] | None = None,
+) -> None:
     """Create or update the app role and set its privileges exactly to ``GRANTS``.
+
+    ``extra_grants`` adds products' tables (``"schema.table": privileges``); their schemas
+    are then managed the same way (every table needs a decision). Core never imports a
+    product: the deploy script passes them in.
 
     Idempotent: safe to run on every deploy. The password is sent to the server only as
     a quoted literal and is never logged.
     """
+    grants = {**GRANTS, **(extra_grants or {})}
+    schemas = tuple(dict.fromkeys([*SCHEMAS, *(t.split(".", 1)[0] for t in grants)]))
     if len(app_password) < 16:
         raise BootstrapError("the app role password must be at least 16 characters")
     engine = get_engine(normalize_url(owner_url))
@@ -72,12 +84,12 @@ def bootstrap_app_role(owner_url: str | URL, app_password: str, role: str = APP_
             tables = list(conn.execute(
                 text("SELECT schemaname || '.' || tablename FROM pg_tables "
                      "WHERE schemaname = ANY(:s) ORDER BY 1"),
-                {"s": list(SCHEMAS)},
+                {"s": list(schemas)},
             ).scalars())  # fmt: skip
-            undecided = [t for t in tables if t not in GRANTS and not _is_version_table(t)]
+            undecided = [t for t in tables if t not in grants and not _is_version_table(t)]
             if undecided:
                 raise BootstrapError(f"no privilege decision for: {', '.join(undecided)}")
-            missing = sorted(set(GRANTS) - set(tables))
+            missing = sorted(set(grants) - set(tables))
             if missing:
                 raise BootstrapError(f"tables not found (run migrations first): {missing}")
             raw = conn.connection.driver_connection
@@ -89,7 +101,7 @@ def bootstrap_app_role(owner_url: str | URL, app_password: str, role: str = APP_
                 verb = "ALTER" if cur.fetchone() else "CREATE"
                 cur.execute(sql.SQL("{} ROLE {} WITH LOGIN PASSWORD {}").format(
                     sql.SQL(verb), role_id, sql.Literal(app_password)))  # fmt: skip
-                for schema in SCHEMAS:
+                for schema in schemas:
                     ident = sql.Identifier(schema)
                     cur.execute(sql.SQL("REVOKE ALL ON SCHEMA {} FROM {}").format(ident, role_id))
                     cur.execute(sql.SQL("GRANT USAGE ON SCHEMA {} TO {}").format(ident, role_id))
@@ -101,7 +113,7 @@ def bootstrap_app_role(owner_url: str | URL, app_password: str, role: str = APP_
                     schema, name = table.split(".", 1)
                     target = sql.Identifier(schema, name)
                     cur.execute(sql.SQL("REVOKE ALL ON TABLE {} FROM {}").format(target, role_id))
-                    privileges = GRANTS.get(table, ())
+                    privileges = grants.get(table, ())
                     if privileges:
                         cur.execute(sql.SQL("GRANT {} ON TABLE {} TO {}").format(
                             sql.SQL(", ").join(sql.SQL(p) for p in privileges),

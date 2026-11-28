@@ -1,0 +1,132 @@
+{
+  "file": "week1.tsv",
+  "as_of": "2026-11-01",
+  "errors": [
+    {
+      "row": 207,
+      "line": 208,
+      "field": "paid_date",
+      "rule": "not before service_date",
+      "severity": "blocker"
+    },
+    {
+      "row": 219,
+      "line": 220,
+      "field": "member_dob",
+      "rule": "date DD/MM/YYYY",
+      "severity": "blocker"
+    },
+    {
+      "row": 236,
+      "line": 237,
+      "field": "place_of_service",
+      "rule": "exactly 2 digits",
+      "severity": "warning"
+    },
+    {
+      "row": 288,
+      "line": 289,
+      "field": "paid_date",
+      "rule": "not before service_date",
+      "severity": "blocker"
+    },
+    {
+      "row": 307,
+      "line": 308,
+      "field": "allowed_amount",
+      "rule": "not greater than billed_amount",
+      "severity": "warning"
+    },
+    {
+      "row": 309,
+      "line": 310,
+      "field": "allowed_amount",
+      "rule": "not greater than billed_amount",
+      "severity": "warning"
+    },
+    {
+      "row": 320,
+      "line": 321,
+      "field": "allowed_amount",
+      "rule": "not greater than billed_amount",
+      "severity": "warning"
+    },
+    {
+      "row": 325,
+      "line": 326,
+      "field": "member_dob",
+      "rule": "date DD/MM/YYYY",
+      "severity": "blocker"
+    },
+    {
+      "row": 341,
+      "line": 342,
+      "field": "paid_date",
+      "rule": "not before service_date",
+      "severity": "blocker"
+    },
+    {
+      "row": 342,
+      "line": 343,
+      "field": "procedure_code",
+      "rule": "exactly 5 characters",
+      "severity": "blocker"
+    },
+    {
+      "row": 345,
+      "line": 346,
+      "field": "member_dob",
+      "rule": "date DD/MM/YYYY",
+      "severity": "blocker"
+    },
+    {
+      "row": 354,
+      "line": 355,
+      "field": "procedure_code",
+      "rule": "exactly 5 characters",
+      "severity": "blocker"
+    },
+    {
+      "row": 404,
+      "line": 405,
+      "field": "service_date",
+      "rule": "not in the future",
+      "severity": "blocker"
+    },
+    {
+      "row": 412,
+      "line": 413,
+      "field": "paid_date",
+      "rule": "not before service_date",
+      "severity": "blocker"
+    },
+    {
+      "row": 440,
+      "line": 441,
+      "field": "procedure_code",
+      "rule": "exactly 5 characters",
+      "severity": "blocker"
+    },
+    {
+      "row": 450,
+      "line": 451,
+      "field": "place_of_service",
+      "rule": "exactly 2 digits",
+      "severity": "warning"
+    },
+    {
+      "row": 454,
+      "line": 455,
+      "field": "place_of_service",
+      "rule": "exactly 2 digits",
+      "severity": "warning"
+    },
+    {
+      "row": 469,
+      "line": 470,
+      "field": "service_date",
+      "rule": "not in the future",
+      "severity": "blocker"
+    }
+  ]
+}

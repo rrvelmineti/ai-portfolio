@@ -16,7 +16,7 @@ One visitor's changes must not persist for the next, so every night (in one tran
 
 from __future__ import annotations
 
-from collections.abc import Mapping
+from collections.abc import Mapping, Sequence
 from datetime import UTC, datetime
 
 from ai_platform_auth.audit import audit
@@ -30,10 +30,16 @@ AUDIT_RETENTION_DAYS = 7  # enforced by the audit trigger as well
 
 
 def reset_demo(
-    session: Session, passwords: Mapping[str, str], now: datetime | None = None
+    session: Session,
+    passwords: Mapping[str, str],
+    now: datetime | None = None,
+    *,
+    keep_usernames: Sequence[str] = (),
 ) -> dict[str, int]:
     """Reset the demo tenant to its seeded state. Returns row counts (logged and audited).
 
+    ``keep_usernames``: other accounts that belong to the demo (e.g. a product's non-login
+    ``system:seed`` account) and must survive the reset.
     The caller commits. Needs the owner role (the app role has no DELETE anywhere).
     """
     now = (now or datetime.now(UTC)).astimezone(UTC)
@@ -42,7 +48,7 @@ def reset_demo(
     if tenant is None:  # pragma: no cover - seed just created it
         raise RuntimeError("demo tenant missing after seeding")
     t = {"t": tenant.id}
-    seeded = [name for name, _, _ in DEMO_USERS]
+    seeded = [name for name, _, _ in DEMO_USERS] + list(keep_usernames)
 
     def run(sql: str, **params: object) -> int:
         result = session.execute(text(sql), {**t, **params})

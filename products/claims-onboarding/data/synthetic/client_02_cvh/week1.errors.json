@@ -1,0 +1,181 @@
+{
+  "file": "week1.txt",
+  "as_of": "2026-11-01",
+  "errors": [
+    {
+      "row": 209,
+      "line": 210,
+      "field": "member_id",
+      "rule": "required",
+      "severity": "blocker"
+    },
+    {
+      "row": 218,
+      "line": 219,
+      "field": "provider_npi",
+      "rule": "exactly 10 digits",
+      "severity": "blocker"
+    },
+    {
+      "row": 249,
+      "line": 250,
+      "field": "paid_amount",
+      "rule": "not greater than billed_amount",
+      "severity": "blocker"
+    },
+    {
+      "row": 316,
+      "line": 317,
+      "field": "billed_amount",
+      "rule": "number",
+      "severity": "blocker"
+    },
+    {
+      "row": 336,
+      "line": 337,
+      "field": "service_date",
+      "rule": "date MM/DD/YYYY",
+      "severity": "blocker"
+    },
+    {
+      "row": 372,
+      "line": 373,
+      "field": "paid_amount",
+      "rule": "not greater than billed_amount",
+      "severity": "blocker"
+    },
+    {
+      "row": 373,
+      "line": 374,
+      "field": "claim_id",
+      "rule": "unique",
+      "severity": "blocker"
+    },
+    {
+      "row": 374,
+      "line": 375,
+      "field": "member_id",
+      "rule": "required",
+      "severity": "blocker"
+    },
+    {
+      "row": 397,
+      "line": 398,
+      "field": "billed_amount",
+      "rule": "number",
+      "severity": "blocker"
+    },
+    {
+      "row": 418,
+      "line": 419,
+      "field": "billed_amount",
+      "rule": "number",
+      "severity": "blocker"
+    },
+    {
+      "row": 434,
+      "line": 435,
+      "field": "claim_id",
+      "rule": "unique",
+      "severity": "blocker"
+    },
+    {
+      "row": 437,
+      "line": 438,
+      "field": "provider_npi",
+      "rule": "exactly 10 digits",
+      "severity": "blocker"
+    },
+    {
+      "row": 446,
+      "line": 447,
+      "field": "claim_status",
+      "rule": "one of paid / denied / pending / adjusted",
+      "severity": "blocker"
+    },
+    {
+      "row": 448,
+      "line": 449,
+      "field": "diagnosis_code",
+      "rule": "ICD-10 format",
+      "severity": "blocker"
+    },
+    {
+      "row": 499,
+      "line": 500,
+      "field": "member_id",
+      "rule": "required",
+      "severity": "blocker"
+    },
+    {
+      "row": 502,
+      "line": 503,
+      "field": "paid_amount",
+      "rule": "not greater than billed_amount",
+      "severity": "blocker"
+    },
+    {
+      "row": 550,
+      "line": 551,
+      "field": "diagnosis_code",
+      "rule": "ICD-10 format",
+      "severity": "blocker"
+    },
+    {
+      "row": 577,
+      "line": 578,
+      "field": "provider_npi",
+      "rule": "exactly 10 digits",
+      "severity": "blocker"
+    },
+    {
+      "row": 593,
+      "line": 594,
+      "field": "service_date",
+      "rule": "date MM/DD/YYYY",
+      "severity": "blocker"
+    },
+    {
+      "row": 607,
+      "line": 608,
+      "field": "claim_status",
+      "rule": "one of paid / denied / pending / adjusted",
+      "severity": "blocker"
+    },
+    {
+      "row": 678,
+      "line": 679,
+      "field": "provider_npi",
+      "rule": "exactly 10 digits",
+      "severity": "blocker"
+    },
+    {
+      "row": 681,
+      "line": 682,
+      "field": "service_date",
+      "rule": "date MM/DD/YYYY",
+      "severity": "blocker"
+    },
+    {
+      "row": 684,
+      "line": 685,
+      "field": "paid_amount",
+      "rule": "not greater than billed_amount",
+      "severity": "blocker"
+    },
+    {
+      "row": 693,
+      "line": 694,
+      "field": "diagnosis_code",
+      "rule": "ICD-10 format",
+      "severity": "blocker"
+    },
+    {
+      "row": 795,
+      "line": 796,
+      "field": "claim_status",
+      "rule": "one of paid / denied / pending / adjusted",
+      "severity": "blocker"
+    }
+  ]
+}

@@ -1,0 +1,146 @@
+{
+  "file": "week1.txt",
+  "as_of": "2026-11-01",
+  "errors": [
+    {
+      "row": 209,
+      "line": 210,
+      "field": "claim_id",
+      "rule": "required",
+      "severity": "blocker"
+    },
+    {
+      "row": 291,
+      "line": 292,
+      "field": "member_dob",
+      "rule": "date YYYY-MM-DD",
+      "severity": "blocker"
+    },
+    {
+      "row": 294,
+      "line": 295,
+      "field": "paid_date",
+      "rule": "not before service_date",
+      "severity": "blocker"
+    },
+    {
+      "row": 295,
+      "line": 296,
+      "field": "member_dob",
+      "rule": "date YYYY-MM-DD",
+      "severity": "blocker"
+    },
+    {
+      "row": 319,
+      "line": 320,
+      "field": "paid_amount",
+      "rule": "not greater than billed_amount",
+      "severity": "blocker"
+    },
+    {
+      "row": 320,
+      "line": 321,
+      "field": "member_dob",
+      "rule": "date YYYY-MM-DD",
+      "severity": "blocker"
+    },
+    {
+      "row": 360,
+      "line": 361,
+      "field": "place_of_service",
+      "rule": "exactly 2 digits",
+      "severity": "warning"
+    },
+    {
+      "row": 371,
+      "line": 372,
+      "field": "place_of_service",
+      "rule": "exactly 2 digits",
+      "severity": "warning"
+    },
+    {
+      "row": 377,
+      "line": 378,
+      "field": "paid_amount",
+      "rule": "not greater than billed_amount",
+      "severity": "blocker"
+    },
+    {
+      "row": 402,
+      "line": 403,
+      "field": "paid_amount",
+      "rule": "not greater than billed_amount",
+      "severity": "blocker"
+    },
+    {
+      "row": 422,
+      "line": 423,
+      "field": "service_date",
+      "rule": "date YYYY-MM-DD",
+      "severity": "blocker"
+    },
+    {
+      "row": 435,
+      "line": 436,
+      "field": "paid_date",
+      "rule": "not before service_date",
+      "severity": "blocker"
+    },
+    {
+      "row": 463,
+      "line": 464,
+      "field": "claim_id",
+      "rule": "required",
+      "severity": "blocker"
+    },
+    {
+      "row": 474,
+      "line": 475,
+      "field": "paid_amount",
+      "rule": "not greater than billed_amount",
+      "severity": "blocker"
+    },
+    {
+      "row": 505,
+      "line": 506,
+      "field": "paid_date",
+      "rule": "not before service_date",
+      "severity": "blocker"
+    },
+    {
+      "row": 538,
+      "line": 539,
+      "field": "claim_id",
+      "rule": "required",
+      "severity": "blocker"
+    },
+    {
+      "row": 546,
+      "line": 547,
+      "field": "paid_date",
+      "rule": "not before service_date",
+      "severity": "blocker"
+    },
+    {
+      "row": 575,
+      "line": 576,
+      "field": "service_date",
+      "rule": "date YYYY-MM-DD",
+      "severity": "blocker"
+    },
+    {
+      "row": 588,
+      "line": 589,
+      "field": "service_date",
+      "rule": "date YYYY-MM-DD",
+      "severity": "blocker"
+    },
+    {
+      "row": 647,
+      "line": 648,
+      "field": "place_of_service",
+      "rule": "exactly 2 digits",
+      "severity": "warning"
+    }
+  ]
+}

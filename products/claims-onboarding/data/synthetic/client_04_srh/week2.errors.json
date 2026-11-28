@@ -1,0 +1,202 @@
+{
+  "file": "week2.xlsx",
+  "as_of": "2026-11-08",
+  "errors": [
+    {
+      "row": 205,
+      "line": 206,
+      "field": "place_of_service",
+      "rule": "exactly 2 digits",
+      "severity": "warning"
+    },
+    {
+      "row": 209,
+      "line": 210,
+      "field": "paid_amount",
+      "rule": "not negative",
+      "severity": "blocker"
+    },
+    {
+      "row": 242,
+      "line": 243,
+      "field": "paid_amount",
+      "rule": "not negative",
+      "severity": "blocker"
+    },
+    {
+      "row": 244,
+      "line": 245,
+      "field": "paid_date",
+      "rule": "date YYYY-MM-DD",
+      "severity": "blocker"
+    },
+    {
+      "row": 253,
+      "line": 254,
+      "field": "paid_amount",
+      "rule": "not negative",
+      "severity": "blocker"
+    },
+    {
+      "row": 259,
+      "line": 260,
+      "field": "claim_status",
+      "rule": "one of paid / denied / pending / adjusted",
+      "severity": "blocker"
+    },
+    {
+      "row": 273,
+      "line": 274,
+      "field": "paid_date",
+      "rule": "date YYYY-MM-DD",
+      "severity": "blocker"
+    },
+    {
+      "row": 275,
+      "line": 276,
+      "field": "paid_amount",
+      "rule": "not negative",
+      "severity": "blocker"
+    },
+    {
+      "row": 287,
+      "line": 288,
+      "field": "place_of_service",
+      "rule": "exactly 2 digits",
+      "severity": "warning"
+    },
+    {
+      "row": 305,
+      "line": 306,
+      "field": "paid_date",
+      "rule": "date YYYY-MM-DD",
+      "severity": "blocker"
+    },
+    {
+      "row": 325,
+      "line": 326,
+      "field": "place_of_service",
+      "rule": "exactly 2 digits",
+      "severity": "warning"
+    },
+    {
+      "row": 334,
+      "line": 335,
+      "field": "paid_amount",
+      "rule": "not negative",
+      "severity": "blocker"
+    },
+    {
+      "row": 366,
+      "line": 367,
+      "field": "paid_amount",
+      "rule": "not greater than billed_amount",
+      "severity": "blocker"
+    },
+    {
+      "row": 376,
+      "line": 377,
+      "field": "place_of_service",
+      "rule": "exactly 2 digits",
+      "severity": "warning"
+    },
+    {
+      "row": 384,
+      "line": 385,
+      "field": "claim_status",
+      "rule": "one of paid / denied / pending / adjusted",
+      "severity": "blocker"
+    },
+    {
+      "row": 387,
+      "line": 388,
+      "field": "paid_amount",
+      "rule": "not negative",
+      "severity": "blocker"
+    },
+    {
+      "row": 458,
+      "line": 459,
+      "field": "paid_amount",
+      "rule": "not greater than billed_amount",
+      "severity": "blocker"
+    },
+    {
+      "row": 480,
+      "line": 481,
+      "field": "paid_amount",
+      "rule": "not negative",
+      "severity": "blocker"
+    },
+    {
+      "row": 487,
+      "line": 488,
+      "field": "paid_date",
+      "rule": "date YYYY-MM-DD",
+      "severity": "blocker"
+    },
+    {
+      "row": 525,
+      "line": 526,
+      "field": "place_of_service",
+      "rule": "exactly 2 digits",
+      "severity": "warning"
+    },
+    {
+      "row": 546,
+      "line": 547,
+      "field": "place_of_service",
+      "rule": "exactly 2 digits",
+      "severity": "warning"
+    },
+    {
+      "row": 598,
+      "line": 599,
+      "field": "paid_date",
+      "rule": "date YYYY-MM-DD",
+      "severity": "blocker"
+    },
+    {
+      "row": 605,
+      "line": 606,
+      "field": "paid_amount",
+      "rule": "not greater than billed_amount",
+      "severity": "blocker"
+    },
+    {
+      "row": 618,
+      "line": 619,
+      "field": "paid_date",
+      "rule": "date YYYY-MM-DD",
+      "severity": "blocker"
+    },
+    {
+      "row": 622,
+      "line": 623,
+      "field": "paid_date",
+      "rule": "date YYYY-MM-DD",
+      "severity": "blocker"
+    },
+    {
+      "row": 640,
+      "line": 641,
+      "field": "paid_amount",
+      "rule": "not greater than billed_amount",
+      "severity": "blocker"
+    },
+    {
+      "row": 656,
+      "line": 657,
+      "field": "paid_amount",
+      "rule": "not greater than billed_amount",
+      "severity": "blocker"
+    },
+    {
+      "row": 690,
+      "line": 691,
+      "field": "claim_status",
+      "rule": "one of paid / denied / pending / adjusted",
+      "severity": "blocker"
+    }
+  ]
+}
