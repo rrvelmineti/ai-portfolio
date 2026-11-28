@@ -6,7 +6,6 @@ import json
 from dataclasses import dataclass
 from functools import cache
 from pathlib import Path
-from typing import Any
 
 DATA_DIR = Path(__file__).resolve().parents[3] / "data"
 DICTIONARY_PATH = DATA_DIR / "dictionary" / "claims_v1.json"
@@ -40,12 +39,6 @@ class Dictionary:
     @property
     def names(self) -> list[str]:
         return [f.name for f in self.fields]
-
-    def as_json_fields(self) -> list[dict[str, Any]]:
-        raw: list[dict[str, Any]] = json.loads(DICTIONARY_PATH.read_text(encoding="utf-8"))[
-            "fields"
-        ]
-        return raw
 
     def for_date_format(self, date_format: str, only: set[str] | None = None) -> Dictionary:
         """The same rules with the client's date format (and optionally fewer fields)."""
