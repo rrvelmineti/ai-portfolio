@@ -1,0 +1,73 @@
+{
+  "file": "week2.xlsx",
+  "columns": [
+    {
+      "header": "Claim Number",
+      "target": "claim_id"
+    },
+    {
+      "header": "Member ID",
+      "target": "member_id"
+    },
+    {
+      "header": "Member Name",
+      "target": "unmapped"
+    },
+    {
+      "header": "Date of Birth",
+      "target": "member_dob"
+    },
+    {
+      "header": "Provider NPI",
+      "target": "provider_npi"
+    },
+    {
+      "header": "Service Date",
+      "target": "service_date"
+    },
+    {
+      "header": "Paid Date",
+      "target": "paid_date"
+    },
+    {
+      "header": "Diagnosis",
+      "target": "diagnosis_code"
+    },
+    {
+      "header": "Procedure Code",
+      "target": "procedure_code"
+    },
+    {
+      "header": "Place of Service",
+      "target": "place_of_service"
+    },
+    {
+      "header": "Billed",
+      "target": "billed_amount"
+    },
+    {
+      "header": "Allowed",
+      "target": "allowed_amount"
+    },
+    {
+      "header": "Paid",
+      "target": "paid_amount"
+    },
+    {
+      "header": "Status",
+      "target": "claim_status"
+    },
+    {
+      "header": "Group",
+      "target": "unmapped"
+    },
+    {
+      "header": "Plan Code",
+      "target": "unmapped"
+    },
+    {
+      "header": "Network",
+      "target": "unmapped"
+    }
+  ]
+}

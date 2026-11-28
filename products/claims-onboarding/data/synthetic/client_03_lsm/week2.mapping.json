@@ -1,0 +1,73 @@
+{
+  "file": "week2.tsv",
+  "columns": [
+    {
+      "header": "claimNumber",
+      "target": "claim_id"
+    },
+    {
+      "header": "memberId",
+      "target": "member_id"
+    },
+    {
+      "header": "memberName",
+      "target": "unmapped"
+    },
+    {
+      "header": "memberAddress",
+      "target": "unmapped"
+    },
+    {
+      "header": "dateOfBirth",
+      "target": "member_dob"
+    },
+    {
+      "header": "renderingNpi",
+      "target": "provider_npi"
+    },
+    {
+      "header": "serviceDate",
+      "target": "service_date"
+    },
+    {
+      "header": "paidDate",
+      "target": "paid_date"
+    },
+    {
+      "header": "diagnosisCode",
+      "target": "diagnosis_code"
+    },
+    {
+      "header": "procedureCode",
+      "target": "procedure_code"
+    },
+    {
+      "header": "placeOfService",
+      "target": "place_of_service"
+    },
+    {
+      "header": "totalCharge",
+      "target": "billed_amount"
+    },
+    {
+      "header": "allowedAmount",
+      "target": "allowed_amount"
+    },
+    {
+      "header": "paidAmount",
+      "target": "paid_amount"
+    },
+    {
+      "header": "claimStatus",
+      "target": "claim_status"
+    },
+    {
+      "header": "lineCount",
+      "target": "unmapped"
+    },
+    {
+      "header": "payerReference",
+      "target": "unmapped"
+    }
+  ]
+}

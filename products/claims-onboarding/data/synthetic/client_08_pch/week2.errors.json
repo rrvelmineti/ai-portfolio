@@ -1,0 +1,181 @@
+{
+  "file": "week2.csv",
+  "as_of": "2026-11-08",
+  "errors": [
+    {
+      "row": 161,
+      "line": 162,
+      "field": "provider_npi",
+      "rule": "exactly 10 digits",
+      "severity": "blocker"
+    },
+    {
+      "row": 180,
+      "line": 181,
+      "field": "member_id",
+      "rule": "required",
+      "severity": "blocker"
+    },
+    {
+      "row": 187,
+      "line": 188,
+      "field": "billed_amount",
+      "rule": "number",
+      "severity": "blocker"
+    },
+    {
+      "row": 205,
+      "line": 206,
+      "field": "allowed_amount",
+      "rule": "not greater than billed_amount",
+      "severity": "warning"
+    },
+    {
+      "row": 239,
+      "line": 240,
+      "field": "service_date",
+      "rule": "date MM/DD/YYYY",
+      "severity": "blocker"
+    },
+    {
+      "row": 295,
+      "line": 296,
+      "field": "service_date",
+      "rule": "date MM/DD/YYYY",
+      "severity": "blocker"
+    },
+    {
+      "row": 309,
+      "line": 310,
+      "field": "allowed_amount",
+      "rule": "not greater than billed_amount",
+      "severity": "warning"
+    },
+    {
+      "row": 311,
+      "line": 312,
+      "field": "billed_amount",
+      "rule": "number",
+      "severity": "blocker"
+    },
+    {
+      "row": 315,
+      "line": 316,
+      "field": "service_date",
+      "rule": "date MM/DD/YYYY",
+      "severity": "blocker"
+    },
+    {
+      "row": 327,
+      "line": 328,
+      "field": "allowed_amount",
+      "rule": "not greater than billed_amount",
+      "severity": "warning"
+    },
+    {
+      "row": 377,
+      "line": 378,
+      "field": "billed_amount",
+      "rule": "number",
+      "severity": "blocker"
+    },
+    {
+      "row": 387,
+      "line": 388,
+      "field": "allowed_amount",
+      "rule": "not greater than billed_amount",
+      "severity": "warning"
+    },
+    {
+      "row": 405,
+      "line": 406,
+      "field": "allowed_amount",
+      "rule": "not greater than billed_amount",
+      "severity": "warning"
+    },
+    {
+      "row": 423,
+      "line": 424,
+      "field": "service_date",
+      "rule": "date MM/DD/YYYY",
+      "severity": "blocker"
+    },
+    {
+      "row": 425,
+      "line": 426,
+      "field": "allowed_amount",
+      "rule": "not greater than billed_amount",
+      "severity": "warning"
+    },
+    {
+      "row": 430,
+      "line": 431,
+      "field": "allowed_amount",
+      "rule": "not greater than billed_amount",
+      "severity": "warning"
+    },
+    {
+      "row": 436,
+      "line": 437,
+      "field": "provider_npi",
+      "rule": "exactly 10 digits",
+      "severity": "blocker"
+    },
+    {
+      "row": 481,
+      "line": 482,
+      "field": "diagnosis_code",
+      "rule": "required",
+      "severity": "blocker"
+    },
+    {
+      "row": 501,
+      "line": 502,
+      "field": "service_date",
+      "rule": "date MM/DD/YYYY",
+      "severity": "blocker"
+    },
+    {
+      "row": 504,
+      "line": 505,
+      "field": "billed_amount",
+      "rule": "number",
+      "severity": "blocker"
+    },
+    {
+      "row": 536,
+      "line": 537,
+      "field": "diagnosis_code",
+      "rule": "required",
+      "severity": "blocker"
+    },
+    {
+      "row": 543,
+      "line": 544,
+      "field": "diagnosis_code",
+      "rule": "required",
+      "severity": "blocker"
+    },
+    {
+      "row": 553,
+      "line": 554,
+      "field": "billed_amount",
+      "rule": "number",
+      "severity": "blocker"
+    },
+    {
+      "row": 563,
+      "line": 564,
+      "field": "allowed_amount",
+      "rule": "not greater than billed_amount",
+      "severity": "warning"
+    },
+    {
+      "row": 583,
+      "line": 584,
+      "field": "billed_amount",
+      "rule": "number",
+      "severity": "blocker"
+    }
+  ]
+}

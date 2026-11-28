@@ -1,0 +1,118 @@
+{
+  "file": "week2.tsv",
+  "as_of": "2026-11-08",
+  "errors": [
+    {
+      "row": 97,
+      "line": 98,
+      "field": "diagnosis_code",
+      "rule": "required",
+      "severity": "blocker"
+    },
+    {
+      "row": 109,
+      "line": 110,
+      "field": "allowed_amount",
+      "rule": "not negative",
+      "severity": "blocker"
+    },
+    {
+      "row": 142,
+      "line": 143,
+      "field": "paid_amount",
+      "rule": "not greater than billed_amount",
+      "severity": "blocker"
+    },
+    {
+      "row": 143,
+      "line": 144,
+      "field": "diagnosis_code",
+      "rule": "required",
+      "severity": "blocker"
+    },
+    {
+      "row": 151,
+      "line": 152,
+      "field": "allowed_amount",
+      "rule": "not negative",
+      "severity": "blocker"
+    },
+    {
+      "row": 157,
+      "line": 158,
+      "field": "claim_id",
+      "rule": "unique",
+      "severity": "blocker"
+    },
+    {
+      "row": 168,
+      "line": 169,
+      "field": "allowed_amount",
+      "rule": "not negative",
+      "severity": "blocker"
+    },
+    {
+      "row": 179,
+      "line": 180,
+      "field": "allowed_amount",
+      "rule": "not negative",
+      "severity": "blocker"
+    },
+    {
+      "row": 181,
+      "line": 182,
+      "field": "claim_id",
+      "rule": "unique",
+      "severity": "blocker"
+    },
+    {
+      "row": 187,
+      "line": 188,
+      "field": "diagnosis_code",
+      "rule": "required",
+      "severity": "blocker"
+    },
+    {
+      "row": 191,
+      "line": 192,
+      "field": "paid_amount",
+      "rule": "not greater than billed_amount",
+      "severity": "blocker"
+    },
+    {
+      "row": 193,
+      "line": 194,
+      "field": "diagnosis_code",
+      "rule": "required",
+      "severity": "blocker"
+    },
+    {
+      "row": 211,
+      "line": 212,
+      "field": "allowed_amount",
+      "rule": "not negative",
+      "severity": "blocker"
+    },
+    {
+      "row": 218,
+      "line": 219,
+      "field": "allowed_amount",
+      "rule": "not negative",
+      "severity": "blocker"
+    },
+    {
+      "row": 230,
+      "line": 231,
+      "field": "diagnosis_code",
+      "rule": "required",
+      "severity": "blocker"
+    },
+    {
+      "row": 234,
+      "line": 235,
+      "field": "allowed_amount",
+      "rule": "not negative",
+      "severity": "blocker"
+    }
+  ]
+}

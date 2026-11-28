@@ -10,6 +10,7 @@ dependencies = [
     "ai-platform-observability",
     "alembic==1.20.1",
     "fastapi==0.165.0",
+    "openpyxl==3.1.5",
     "psycopg[binary]==3.3.9",
     "pydantic==2.14.4",
     "sqlalchemy==2.1.9",

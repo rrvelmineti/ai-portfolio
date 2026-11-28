@@ -1,0 +1,251 @@
+{
+  "file": "week2.csv",
+  "as_of": "2026-11-08",
+  "errors": [
+    {
+      "row": 72,
+      "line": 73,
+      "field": "place_of_service",
+      "rule": "exactly 2 digits",
+      "severity": "warning"
+    },
+    {
+      "row": 74,
+      "line": 75,
+      "field": "allowed_amount",
+      "rule": "not greater than billed_amount",
+      "severity": "warning"
+    },
+    {
+      "row": 75,
+      "line": 76,
+      "field": "place_of_service",
+      "rule": "exactly 2 digits",
+      "severity": "warning"
+    },
+    {
+      "row": 76,
+      "line": 77,
+      "field": "paid_amount",
+      "rule": "number",
+      "severity": "blocker"
+    },
+    {
+      "row": 84,
+      "line": 85,
+      "field": "paid_amount",
+      "rule": "number",
+      "severity": "blocker"
+    },
+    {
+      "row": 96,
+      "line": 97,
+      "field": "procedure_code",
+      "rule": "exactly 5 characters",
+      "severity": "blocker"
+    },
+    {
+      "row": 102,
+      "line": 103,
+      "field": "procedure_code",
+      "rule": "exactly 5 characters",
+      "severity": "blocker"
+    },
+    {
+      "row": 103,
+      "line": 104,
+      "field": "allowed_amount",
+      "rule": "not greater than billed_amount",
+      "severity": "warning"
+    },
+    {
+      "row": 106,
+      "line": 107,
+      "field": "provider_npi",
+      "rule": "exactly 10 digits",
+      "severity": "blocker"
+    },
+    {
+      "row": 110,
+      "line": 111,
+      "field": "paid_amount",
+      "rule": "number",
+      "severity": "blocker"
+    },
+    {
+      "row": 113,
+      "line": 114,
+      "field": "paid_amount",
+      "rule": "number",
+      "severity": "blocker"
+    },
+    {
+      "row": 120,
+      "line": 121,
+      "field": "provider_npi",
+      "rule": "exactly 10 digits",
+      "severity": "blocker"
+    },
+    {
+      "row": 129,
+      "line": 130,
+      "field": "place_of_service",
+      "rule": "exactly 2 digits",
+      "severity": "warning"
+    },
+    {
+      "row": 132,
+      "line": 133,
+      "field": "allowed_amount",
+      "rule": "not greater than billed_amount",
+      "severity": "warning"
+    },
+    {
+      "row": 133,
+      "line": 134,
+      "field": "place_of_service",
+      "rule": "exactly 2 digits",
+      "severity": "warning"
+    },
+    {
+      "row": 134,
+      "line": 135,
+      "field": "provider_npi",
+      "rule": "exactly 10 digits",
+      "severity": "blocker"
+    },
+    {
+      "row": 140,
+      "line": 141,
+      "field": "place_of_service",
+      "rule": "exactly 2 digits",
+      "severity": "warning"
+    },
+    {
+      "row": 143,
+      "line": 144,
+      "field": "member_id",
+      "rule": "required",
+      "severity": "blocker"
+    },
+    {
+      "row": 144,
+      "line": 145,
+      "field": "place_of_service",
+      "rule": "exactly 2 digits",
+      "severity": "warning"
+    },
+    {
+      "row": 146,
+      "line": 147,
+      "field": "provider_npi",
+      "rule": "exactly 10 digits",
+      "severity": "blocker"
+    },
+    {
+      "row": 149,
+      "line": 150,
+      "field": "paid_amount",
+      "rule": "number",
+      "severity": "blocker"
+    },
+    {
+      "row": 165,
+      "line": 166,
+      "field": "procedure_code",
+      "rule": "exactly 5 characters",
+      "severity": "blocker"
+    },
+    {
+      "row": 166,
+      "line": 167,
+      "field": "service_date",
+      "rule": "date YYYY/MM/DD",
+      "severity": "blocker"
+    },
+    {
+      "row": 167,
+      "line": 168,
+      "field": "paid_amount",
+      "rule": "number",
+      "severity": "blocker"
+    },
+    {
+      "row": 175,
+      "line": 176,
+      "field": "member_id",
+      "rule": "required",
+      "severity": "blocker"
+    },
+    {
+      "row": 177,
+      "line": 178,
+      "field": "procedure_code",
+      "rule": "exactly 5 characters",
+      "severity": "blocker"
+    },
+    {
+      "row": 182,
+      "line": 183,
+      "field": "paid_amount",
+      "rule": "number",
+      "severity": "blocker"
+    },
+    {
+      "row": 183,
+      "line": 184,
+      "field": "paid_amount",
+      "rule": "number",
+      "severity": "blocker"
+    },
+    {
+      "row": 184,
+      "line": 185,
+      "field": "procedure_code",
+      "rule": "exactly 5 characters",
+      "severity": "blocker"
+    },
+    {
+      "row": 192,
+      "line": 193,
+      "field": "service_date",
+      "rule": "date YYYY/MM/DD",
+      "severity": "blocker"
+    },
+    {
+      "row": 204,
+      "line": 205,
+      "field": "allowed_amount",
+      "rule": "not greater than billed_amount",
+      "severity": "warning"
+    },
+    {
+      "row": 208,
+      "line": 209,
+      "field": "member_id",
+      "rule": "required",
+      "severity": "blocker"
+    },
+    {
+      "row": 209,
+      "line": 210,
+      "field": "provider_npi",
+      "rule": "exactly 10 digits",
+      "severity": "blocker"
+    },
+    {
+      "row": 257,
+      "line": 258,
+      "field": "procedure_code",
+      "rule": "exactly 5 characters",
+      "severity": "blocker"
+    },
+    {
+      "row": 259,
+      "line": 260,
+      "field": "place_of_service",
+      "rule": "exactly 2 digits",
+      "severity": "warning"
+    }
+  ]
+}

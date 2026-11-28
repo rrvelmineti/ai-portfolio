@@ -1,0 +1,230 @@
+{
+  "file": "week2.csv",
+  "as_of": "2026-11-08",
+  "errors": [
+    {
+      "row": 110,
+      "line": 111,
+      "field": "diagnosis_code",
+      "rule": "required",
+      "severity": "blocker"
+    },
+    {
+      "row": 118,
+      "line": 119,
+      "field": "member_dob",
+      "rule": "date DD-MM-YYYY",
+      "severity": "blocker"
+    },
+    {
+      "row": 125,
+      "line": 126,
+      "field": "paid_amount",
+      "rule": "number",
+      "severity": "blocker"
+    },
+    {
+      "row": 139,
+      "line": 140,
+      "field": "paid_amount",
+      "rule": "not negative",
+      "severity": "blocker"
+    },
+    {
+      "row": 144,
+      "line": 145,
+      "field": "paid_amount",
+      "rule": "number",
+      "severity": "blocker"
+    },
+    {
+      "row": 155,
+      "line": 156,
+      "field": "paid_amount",
+      "rule": "not negative",
+      "severity": "blocker"
+    },
+    {
+      "row": 160,
+      "line": 161,
+      "field": "paid_amount",
+      "rule": "number",
+      "severity": "blocker"
+    },
+    {
+      "row": 166,
+      "line": 167,
+      "field": "member_dob",
+      "rule": "required",
+      "severity": "blocker"
+    },
+    {
+      "row": 180,
+      "line": 181,
+      "field": "paid_date",
+      "rule": "date DD-MM-YYYY",
+      "severity": "blocker"
+    },
+    {
+      "row": 181,
+      "line": 182,
+      "field": "paid_date",
+      "rule": "date DD-MM-YYYY",
+      "severity": "blocker"
+    },
+    {
+      "row": 190,
+      "line": 191,
+      "field": "member_dob",
+      "rule": "required",
+      "severity": "blocker"
+    },
+    {
+      "row": 193,
+      "line": 194,
+      "field": "paid_amount",
+      "rule": "number",
+      "severity": "blocker"
+    },
+    {
+      "row": 199,
+      "line": 200,
+      "field": "member_dob",
+      "rule": "required",
+      "severity": "blocker"
+    },
+    {
+      "row": 211,
+      "line": 212,
+      "field": "paid_amount",
+      "rule": "not negative",
+      "severity": "blocker"
+    },
+    {
+      "row": 221,
+      "line": 222,
+      "field": "paid_date",
+      "rule": "date DD-MM-YYYY",
+      "severity": "blocker"
+    },
+    {
+      "row": 229,
+      "line": 230,
+      "field": "member_dob",
+      "rule": "required",
+      "severity": "blocker"
+    },
+    {
+      "row": 250,
+      "line": 251,
+      "field": "member_dob",
+      "rule": "required",
+      "severity": "blocker"
+    },
+    {
+      "row": 255,
+      "line": 256,
+      "field": "member_dob",
+      "rule": "required",
+      "severity": "blocker"
+    },
+    {
+      "row": 261,
+      "line": 262,
+      "field": "paid_amount",
+      "rule": "number",
+      "severity": "blocker"
+    },
+    {
+      "row": 263,
+      "line": 264,
+      "field": "member_dob",
+      "rule": "required",
+      "severity": "blocker"
+    },
+    {
+      "row": 297,
+      "line": 298,
+      "field": "paid_amount",
+      "rule": "not negative",
+      "severity": "blocker"
+    },
+    {
+      "row": 321,
+      "line": 322,
+      "field": "diagnosis_code",
+      "rule": "required",
+      "severity": "blocker"
+    },
+    {
+      "row": 332,
+      "line": 333,
+      "field": "paid_date",
+      "rule": "date DD-MM-YYYY",
+      "severity": "blocker"
+    },
+    {
+      "row": 336,
+      "line": 337,
+      "field": "paid_date",
+      "rule": "date DD-MM-YYYY",
+      "severity": "blocker"
+    },
+    {
+      "row": 337,
+      "line": 338,
+      "field": "paid_date",
+      "rule": "date DD-MM-YYYY",
+      "severity": "blocker"
+    },
+    {
+      "row": 342,
+      "line": 343,
+      "field": "paid_date",
+      "rule": "date DD-MM-YYYY",
+      "severity": "blocker"
+    },
+    {
+      "row": 356,
+      "line": 357,
+      "field": "member_dob",
+      "rule": "required",
+      "severity": "blocker"
+    },
+    {
+      "row": 358,
+      "line": 359,
+      "field": "paid_amount",
+      "rule": "number",
+      "severity": "blocker"
+    },
+    {
+      "row": 360,
+      "line": 361,
+      "field": "paid_amount",
+      "rule": "not negative",
+      "severity": "blocker"
+    },
+    {
+      "row": 366,
+      "line": 367,
+      "field": "paid_amount",
+      "rule": "number",
+      "severity": "blocker"
+    },
+    {
+      "row": 369,
+      "line": 370,
+      "field": "paid_amount",
+      "rule": "not negative",
+      "severity": "blocker"
+    },
+    {
+      "row": 399,
+      "line": 400,
+      "field": "paid_amount",
+      "rule": "number",
+      "severity": "blocker"
+    }
+  ]
+}

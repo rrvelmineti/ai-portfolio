@@ -1,0 +1,69 @@
+{
+  "file": "week2.csv",
+  "columns": [
+    {
+      "header": "Claim Control Number",
+      "target": "claim_id"
+    },
+    {
+      "header": "Subscriber Identification Number",
+      "target": "member_id"
+    },
+    {
+      "header": "Patient Full Name",
+      "target": "unmapped"
+    },
+    {
+      "header": "Patient Date of Birth",
+      "target": "member_dob"
+    },
+    {
+      "header": "Billing Provider National ID",
+      "target": "unmapped"
+    },
+    {
+      "header": "Rendering Provider National ID",
+      "target": "provider_npi"
+    },
+    {
+      "header": "First Date of Service",
+      "target": "service_date"
+    },
+    {
+      "header": "Payment Date",
+      "target": "paid_date"
+    },
+    {
+      "header": "Principal Diagnosis Code",
+      "target": "diagnosis_code"
+    },
+    {
+      "header": "Service Procedure Code",
+      "target": "procedure_code"
+    },
+    {
+      "header": "Facility Type Code",
+      "target": "place_of_service"
+    },
+    {
+      "header": "Submitted Charge Amount",
+      "target": "billed_amount"
+    },
+    {
+      "header": "Contractual Allowed Amount",
+      "target": "allowed_amount"
+    },
+    {
+      "header": "Net Payment Amount",
+      "target": "paid_amount"
+    },
+    {
+      "header": "Adjudication Status Description",
+      "target": "claim_status"
+    },
+    {
+      "header": "Claim Frequency Code",
+      "target": "unmapped"
+    }
+  ]
+}

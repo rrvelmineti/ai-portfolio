@@ -1,0 +1,65 @@
+{
+  "file": "week1.tsv",
+  "columns": [
+    {
+      "header": "Claim Ref",
+      "target": "claim_id"
+    },
+    {
+      "header": "Member Ref",
+      "target": "member_id"
+    },
+    {
+      "header": "Patient Name",
+      "target": "unmapped"
+    },
+    {
+      "header": "Address",
+      "target": "unmapped"
+    },
+    {
+      "header": "Birth Date",
+      "target": "member_dob"
+    },
+    {
+      "header": "Treating NPI",
+      "target": "provider_npi"
+    },
+    {
+      "header": "Visit Date",
+      "target": "service_date"
+    },
+    {
+      "header": "Dx",
+      "target": "diagnosis_code"
+    },
+    {
+      "header": "Service Code",
+      "target": "procedure_code"
+    },
+    {
+      "header": "Setting",
+      "target": "place_of_service"
+    },
+    {
+      "header": "Charge Amt",
+      "target": "billed_amount"
+    },
+    {
+      "header": "Approved Amt",
+      "target": "allowed_amount"
+    },
+    {
+      "header": "Reimbursed Amt",
+      "target": "paid_amount"
+    },
+    {
+      "header": "Outcome",
+      "target": "claim_status"
+    },
+    {
+      "header": "Adjustment Code",
+      "target": "unmapped"
+    }
+  ]
+}

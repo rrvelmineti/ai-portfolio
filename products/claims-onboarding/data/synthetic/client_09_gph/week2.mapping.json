@@ -1,0 +1,69 @@
+{
+  "file": "week2.txt",
+  "columns": [
+    {
+      "header": "CLMID",
+      "target": "claim_id"
+    },
+    {
+      "header": "MBRID",
+      "target": "member_id"
+    },
+    {
+      "header": "BDT",
+      "target": "member_dob"
+    },
+    {
+      "header": "PRVNPI",
+      "target": "provider_npi"
+    },
+    {
+      "header": "SVC_DT",
+      "target": "service_date"
+    },
+    {
+      "header": "SVC_THRU_DT",
+      "target": "unmapped"
+    },
+    {
+      "header": "PAY_DT",
+      "target": "paid_date"
+    },
+    {
+      "header": "DX1",
+      "target": "diagnosis_code"
+    },
+    {
+      "header": "PROC1",
+      "target": "procedure_code"
+    },
+    {
+      "header": "POS",
+      "target": "place_of_service"
+    },
+    {
+      "header": "CHG",
+      "target": "billed_amount"
+    },
+    {
+      "header": "ALW",
+      "target": "allowed_amount"
+    },
+    {
+      "header": "PD",
+      "target": "paid_amount"
+    },
+    {
+      "header": "STS",
+      "target": "claim_status"
+    },
+    {
+      "header": "LINE_NO",
+      "target": "unmapped"
+    },
+    {
+      "header": "REV_CD",
+      "target": "unmapped"
+    }
+  ]
+}

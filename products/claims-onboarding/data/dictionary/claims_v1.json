@@ -1,0 +1,33 @@
+{
+  "name": "claims",
+  "version": 1,
+  "note": "Target fields every client's claims extract maps to. Rules use the plain-language wording of the original claims onboarding app (rules.txt). 'date YYYY-MM-DD' is the canonical format; each client's profile states the date format it actually sends. Synthetic data only.",
+  "fields": [
+    {"name": "claim_id", "description": "Unique number identifying the claim", "type": "string", "format": "client-specific identifier", "required": true,
+     "rules": [{"rule": "required", "severity": "blocker"}, {"rule": "unique", "severity": "blocker"}]},
+    {"name": "member_id", "description": "Insured member's identifier", "type": "string", "format": "client-specific identifier", "required": true,
+     "rules": [{"rule": "required", "severity": "blocker"}]},
+    {"name": "member_dob", "description": "Member's date of birth", "type": "date", "format": "YYYY-MM-DD", "required": true,
+     "rules": [{"rule": "required", "severity": "blocker"}, {"rule": "date YYYY-MM-DD", "severity": "blocker"}, {"rule": "not in the future", "severity": "blocker"}]},
+    {"name": "provider_npi", "description": "Rendering provider's National Provider Identifier", "type": "string", "format": "10 digits", "required": true,
+     "rules": [{"rule": "required", "severity": "blocker"}, {"rule": "exactly 10 digits", "severity": "blocker"}]},
+    {"name": "service_date", "description": "Date the service was provided", "type": "date", "format": "YYYY-MM-DD", "required": true,
+     "rules": [{"rule": "required", "severity": "blocker"}, {"rule": "date YYYY-MM-DD", "severity": "blocker"}, {"rule": "not in the future", "severity": "blocker"}, {"rule": "not before member_dob", "severity": "blocker"}]},
+    {"name": "paid_date", "description": "Date the health plan paid the claim", "type": "date", "format": "YYYY-MM-DD", "required": false,
+     "rules": [{"rule": "date YYYY-MM-DD", "severity": "blocker"}, {"rule": "not in the future", "severity": "blocker"}, {"rule": "not before service_date", "severity": "blocker"}]},
+    {"name": "diagnosis_code", "description": "Primary ICD-10-CM diagnosis code", "type": "string", "format": "ICD-10-CM, e.g. E11.9", "required": true,
+     "rules": [{"rule": "required", "severity": "blocker"}, {"rule": "ICD-10 format", "severity": "blocker"}]},
+    {"name": "procedure_code", "description": "Procedure code (synthetic in this project: Z + 4 digits)", "type": "string", "format": "5 characters", "required": true,
+     "rules": [{"rule": "required", "severity": "blocker"}, {"rule": "exactly 5 characters", "severity": "blocker"}]},
+    {"name": "place_of_service", "description": "Two-digit place of service code", "type": "string", "format": "2 digits", "required": false,
+     "rules": [{"rule": "exactly 2 digits", "severity": "warning"}]},
+    {"name": "billed_amount", "description": "Total amount charged by the provider", "type": "decimal", "format": "plain number, e.g. 125.50", "required": true,
+     "rules": [{"rule": "required", "severity": "blocker"}, {"rule": "number", "severity": "blocker"}, {"rule": "not negative", "severity": "blocker"}]},
+    {"name": "allowed_amount", "description": "Amount allowed under the provider contract", "type": "decimal", "format": "plain number", "required": false,
+     "rules": [{"rule": "number", "severity": "blocker"}, {"rule": "not negative", "severity": "blocker"}, {"rule": "not greater than billed_amount", "severity": "warning"}]},
+    {"name": "paid_amount", "description": "Amount paid by the health plan", "type": "decimal", "format": "plain number", "required": true,
+     "rules": [{"rule": "required", "severity": "blocker"}, {"rule": "number", "severity": "blocker"}, {"rule": "not negative", "severity": "blocker"}, {"rule": "not greater than billed_amount", "severity": "blocker"}]},
+    {"name": "claim_status", "description": "Adjudication status of the claim", "type": "string", "format": "paid / denied / pending / adjusted", "required": true,
+     "rules": [{"rule": "required", "severity": "blocker"}, {"rule": "one of paid / denied / pending / adjusted", "severity": "blocker"}]}
+  ]
+}

@@ -1,0 +1,454 @@
+{
+  "file": "week1.csv",
+  "as_of": "2026-11-15",
+  "errors": [
+    {
+      "row": 330,
+      "line": 331,
+      "field": "member_id",
+      "rule": "required",
+      "severity": "blocker",
+      "origin": "legacy"
+    },
+    {
+      "row": 387,
+      "line": 388,
+      "field": "provider_npi",
+      "rule": "exactly 10 digits",
+      "severity": "blocker",
+      "origin": "legacy"
+    },
+    {
+      "row": 404,
+      "line": 405,
+      "field": "place_of_service",
+      "rule": "exactly 2 digits",
+      "severity": "warning",
+      "origin": "legacy"
+    },
+    {
+      "row": 477,
+      "line": 478,
+      "field": "place_of_service",
+      "rule": "exactly 2 digits",
+      "severity": "warning",
+      "origin": "legacy"
+    },
+    {
+      "row": 565,
+      "line": 566,
+      "field": "paid_amount",
+      "rule": "not greater than billed_amount",
+      "severity": "blocker",
+      "origin": "legacy"
+    },
+    {
+      "row": 574,
+      "line": 575,
+      "field": "paid_amount",
+      "rule": "not greater than billed_amount",
+      "severity": "blocker",
+      "origin": "legacy"
+    },
+    {
+      "row": 575,
+      "line": 576,
+      "field": "service_date",
+      "rule": "date YYYY-MM-DD",
+      "severity": "blocker",
+      "origin": "legacy"
+    },
+    {
+      "row": 651,
+      "line": 652,
+      "field": "place_of_service",
+      "rule": "exactly 2 digits",
+      "severity": "warning",
+      "origin": "legacy"
+    },
+    {
+      "row": 663,
+      "line": 664,
+      "field": "provider_npi",
+      "rule": "exactly 10 digits",
+      "severity": "blocker",
+      "origin": "legacy"
+    },
+    {
+      "row": 682,
+      "line": 683,
+      "field": "claim_id",
+      "rule": "unique",
+      "severity": "blocker",
+      "origin": "legacy"
+    },
+    {
+      "row": 711,
+      "line": 712,
+      "field": "claim_id",
+      "rule": "unique",
+      "severity": "blocker",
+      "origin": "legacy"
+    },
+    {
+      "row": 806,
+      "line": 807,
+      "field": "allowed_amount",
+      "rule": "not greater than billed_amount",
+      "severity": "warning",
+      "origin": "legacy"
+    },
+    {
+      "row": 893,
+      "line": 894,
+      "field": "procedure_code",
+      "rule": "exactly 5 characters",
+      "severity": "blocker",
+      "origin": "legacy"
+    },
+    {
+      "row": 899,
+      "line": 900,
+      "field": "claim_id",
+      "rule": "unique",
+      "severity": "blocker",
+      "origin": "legacy"
+    },
+    {
+      "row": 913,
+      "line": 914,
+      "field": "claim_id",
+      "rule": "unique",
+      "severity": "blocker",
+      "origin": "legacy"
+    },
+    {
+      "row": 938,
+      "line": 939,
+      "field": "paid_amount",
+      "rule": "not greater than billed_amount",
+      "severity": "blocker",
+      "origin": "legacy"
+    },
+    {
+      "row": 959,
+      "line": 960,
+      "field": "allowed_amount",
+      "rule": "not greater than billed_amount",
+      "severity": "warning",
+      "origin": "legacy"
+    },
+    {
+      "row": 972,
+      "line": 973,
+      "field": "service_date",
+      "rule": "not before member_dob",
+      "severity": "blocker",
+      "origin": "legacy"
+    },
+    {
+      "row": 976,
+      "line": 977,
+      "field": "place_of_service",
+      "rule": "exactly 2 digits",
+      "severity": "warning",
+      "origin": "legacy"
+    },
+    {
+      "row": 1017,
+      "line": 1018,
+      "field": "claim_status",
+      "rule": "one of paid / denied / pending / adjusted",
+      "severity": "blocker",
+      "origin": "legacy"
+    },
+    {
+      "row": 1090,
+      "line": 1091,
+      "field": "diagnosis_code",
+      "rule": "ICD-10 format",
+      "severity": "blocker",
+      "origin": "legacy"
+    },
+    {
+      "row": 1097,
+      "line": 1098,
+      "field": "paid_amount",
+      "rule": "not negative",
+      "severity": "blocker",
+      "origin": "legacy"
+    },
+    {
+      "row": 1104,
+      "line": 1105,
+      "field": "allowed_amount",
+      "rule": "not greater than billed_amount",
+      "severity": "warning",
+      "origin": "legacy"
+    },
+    {
+      "row": 1117,
+      "line": 1118,
+      "field": "paid_date",
+      "rule": "not before service_date",
+      "severity": "blocker",
+      "origin": "derived_paid_date"
+    },
+    {
+      "row": 1117,
+      "line": 1118,
+      "field": "service_date",
+      "rule": "not in the future",
+      "severity": "blocker",
+      "origin": "legacy"
+    },
+    {
+      "row": 1145,
+      "line": 1146,
+      "field": "claim_id",
+      "rule": "unique",
+      "severity": "blocker",
+      "origin": "legacy"
+    },
+    {
+      "row": 1155,
+      "line": 1156,
+      "field": "claim_status",
+      "rule": "one of paid / denied / pending / adjusted",
+      "severity": "blocker",
+      "origin": "legacy"
+    },
+    {
+      "row": 1248,
+      "line": 1249,
+      "field": "provider_npi",
+      "rule": "exactly 10 digits",
+      "severity": "blocker",
+      "origin": "legacy"
+    },
+    {
+      "row": 1262,
+      "line": 1263,
+      "field": "paid_amount",
+      "rule": "not negative",
+      "severity": "blocker",
+      "origin": "legacy"
+    },
+    {
+      "row": 1278,
+      "line": 1279,
+      "field": "provider_npi",
+      "rule": "exactly 10 digits",
+      "severity": "blocker",
+      "origin": "legacy"
+    },
+    {
+      "row": 1338,
+      "line": 1339,
+      "field": "provider_npi",
+      "rule": "exactly 10 digits",
+      "severity": "blocker",
+      "origin": "legacy"
+    },
+    {
+      "row": 1354,
+      "line": 1355,
+      "field": "service_date",
+      "rule": "date YYYY-MM-DD",
+      "severity": "blocker",
+      "origin": "legacy"
+    },
+    {
+      "row": 1377,
+      "line": 1378,
+      "field": "paid_date",
+      "rule": "not before service_date",
+      "severity": "blocker",
+      "origin": "derived_paid_date"
+    },
+    {
+      "row": 1377,
+      "line": 1378,
+      "field": "service_date",
+      "rule": "not in the future",
+      "severity": "blocker",
+      "origin": "legacy"
+    },
+    {
+      "row": 1410,
+      "line": 1411,
+      "field": "paid_amount",
+      "rule": "not greater than billed_amount",
+      "severity": "blocker",
+      "origin": "legacy"
+    },
+    {
+      "row": 1439,
+      "line": 1440,
+      "field": "diagnosis_code",
+      "rule": "ICD-10 format",
+      "severity": "blocker",
+      "origin": "legacy"
+    },
+    {
+      "row": 1452,
+      "line": 1453,
+      "field": "member_id",
+      "rule": "required",
+      "severity": "blocker",
+      "origin": "legacy"
+    },
+    {
+      "row": 1469,
+      "line": 1470,
+      "field": "diagnosis_code",
+      "rule": "ICD-10 format",
+      "severity": "blocker",
+      "origin": "legacy"
+    },
+    {
+      "row": 1482,
+      "line": 1483,
+      "field": "procedure_code",
+      "rule": "exactly 5 characters",
+      "severity": "blocker",
+      "origin": "legacy"
+    },
+    {
+      "row": 1561,
+      "line": 1562,
+      "field": "procedure_code",
+      "rule": "exactly 5 characters",
+      "severity": "blocker",
+      "origin": "legacy"
+    },
+    {
+      "row": 1577,
+      "line": 1578,
+      "field": "place_of_service",
+      "rule": "exactly 2 digits",
+      "severity": "warning",
+      "origin": "legacy"
+    },
+    {
+      "row": 1603,
+      "line": 1604,
+      "field": "member_id",
+      "rule": "required",
+      "severity": "blocker",
+      "origin": "legacy"
+    },
+    {
+      "row": 1713,
+      "line": 1714,
+      "field": "billed_amount",
+      "rule": "number",
+      "severity": "blocker",
+      "origin": "legacy"
+    },
+    {
+      "row": 1716,
+      "line": 1717,
+      "field": "paid_date",
+      "rule": "not before service_date",
+      "severity": "blocker",
+      "origin": "derived_paid_date"
+    },
+    {
+      "row": 1716,
+      "line": 1717,
+      "field": "service_date",
+      "rule": "not in the future",
+      "severity": "blocker",
+      "origin": "legacy"
+    },
+    {
+      "row": 1763,
+      "line": 1764,
+      "field": "provider_npi",
+      "rule": "exactly 10 digits",
+      "severity": "blocker",
+      "origin": "legacy"
+    },
+    {
+      "row": 1765,
+      "line": 1766,
+      "field": "claim_status",
+      "rule": "one of paid / denied / pending / adjusted",
+      "severity": "blocker",
+      "origin": "legacy"
+    },
+    {
+      "row": 1769,
+      "line": 1770,
+      "field": "member_id",
+      "rule": "required",
+      "severity": "blocker",
+      "origin": "legacy"
+    },
+    {
+      "row": 1779,
+      "line": 1780,
+      "field": "billed_amount",
+      "rule": "number",
+      "severity": "blocker",
+      "origin": "legacy"
+    },
+    {
+      "row": 1818,
+      "line": 1819,
+      "field": "billed_amount",
+      "rule": "number",
+      "severity": "blocker",
+      "origin": "legacy"
+    },
+    {
+      "row": 1832,
+      "line": 1833,
+      "field": "allowed_amount",
+      "rule": "not greater than billed_amount",
+      "severity": "warning",
+      "origin": "legacy"
+    },
+    {
+      "row": 1845,
+      "line": 1846,
+      "field": "service_date",
+      "rule": "date YYYY-MM-DD",
+      "severity": "blocker",
+      "origin": "legacy"
+    },
+    {
+      "row": 1851,
+      "line": 1852,
+      "field": "allowed_amount",
+      "rule": "not greater than billed_amount",
+      "severity": "warning",
+      "origin": "legacy"
+    },
+    {
+      "row": 1902,
+      "line": 1903,
+      "field": "paid_date",
+      "rule": "not before service_date",
+      "severity": "blocker",
+      "origin": "derived_paid_date"
+    },
+    {
+      "row": 1902,
+      "line": 1903,
+      "field": "service_date",
+      "rule": "not before member_dob",
+      "severity": "blocker",
+      "origin": "legacy"
+    },
+    {
+      "row": 1957,
+      "line": 1958,
+      "field": "diagnosis_code",
+      "rule": "ICD-10 format",
+      "severity": "blocker",
+      "origin": "legacy"
+    }
+  ]
+}

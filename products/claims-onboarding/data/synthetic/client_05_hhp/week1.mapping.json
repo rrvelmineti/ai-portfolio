@@ -1,0 +1,65 @@
+{
+  "file": "week1.csv",
+  "columns": [
+    {
+      "header": "ClmID",
+      "target": "claim_id"
+    },
+    {
+      "header": "MbrNo",
+      "target": "member_id"
+    },
+    {
+      "header": "DOB",
+      "target": "member_dob"
+    },
+    {
+      "header": "NPI",
+      "target": "provider_npi"
+    },
+    {
+      "header": "DOS",
+      "target": "service_date"
+    },
+    {
+      "header": "PdDt",
+      "target": "paid_date"
+    },
+    {
+      "header": "DxCd",
+      "target": "diagnosis_code"
+    },
+    {
+      "header": "ProcCd",
+      "target": "procedure_code"
+    },
+    {
+      "header": "POS",
+      "target": "place_of_service"
+    },
+    {
+      "header": "ChgAmt",
+      "target": "billed_amount"
+    },
+    {
+      "header": "AlwdAmt",
+      "target": "allowed_amount"
+    },
+    {
+      "header": "PdAmt",
+      "target": "paid_amount"
+    },
+    {
+      "header": "Sts",
+      "target": "claim_status"
+    },
+    {
+      "header": "GrpNo",
+      "target": "unmapped"
+    },
+    {
+      "header": "LnCnt",
+      "target": "unmapped"
+    }
+  ]
+}
