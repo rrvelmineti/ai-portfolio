@@ -20,9 +20,8 @@ from datetime import date
 from pathlib import Path
 from typing import Any
 
-from claims_onboarding.synthetic.dictionary import load_dictionary
+from claims_onboarding.synthetic.dictionary import SYNTHETIC_DIR, load_dictionary
 from claims_onboarding.synthetic.formats import FileFormat, read
-from claims_onboarding.synthetic.generate import SYNTHETIC_DIR
 from claims_onboarding.synthetic.rules import Finding, check_rows
 
 

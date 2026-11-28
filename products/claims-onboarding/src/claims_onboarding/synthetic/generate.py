@@ -23,16 +23,18 @@ from dataclasses import dataclass
 from datetime import date, timedelta
 from importlib.metadata import version
 from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
-from faker import Faker
-
-from claims_onboarding.synthetic.dictionary import DATA_DIR, load_dictionary
+from claims_onboarding.synthetic.dictionary import SYNTHETIC_DIR, load_dictionary
 from claims_onboarding.synthetic.formats import FileFormat, write
 from claims_onboarding.synthetic.profiles import CLIENTS, Client, ErrorPlan
 from claims_onboarding.synthetic.rules import DATE_FORMATS, check_rows, format_date
 
-SYNTHETIC_DIR = DATA_DIR / "synthetic"
+if TYPE_CHECKING:  # Faker is a dev dependency: only generating needs it, not seeding
+    from faker import Faker
+
+__all__ = ["SYNTHETIC_DIR", "generate_all", "port_legacy"]
+
 SEED_BASE = 2026
 AS_OF = {1: date(2026, 11, 1), 2: date(2026, 11, 8)}
 LEGACY_AS_OF = date(2026, 11, 15)  # the original sample was measured on 15 Nov 2026
@@ -164,6 +166,8 @@ def _plan(client: Client, week: int, rng: random.Random, mapped: set[str]) -> Er
 
 def build_file(client: Client, week: int) -> Built:
     seed = SEED_BASE * 1000 + client.number * 10 + week
+    from faker import Faker
+
     rng = random.Random(seed)  # noqa: S311 - reproducible test data, not security
     fake = Faker(client.faker_locale)
     fake.seed_instance(seed)

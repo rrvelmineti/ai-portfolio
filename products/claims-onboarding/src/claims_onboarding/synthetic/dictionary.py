@@ -9,6 +9,7 @@ from pathlib import Path
 
 DATA_DIR = Path(__file__).resolve().parents[3] / "data"
 DICTIONARY_PATH = DATA_DIR / "dictionary" / "claims_v1.json"
+SYNTHETIC_DIR = DATA_DIR / "synthetic"
 CANONICAL_DATE = "YYYY-MM-DD"
 
 

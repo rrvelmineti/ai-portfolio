@@ -27,9 +27,8 @@ from sqlalchemy.orm import Session
 
 from claims_onboarding import service
 from claims_onboarding.models import ClaimsFile, Client, DataDictionary, DictionaryStatus
-from claims_onboarding.synthetic.dictionary import DICTIONARY_PATH
+from claims_onboarding.synthetic.dictionary import DICTIONARY_PATH, SYNTHETIC_DIR
 from claims_onboarding.synthetic.formats import read
-from claims_onboarding.synthetic.generate import SYNTHETIC_DIR
 from claims_onboarding.synthetic.profiles import CLIENTS
 
 DEMO_TENANT = "demo"

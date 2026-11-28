@@ -369,3 +369,15 @@ def test_cli(monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
     assert "wrote 2 files" in capsys.readouterr().out
     monkeypatch.setattr(seed, "main", lambda: 0)
     assert cli.main(["seed"]) == 0
+
+
+def test_seed_and_check_run_without_dev_dependencies() -> None:
+    """Deploy and the nightly reset install without dev tools (no Faker): seeding must work."""
+    import subprocess
+    import sys
+
+    code = (
+        "import sys; sys.modules['faker'] = None\n"
+        "import claims_onboarding.synthetic.seed, claims_onboarding.synthetic.check"
+    )
+    subprocess.run([sys.executable, "-c", code], check=True)  # noqa: S603 - fixed arguments
