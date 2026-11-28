@@ -10,7 +10,7 @@ write commits its audit row with it (``service.py``).
 import uuid
 from datetime import date, datetime
 from decimal import Decimal
-from typing import Annotated
+from typing import Annotated, Literal
 
 from ai_platform_auth import Auth, Role, TenantScope, User
 from fastapi import APIRouter, Depends, status
@@ -112,8 +112,11 @@ class DecisionIn(BaseModel):
 
 
 class SignoffIn(BaseModel):
+    """Approve -> live. Reject -> ``reason`` and ``return_to`` are required."""
+
     approve: bool
-    comment: str = Field(default="", max_length=2000)
+    reason: str = Field(default="", max_length=service.MAX_REASON)
+    return_to: Literal[FileStatus.UNDER_REVIEW, FileStatus.ISSUES_SENT] | None = None
 
 
 class SignoffOut(BaseModel):
@@ -122,7 +125,8 @@ class SignoffOut(BaseModel):
     file_id: uuid.UUID
     signed_by: uuid.UUID
     decision: str
-    comment: str
+    reason: str
+    returned_to: str | None
     signed_at: datetime
 
 
@@ -212,9 +216,13 @@ def build_router(auth: Auth) -> APIRouter:
                  status_code=status.HTTP_201_CREATED)  # fmt: skip
     def sign_off(file_id: uuid.UUID, body: SignoffIn, user: Manager, scope: ScopeDep,
                  session: SessionDep) -> SignoffOut:  # fmt: skip
-        """Go-live decision (manager only; never the person who approved the mappings)."""
+        """Go-live decision (manager only; never the person who approved the mappings).
+
+        Approve: the file goes live. Reject: give a ``reason`` and ``return_to``:
+        ``under_review`` (internal fix) or ``issues_sent`` (the client must resubmit).
+        """
         signoff = service.sign_off(session, scope, user, file_id, approve=body.approve,
-                                   comment=body.comment)  # fmt: skip
+                                   reason=body.reason, return_to=body.return_to)  # fmt: skip
         session.commit()
         return SignoffOut.model_validate(signoff)
 

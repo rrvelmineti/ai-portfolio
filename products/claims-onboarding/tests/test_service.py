@@ -21,6 +21,7 @@ from claims_onboarding.models import (
     FileStatus,
     GoLiveSignoff,
     RuleKind,
+    RuleResult,
     Severity,
 )
 from claims_onboarding.service import FourEyesViolation, GuardFailed
@@ -410,35 +411,166 @@ def test_four_eyes_mapping_approver_cannot_sign_off(
     assert file.status == FileStatus.LIVE
 
 
-def test_only_managers_sign_off_and_rejections_need_a_comment(session: Session, org_a: Org) -> None:
+def _ready(session: Session, org: Org) -> ClaimsFile:
+    """A file at ready_for_signoff whose mappings the analyst approved."""
+    file = _file(session, org, _client(session, org))
+    _to_rules_run(session, org, file, approver=org.analyst)
+    service.record_rule_result(
+        session,
+        org.scope,
+        org.analyst,
+        file.id,
+        rule_definition_id=_rule(session, org, Severity.WARNING),
+        failed_rows=1,
+    )
+    _move(session, org, file, FileStatus.READY_FOR_SIGNOFF)
+    return file
+
+
+def test_only_managers_sign_off_files_that_are_ready(session: Session, org_a: Org) -> None:
     file = _file(session, org_a, _client(session, org_a))
     with pytest.raises(PermissionDenied, match="only a manager"):
         service.sign_off(session, org_a.scope, org_a.analyst2, file.id, approve=True)
     with pytest.raises(InvalidTransition, match="only a file at ready_for_signoff"):
         service.sign_off(session, org_a.scope, org_a.manager, file.id, approve=True)
-    _to_rules_run(session, org_a, file, approver=org_a.analyst)
-    service.record_rule_result(
-        session,
-        org_a.scope,
-        org_a.analyst,
-        file.id,
-        rule_definition_id=_rule(session, org_a, Severity.WARNING),
-        failed_rows=1,
+
+
+@pytest.mark.parametrize("return_to", [FileStatus.UNDER_REVIEW, FileStatus.ISSUES_SENT])
+def test_rejected_signoff_needs_a_reason_and_a_target(
+    session: Session, org_a: Org, return_to: FileStatus
+) -> None:
+    file = _ready(session, org_a)
+    m = org_a.manager
+    with pytest.raises(Conflict, match="needs a reason"):
+        service.sign_off(session, org_a.scope, m, file.id, approve=False, return_to=return_to)
+    with pytest.raises(Conflict, match="needs a reason"):
+        service.sign_off(
+            session, org_a.scope, m, file.id, approve=False, reason="   ", return_to=return_to
+        )
+    for bad_target in (None, FileStatus.MAPPED, FileStatus.LIVE):
+        with pytest.raises(Conflict, match="needs return_to"):
+            service.sign_off(
+                session, org_a.scope, m, file.id, approve=False, reason="why", return_to=bad_target
+            )
+    with pytest.raises(Conflict, match="longer than"):
+        service.sign_off(
+            session, org_a.scope, m, file.id, approve=False, reason="x" * 1001, return_to=return_to
+        )
+    with pytest.raises(Conflict, match="don't give return_to"):
+        service.sign_off(session, org_a.scope, m, file.id, approve=True, return_to=return_to)
+    assert file.status == FileStatus.READY_FOR_SIGNOFF  # nothing above changed anything
+
+    reason = "  Paid amounts look shifted by one column; confirm before go-live  "
+    signoff = service.sign_off(
+        session, org_a.scope, m, file.id, approve=False, reason=reason, return_to=return_to
     )
-    _move(session, org_a, file, FileStatus.READY_FOR_SIGNOFF)
-    with pytest.raises(Conflict, match="needs a comment"):
-        service.sign_off(session, org_a.scope, org_a.manager, file.id, approve=False)
+    assert (signoff.decision, signoff.returned_to) == ("rejected", return_to)
+    assert signoff.reason == reason.strip() and file.status == return_to
+
+    rows = session.execute(
+        select(AuditLog.action, AuditLog.details, AuditLog.user_id)
+        .where(AuditLog.resource_id == str(file.id))
+        .order_by(AuditLog.id.desc())
+        .limit(2)
+    ).all()
+    assert [(a, d, u) for a, d, u in reversed(rows)] == [
+        (
+            "claims.signoff.recorded",
+            {"decision": "rejected", "reason": reason.strip(), "return_to": str(return_to)},
+            m.id,
+        ),
+        (
+            "claims.file.status_changed",
+            {"from": "ready_for_signoff", "to": str(return_to), "reason": reason.strip()},
+            m.id,
+        ),
+    ]
+
+
+def test_moves_out_of_ready_for_signoff_only_via_signoff(session: Session, org_a: Org) -> None:
+    file = _ready(session, org_a)
+    for target in (FileStatus.UNDER_REVIEW, FileStatus.ISSUES_SENT, FileStatus.LIVE):
+        with pytest.raises(InvalidTransition, match="only through a go-live sign-off"):
+            _move(session, org_a, file, target, reason="trying to skip the sign-off")
+    assert file.status == FileStatus.READY_FOR_SIGNOFF
+
+
+def test_rejected_back_to_review_can_be_fixed_rerun_and_approved(
+    session: Session, org_a: Org
+) -> None:
+    file = _ready(session, org_a)
     service.sign_off(
         session,
         org_a.scope,
         org_a.manager,
         file.id,
         approve=False,
-        comment="Wait for the February file",
+        reason="Re-check the member ID mapping",
+        return_to=FileStatus.UNDER_REVIEW,
     )
-    assert file.status == FileStatus.READY_FOR_SIGNOFF
-    rows = session.scalars(select(GoLiveSignoff).where(GoLiveSignoff.file_id == file.id)).all()
-    assert [(r.decision, r.signed_by) for r in rows] == [("rejected", org_a.manager.id)]
+    _move(session, org_a, file, FileStatus.MAPPED, reason="manager asked for a re-check")
+    _move(session, org_a, file, FileStatus.UNDER_REVIEW, FileStatus.RULES_RUN)
+    rule = session.scalar(
+        select(RuleResult.rule_definition_id).where(RuleResult.file_id == file.id)
+    )
+    assert rule is not None
+    service.record_rule_result(
+        session, org_a.scope, org_a.analyst, file.id, rule_definition_id=rule, failed_rows=0
+    )  # re-run replaces
+    results = session.scalars(select(RuleResult).where(RuleResult.file_id == file.id)).all()
+    assert [r.failed_rows for r in results] == [0]
+    replaced = session.scalar(
+        select(AuditLog.details)
+        .where(AuditLog.action == "claims.rule_result.recorded")
+        .order_by(AuditLog.id.desc())
+        .limit(1)
+    )
+    assert replaced is not None and replaced["replaced"] is True
+    _move(session, org_a, file, FileStatus.READY_FOR_SIGNOFF)
+    service.sign_off(session, org_a.scope, org_a.manager, file.id, approve=True)
+    assert file.status == FileStatus.LIVE
+    decisions = session.scalars(
+        select(GoLiveSignoff.decision)
+        .where(GoLiveSignoff.file_id == file.id)
+        .order_by(GoLiveSignoff.signed_at, GoLiveSignoff.decision.desc())
+    ).all()
+    assert sorted(decisions) == ["approved", "rejected"]
+
+
+def test_rejected_to_issues_sent_allows_a_resubmission(session: Session, org_a: Org) -> None:
+    file = _ready(session, org_a)
+    service.sign_off(
+        session,
+        org_a.scope,
+        org_a.manager,
+        file.id,
+        approve=False,
+        reason="Client must resend with 2025 dates",
+        return_to=FileStatus.ISSUES_SENT,
+    )
+    again = _file(session, org_a, file.client_id, previous_file_id=file.id, sha256=_sha("v2"))
+    assert again.previous_file_id == file.id and again.status == FileStatus.RECEIVED
+
+
+def test_signoff_outcome_is_enforced_by_the_database(session: Session, org_a: Org) -> None:
+    file = _file(session, org_a, _client(session, org_a))
+    bad: list[dict[str, Any]] = [
+        {"decision": "rejected", "reason": "", "returned_to": "under_review"},
+        {"decision": "rejected", "reason": "why", "returned_to": None},
+        {"decision": "rejected", "reason": "why", "returned_to": "mapped"},
+        {"decision": "approved", "reason": "", "returned_to": "issues_sent"},
+    ]
+    for values in bad:
+        with (
+            pytest.raises(IntegrityError, match="ck_go_live_signoffs_outcome"),
+            session.begin_nested(),
+        ):
+            session.add(
+                GoLiveSignoff(
+                    tenant_id=org_a.tenant.id, file_id=file.id, signed_by=org_a.manager.id, **values
+                )
+            )
+            session.flush()
 
 
 # ---------------------------------------------------------------- rules

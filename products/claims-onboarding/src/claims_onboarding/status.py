@@ -1,15 +1,18 @@
 """The file status machine (ADR 0009).
 
 ```
-received -> masked -> mapped -> under_review -> rules_run -> issues_sent
-                        ^            |                    \\-> ready_for_signoff -> live
-                        +--send back-+
+received -> masked -> mapped -> under_review -> rules_run -> issues_sent <-----------+
+                        ^          |   ^                  \\-> ready_for_signoff -> live
+                        +send back-+   +----- rejected sign-off (internal fix) ----+ |
+                                                rejected sign-off (client resubmits)-+
 ```
 
 - ``under_review -> mapped`` sends mappings back to the analyst and needs a reason.
 - ``issues_sent`` and ``live`` are final. A client's corrected file is a *new* file with
   ``previous_file_id`` pointing at the old one, starting again at ``received``.
-- ``live`` is reached only through a go-live sign-off, never a plain transition.
+- Every move out of ``ready_for_signoff`` is a go-live sign-off, never a plain
+  transition: approval -> ``live``; rejection (reason required) -> ``under_review``
+  for an internal fix, or ``issues_sent`` when the client must resubmit.
 
 The data-dependent guards (all mappings decided, zero blocker results, four-eyes) live
 in ``service.py``; this module holds only the shape of the machine.
@@ -31,15 +34,20 @@ TRANSITIONS: Mapping[S, frozenset[S]] = {
     S.UNDER_REVIEW: frozenset({S.RULES_RUN, S.MAPPED}),
     S.RULES_RUN: frozenset({S.ISSUES_SENT, S.READY_FOR_SIGNOFF}),
     S.ISSUES_SENT: frozenset(),
-    S.READY_FOR_SIGNOFF: frozenset({S.LIVE}),
+    S.READY_FOR_SIGNOFF: frozenset({S.LIVE, S.UNDER_REVIEW, S.ISSUES_SENT}),
     S.LIVE: frozenset(),
 }
 
 # Transitions that need a written reason (stored in the audit row).
 NEEDS_REASON: frozenset[tuple[S, S]] = frozenset({(S.UNDER_REVIEW, S.MAPPED)})
 
-# Only the sign-off flow may make a file live.
-SIGNOFF_ONLY: frozenset[S] = frozenset({S.LIVE})
+# Edges only the go-live sign-off may take (approval -> live, rejection -> the others).
+SIGNOFF_ONLY: frozenset[tuple[S, S]] = frozenset(
+    (S.READY_FOR_SIGNOFF, target) for target in TRANSITIONS[S.READY_FOR_SIGNOFF]
+)
+
+# Where a rejected sign-off may send the file.
+REJECTION_TARGETS: frozenset[S] = frozenset({S.UNDER_REVIEW, S.ISSUES_SENT})
 
 FINAL: frozenset[S] = frozenset(s for s, targets in TRANSITIONS.items() if not targets)
 

@@ -24,7 +24,9 @@ and what we keep or replace: [`docs/current-state.md`](docs/current-state.md).
    - File status machine: received → masked → mapped → under_review → rules_run →
      issues_sent | ready_for_signoff → live; send-back under_review → mapped with a
      required reason; invalid transitions raise. ready_for_signoff only with zero
-     blocker rule results. A corrected file is a new file with `previous_file_id`.
+     blocker rule results. A rejected sign-off needs a reason and goes back to
+     under_review (internal fix) or issues_sent (client resubmits). A corrected file
+     is a new file with `previous_file_id`.
    - Roles: analyst maps and reviews; manager (admin) signs off; viewer read-only;
      four-eyes: whoever approved a file's mappings can't sign off its go-live.
    - Every state change writes to the audit log.
@@ -65,7 +67,7 @@ and what we keep or replace: [`docs/current-state.md`](docs/current-state.md).
 | `POST /files/{id}/mappings` | analyst | Record a mapping suggestion |
 | `POST /mappings/{id}/decision` | analyst | Approve or reject a mapping |
 | `POST /files/{id}/transitions` | analyst | Move status `{"to": ..., "reason": ...}` |
-| `POST /files/{id}/signoff` | manager (admin) | Go-live decision; four-eyes enforced |
+| `POST /files/{id}/signoff` | manager (admin) | Go-live decision; four-eyes enforced. Rejecting needs `reason` and `return_to`: `under_review` or `issues_sent` |
 
 Plus `/auth/*`, `/approvals`, `/metrics`, `/healthz` and `/readyz` from the platform.
 

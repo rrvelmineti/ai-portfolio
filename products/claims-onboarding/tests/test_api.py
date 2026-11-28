@@ -165,11 +165,74 @@ def test_end_to_end_with_four_eyes(client: TestClient, session: Session, org_a: 
     own = client.post(f"/files/{fid}/signoff", headers=manager, json={"approve": True})
     assert own.status_code == 403 and "four-eyes" in own.json()["detail"]
     ok = client.post(
-        f"/files/{fid}/signoff", headers=manager2, json={"approve": True, "comment": "Looks good"}
+        f"/files/{fid}/signoff", headers=manager2, json={"approve": True, "reason": "Looks good"}
     )
     assert ok.status_code == 201 and ok.json()["decision"] == "approved"
     assert client.get(f"/files/{fid}", headers=analyst).json()["status"] == "live"
     assert client.get(f"/clients/{file['client_id']}", headers=analyst).json()["status"] == "live"
+
+
+def test_rejected_signoff_over_http(client: TestClient, session: Session, org_a: Org) -> None:
+    analyst, manager = h(client, org_a, org_a.analyst), h(client, org_a, org_a.manager)
+    file = _new_file(client, analyst)
+    fid = file["id"]
+    _move(client, analyst, fid, "masked", "mapped")
+    column = file["columns"][0]["id"]
+    m = client.post(
+        f"/files/{fid}/mappings",
+        headers=analyst,
+        json={"file_column_id": column, "target_field": "claim_id"},
+    ).json()
+    client.post(f"/mappings/{m['id']}/decision", headers=analyst, json={"approve": True})
+    _move(client, analyst, fid, "under_review", "rules_run")
+    rule = service.add_rule_definition(
+        session,
+        org_a.scope,
+        org_a.analyst,
+        rule_key="dob",
+        target_field="member_dob",
+        rule_text="not in the future",
+        severity=Severity.WARNING,
+    )
+    service.record_rule_result(
+        session,
+        org_a.scope,
+        org_a.analyst,
+        uuid.UUID(fid),
+        rule_definition_id=rule.id,
+        failed_rows=2,
+    )
+    session.commit()
+    _move(client, analyst, fid, "ready_for_signoff")
+    url = f"/files/{fid}/signoff"
+    assert (
+        client.post(
+            url, headers=manager, json={"approve": False, "return_to": "issues_sent"}
+        ).status_code
+        == 409
+    )  # no reason
+    assert (
+        client.post(
+            url, headers=manager, json={"approve": False, "reason": "why", "return_to": "live"}
+        ).status_code
+        == 422
+    )  # not a rejection target
+    plain = client.post(
+        f"/files/{fid}/transitions", headers=analyst, json={"to": "issues_sent", "reason": "skip"}
+    )
+    assert plain.status_code == 409 and "sign-off" in plain.json()["detail"]
+    r = client.post(
+        url,
+        headers=manager,
+        json={
+            "approve": False,
+            "return_to": "issues_sent",
+            "reason": "Dates of birth after service dates",
+        },
+    )
+    assert r.status_code == 201
+    assert (r.json()["decision"], r.json()["returned_to"]) == ("rejected", "issues_sent")
+    assert client.get(f"/files/{fid}", headers=analyst).json()["status"] == "issues_sent"
 
 
 def test_status_errors_are_409_and_send_back_needs_a_reason(client: TestClient, org_a: Org) -> None:

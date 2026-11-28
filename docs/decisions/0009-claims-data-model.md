@@ -36,7 +36,7 @@ before any AI, masking or rules work lands on it.
 | `rule_definitions` | Versioned by `rule_key`. `kind` built_in / analyst. Blocker or warning. A new version retires the active one. |
 | `rule_results` | Failed rows per rule per file. Severity is copied from the rule. Examples are stored masked. |
 | `issue_letters` | Draft / sent, body stored masked |
-| `go_live_signoffs` | Approved or rejected with a comment; at most one approval per file |
+| `go_live_signoffs` | Approved, or rejected with a reason and `returned_to` (`under_review` or `issues_sent`); at most one approval per file. A CHECK enforces the outcome. |
 
 - Statuses are **strings with CHECK constraints**, not Postgres enums, so later phases
   extend them with a constraint change instead of an enum migration.
@@ -61,9 +61,10 @@ before any AI, masking or rules work lands on it.
 ### File status machine
 
 ```
-received -> masked -> mapped -> under_review -> rules_run -> issues_sent
-                        ^            |                    \-> ready_for_signoff -> live
-                        +--send back-+
+received -> masked -> mapped -> under_review -> rules_run -> issues_sent <-----------+
+                        ^          |   ^                  \-> ready_for_signoff -> live
+                        +send back-+   +----- rejected sign-off (internal fix) ----+ |
+                                                rejected sign-off (client resubmits)-+
 ```
 
 - Any other change raises `InvalidTransition` (HTTP 409).
@@ -71,7 +72,17 @@ received -> masked -> mapped -> under_review -> rules_run -> issues_sent
 - **`issues_sent` and `live` are final.** The client's corrected file is a new file with
   `previous_file_id` set, starting at `received`. Only a file at `issues_sent` can be
   "previous".
-- **`live` only through a sign-off,** never a plain transition.
+- **Every move out of `ready_for_signoff` is a go-live sign-off,** never a plain
+  transition:
+  - **approved** → `live`;
+  - **rejected** → a **reason is required**, plus `return_to`:
+    - `under_review` for an internal fix: the analysts correct mappings, re-run the
+      rules (a re-run replaces that rule's earlier result) and ask for sign-off again;
+    - `issues_sent` when the client must send a corrected file, which comes in as a
+      new file with `previous_file_id`.
+  - **Both are audited:** `claims.signoff.recorded {decision, reason, return_to}` and
+    `claims.file.status_changed {from: ready_for_signoff, to, reason}`.
+  - Four-eyes applies to rejections too.
 - **Guards** (data checks, HTTP 409):
   - entering `rules_run` needs no undecided mappings and at least one approved one;
   - `rules_run → ready_for_signoff` needs recorded rule results **with zero failed
@@ -99,7 +110,7 @@ received -> masked -> mapped -> under_review -> rules_run -> issues_sent
   - `client.created`, `file.registered`, `file.status_changed {from, to, reason}`;
   - `mapping.suggested`, `mapping.decided`;
   - `rule.defined`, `rule_result.recorded`;
-  - `signoff.recorded`, `client.live`.
+  - `signoff.recorded {decision, reason, return_to}`, `client.live`.
 - If the change rolls back, so does its row, and refused changes write nothing.
 - The platform's generic `http.post` row is skipped for these requests because they are
   already audited.
@@ -126,6 +137,3 @@ received -> masked -> mapped -> under_review -> rules_run -> issues_sent
   - It would be enforced in the same two places as tenant isolation: queries filtered by
     assignment, plus 404 for unassigned clients.
   - Manager sign-off still requires four-eyes.
-- **Rejected sign-off:** the file stays at `ready_for_signoff` with the rejection
-  recorded. Decide whether a rejection should send the file back (e.g. to
-  `under_review`) once real use shows what managers expect.

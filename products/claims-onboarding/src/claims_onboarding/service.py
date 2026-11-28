@@ -42,6 +42,7 @@ from claims_onboarding.models import (
 from claims_onboarding.models import ClientStatus as CS
 from claims_onboarding.status import (
     NEEDS_REASON,
+    REJECTION_TARGETS,
     SIGNOFF_ONLY,
     InvalidTransition,
     check_transition,
@@ -191,8 +192,8 @@ def transition(
     """Move a file to ``target`` if the machine and the data allow it; audited."""
     file = _get(session, scope, ClaimsFile, file_id, lock=True)
     current = FileStatus(file.status)
-    if target in SIGNOFF_ONLY:
-        raise InvalidTransition(current, target, "a file goes live only through a go-live "
+    if target == FileStatus.LIVE or (current, target) in SIGNOFF_ONLY:
+        raise InvalidTransition(current, target, "this move happens only through a go-live "
                                 "sign-off (POST /files/{id}/signoff)")  # fmt: skip
     check_transition(current, target)
     reason = (reason or "").strip() or None
@@ -354,32 +355,59 @@ def record_rule_result(
     failed_rows: int,
     examples: Sequence[dict[str, Any]] = (),
 ) -> RuleResult:
-    """Store one rule's outcome for a file at ``rules_run`` (examples must be masked)."""
+    """Store one rule's outcome for a file at ``rules_run`` (examples must be masked).
+
+    Running the rules again (e.g. after a rejected sign-off sent the file back to
+    ``under_review``) replaces that rule's earlier result; the audit row says so.
+    """
     file = _get(session, scope, ClaimsFile, file_id)
     if file.status != FileStatus.RULES_RUN:
         raise Conflict(f"rule results can only be recorded at rules_run (file is {file.status})")
     rule = _get(session, scope, RuleDefinition, rule_definition_id)
     if rule.status != RuleStatus.ACTIVE or rule.client_id not in (None, file.client_id):
         raise Conflict("that rule doesn't apply to this file")
-    result = RuleResult(id=uuid.uuid4(), tenant_id=scope.tenant_id, file_id=file.id,
-                        rule_definition_id=rule.id, severity=rule.severity,
-                        failed_rows=failed_rows, examples=list(examples))  # fmt: skip
-    session.add(result)
+    result = session.scalar(
+        scope.apply(select(RuleResult), RuleResult)
+        .where(RuleResult.file_id == file.id, RuleResult.rule_definition_id == rule.id)
+        .with_for_update()
+    )  # fmt: skip
+    replaced = result is not None
+    if result is None:
+        result = RuleResult(id=uuid.uuid4(), tenant_id=scope.tenant_id, file_id=file.id,
+                            rule_definition_id=rule.id)  # fmt: skip
+        session.add(result)
+    result.severity = rule.severity
+    result.failed_rows = failed_rows
+    result.examples = list(examples)
     session.flush()
     _audit(session, scope, actor, "claims.rule_result.recorded", "claims_rule_result", result.id,
            file_id=file.id, rule_key=rule.rule_key, severity=rule.severity,
-           failed_rows=failed_rows)  # fmt: skip
+           failed_rows=failed_rows, replaced=replaced or None)  # fmt: skip
     return result
 
 
 # ---------------------------------------------------------------- go-live sign-off
 
 
-def sign_off(session: Session, scope: TenantScope, actor: User, file_id: uuid.UUID, *,
-             approve: bool, comment: str = "") -> GoLiveSignoff:  # fmt: skip
-    """A manager's go-live decision. Approval makes the file (and its client) live.
+def sign_off(
+    session: Session,
+    scope: TenantScope,
+    actor: User,
+    file_id: uuid.UUID,
+    *,
+    approve: bool,
+    reason: str = "",
+    return_to: FileStatus | None = None,
+) -> GoLiveSignoff:
+    """A manager's go-live decision on a file at ``ready_for_signoff``.
 
-    Four-eyes: anyone who approved a mapping on this file may not sign it off.
+    - Approve: the file (and its client) go live. ``reason`` is an optional note.
+    - Reject: ``reason`` is required, and ``return_to`` says where the file goes:
+      ``under_review`` for an internal fix, or ``issues_sent`` when the client must
+      send a corrected file.
+
+    Four-eyes: anyone who approved a mapping on this file may not decide its sign-off.
+    The decision and the resulting status change are both audited.
     """
     if not role_allows(actor.role, Role.ADMIN):
         raise PermissionDenied("only a manager (admin) can sign off go-live")
@@ -394,19 +422,33 @@ def sign_off(session: Session, scope: TenantScope, actor: User, file_id: uuid.UU
     )  # fmt: skip
     if approved_mapping is not None:
         raise FourEyesViolation
-    comment = comment.strip()
-    if not approve and not comment:
-        raise Conflict("a rejected sign-off needs a comment")
+    reason = reason.strip()
+    if len(reason) > MAX_REASON:
+        raise Conflict(f"reason is longer than {MAX_REASON} characters")
+    if approve:
+        if return_to is not None:
+            raise Conflict("an approved sign-off makes the file live; don't give return_to")
+        target = FileStatus.LIVE
+    else:
+        if not reason:
+            raise Conflict("a rejected sign-off needs a reason")
+        if return_to not in REJECTION_TARGETS:
+            raise Conflict("a rejected sign-off needs return_to: under_review (internal fix) "
+                           "or issues_sent (the client must resubmit)")  # fmt: skip
+        target = return_to
+    check_transition(current, target)
     decision = SignoffDecision.APPROVED if approve else SignoffDecision.REJECTED
-    signoff = GoLiveSignoff(id=uuid.uuid4(), tenant_id=scope.tenant_id, file_id=file.id,
-                            signed_by=actor.id, decision=decision, comment=comment)  # fmt: skip
+    signoff = GoLiveSignoff(
+        id=uuid.uuid4(), tenant_id=scope.tenant_id, file_id=file.id, signed_by=actor.id,
+        decision=decision, reason=reason, returned_to=None if approve else str(target),
+    )  # fmt: skip
     session.add(signoff)
     session.flush()
     _audit(session, scope, actor, "claims.signoff.recorded", "claims_file", file.id,
-           decision=str(decision), comment=comment or None)  # fmt: skip
+           decision=str(decision), reason=reason or None,
+           return_to=None if approve else str(target))  # fmt: skip
+    _set_status(session, scope, actor, file, target, reason=reason or None)
     if approve:
-        check_transition(current, FileStatus.LIVE)
-        _set_status(session, scope, actor, file, FileStatus.LIVE)
         client = _get(session, scope, Client, file.client_id, lock=True)
         if client.status != CS.LIVE:
             client.status = CS.LIVE

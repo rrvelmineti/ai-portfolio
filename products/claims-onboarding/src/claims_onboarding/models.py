@@ -372,12 +372,24 @@ class IssueLetter(Base):
 
 
 class GoLiveSignoff(Base):
-    """A manager's go-live decision on a file (four-eyes: never the mapping approver)."""
+    """A manager's go-live decision on a file (four-eyes: never the mapping approver).
+
+    Approved: the file goes live. Rejected: with a reason, back to ``under_review``
+    (internal fix) or to ``issues_sent`` (the client must resubmit).
+    """
 
     __tablename__ = "go_live_signoffs"
     __table_args__ = (
         UniqueConstraint("tenant_id", "id", name="uq_go_live_signoffs_tenant_id"),
         CheckConstraint(_in("decision", SignoffDecision), name="ck_go_live_signoffs_decision"),
+        # approval: no return target; rejection: a reason and where the file went back to
+        CheckConstraint(
+            "(decision = 'approved' AND returned_to IS NULL)"
+            " OR (decision = 'rejected' AND returned_to IS NOT NULL"
+            " AND returned_to IN ('under_review', 'issues_sent')"
+            " AND length(btrim(reason)) > 0)",
+            name="ck_go_live_signoffs_outcome",
+        ),
         _fk("fk_go_live_signoffs_file", "file_id", "files"),
         # at most one approval per file
         Index(
@@ -394,5 +406,6 @@ class GoLiveSignoff(Base):
     file_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), nullable=False)
     signed_by: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), nullable=False)
     decision: Mapped[str] = mapped_column(String(20), nullable=False)
-    comment: Mapped[str] = mapped_column(Text, nullable=False, default="")
+    reason: Mapped[str] = mapped_column(Text, nullable=False, default="")  # required to reject
+    returned_to: Mapped[str | None] = mapped_column(String(20))  # rejected: where the file went
     signed_at: Mapped[datetime] = _created_at()

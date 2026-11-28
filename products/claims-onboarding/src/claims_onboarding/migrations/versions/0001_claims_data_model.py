@@ -209,12 +209,20 @@ def upgrade() -> None:
         sa.Column("file_id", sa.UUID(), nullable=False),
         sa.Column("signed_by", sa.UUID(), nullable=False),
         sa.Column("decision", sa.String(length=20), nullable=False),
-        sa.Column("comment", sa.Text(), nullable=False),
+        sa.Column("reason", sa.Text(), nullable=False),
+        sa.Column("returned_to", sa.String(length=20), nullable=True),
         sa.Column(
             "signed_at", sa.DateTime(timezone=True), server_default=sa.text("now()"), nullable=False
         ),
         sa.CheckConstraint(
             "decision IN ('approved', 'rejected')", name="ck_go_live_signoffs_decision"
+        ),
+        sa.CheckConstraint(
+            "(decision = 'approved' AND returned_to IS NULL)"
+            " OR (decision = 'rejected' AND returned_to IS NOT NULL"
+            " AND returned_to IN ('under_review', 'issues_sent')"
+            " AND length(btrim(reason)) > 0)",
+            name="ck_go_live_signoffs_outcome",
         ),
         sa.ForeignKeyConstraint(
             ["tenant_id", "file_id"],

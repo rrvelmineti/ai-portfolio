@@ -55,7 +55,9 @@ on the shared platform. Synthetic claims data only.
      - File status machine: received → masked → mapped → under_review → rules_run →
        issues_sent | ready_for_signoff → live; send-back under_review → mapped with a
        required reason; invalid transitions raise. ready_for_signoff only with zero
-       blocker rule results. A corrected file is a new file with `previous_file_id`.
+       blocker rule results. A rejected sign-off needs a reason and goes back to
+       under_review (internal fix) or issues_sent (client resubmits). A corrected file
+       is a new file with `previous_file_id`.
      - Roles: analyst maps and reviews; manager (admin) signs off; viewer read-only;
        four-eyes: whoever approved a file's mappings can't sign off its go-live.
      - Every state change writes to the audit log.

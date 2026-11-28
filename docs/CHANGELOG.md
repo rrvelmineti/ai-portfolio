@@ -17,7 +17,9 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - **File status machine** with send-back (reason required) and guards:
   - no undecided mappings before `rules_run`;
   - zero failed blocker rules before `ready_for_signoff`, otherwise only `issues_sent`;
-  - `live` only via sign-off.
+  - every move out of `ready_for_signoff` is a sign-off: approved → `live`; rejected
+    (reason required) → `under_review` (internal fix) or `issues_sent` (client
+    resubmits), with both the decision and the status change audited.
 - **Roles:** viewer read-only, analyst maps and reviews, manager (admin) signs off.
   Four-eyes: whoever approved a file's mappings can't sign it off.
 - **Audit:** a `claims.*` audit row for every change, in the same transaction.

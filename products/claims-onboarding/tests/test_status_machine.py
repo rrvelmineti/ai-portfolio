@@ -9,6 +9,7 @@ from claims_onboarding.models import FileStatus as S
 from claims_onboarding.status import (
     FINAL,
     NEEDS_REASON,
+    REJECTION_TARGETS,
     SIGNOFF_ONLY,
     TRANSITIONS,
     InvalidTransition,
@@ -23,7 +24,9 @@ ALLOWED = {
     (S.UNDER_REVIEW, S.MAPPED),  # send back (needs a reason)
     (S.RULES_RUN, S.ISSUES_SENT),
     (S.RULES_RUN, S.READY_FOR_SIGNOFF),
-    (S.READY_FOR_SIGNOFF, S.LIVE),  # sign-off only
+    (S.READY_FOR_SIGNOFF, S.LIVE),  # sign-off approval
+    (S.READY_FOR_SIGNOFF, S.UNDER_REVIEW),  # rejected sign-off: internal fix
+    (S.READY_FOR_SIGNOFF, S.ISSUES_SENT),  # rejected sign-off: client resubmits
 }
 
 
@@ -45,7 +48,10 @@ def test_exactly_the_agreed_edges_are_allowed(current: S, target: S) -> None:
 def test_final_states_and_special_rules() -> None:
     assert {S.ISSUES_SENT, S.LIVE} == FINAL
     assert {(S.UNDER_REVIEW, S.MAPPED)} == NEEDS_REASON
-    assert {S.LIVE} == SIGNOFF_ONLY
+    assert {
+        (S.READY_FOR_SIGNOFF, t) for t in (S.LIVE, S.UNDER_REVIEW, S.ISSUES_SENT)
+    } == SIGNOFF_ONLY
+    assert {S.UNDER_REVIEW, S.ISSUES_SENT} == REJECTION_TARGETS
     with pytest.raises(InvalidTransition, match=r"allowed: none \(final status\)"):
         check_transition(S.ISSUES_SENT, S.RECEIVED)
 
