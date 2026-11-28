@@ -5,6 +5,35 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Added — Claims Onboarding, Spec 1 Phase 2: synthetic claims data (ADR 0010)
+- **Target dictionary** `products/claims-onboarding/data/dictionary/claims_v1.json`: the
+  12 original fields plus optional `paid_date` (`not before service_date`), with types,
+  formats, rules and severity.
+- **20 synthetic extracts** (week 1 and week 2) for 10 fictional health plans under
+  `products/claims-onboarding/data/synthetic/`:
+  - formats: CSV, pipe, tab, `.xlsx`, latin-1, UTF-8 BOM, title lines + TOTAL footer;
+  - per-client date formats, `$` amounts and ID patterns;
+  - vendor, abbreviated, mixed-case and accented headers, an ambiguous date pair, a
+    renamed-but-same field and extra unmapped columns;
+  - 5–60 planted errors per file;
+  - week 2: one renamed header, one new column, a different error mix.
+- **Answer keys per file** (mapping key, error key with row and physical line) and a
+  SHA-256 manifest. The two-way checker requires every keyed error to be found and
+  nothing else.
+- **Client 1** is the original 2,000-row sample: only its procedure codes are replaced
+  by synthetic `Z` codes. Its 52 errors match the original key exactly; 4 derived
+  `paid_date` errors are marked separately.
+- **Procedure codes** are `Z` + 4 digits everywhere, with no descriptions. NPIs are
+  synthetic and Luhn-valid. Names and addresses come from seeded Faker.
+- **`python -m claims_onboarding.synthetic generate | check | seed`.** The seed loads
+  the dictionary, clients and week-1 file metadata into the demo tenant as the non-login
+  `system:seed` account.
+- **Ops:**
+  - the nightly demo reset clears the demo tenant's claims data and re-runs the seed;
+  - deploys migrate the claims schema and grant the app role exact claims privileges
+    (new `extra_grants` / `keep_usernames` parameters on the core demo ops).
+- **Dependencies:** `openpyxl==3.1.5` (claims) and `types-openpyxl` (dev).
+
 ### Added — Claims Onboarding, Spec 1 Phase 1: multi-tenant data model (ADR 0009)
 - `products/claims-onboarding` (package `claims_onboarding`), a new uv workspace member.
 - **Schema `claims`** (own Alembic env, migration 0001): clients, data_dictionaries

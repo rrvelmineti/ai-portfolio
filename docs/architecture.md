@@ -69,4 +69,4 @@ This starts Postgres, then the migrate job (owner role), then the app as
 
 [`docs/decisions/`](decisions/): monorepo layout (0001), gateway (0002), auth (0003),
 observability (0004), guardrails (0005–0007), free deployment (0008), claims
-onboarding data model (0009).
+onboarding data model (0009), synthetic claims data (0010).

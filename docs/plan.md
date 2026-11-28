@@ -46,7 +46,7 @@ on the shared platform. Synthetic claims data only.
 - Status: **In progress**
 - Phases:
 
-  1. **Multi-tenant data model** — **In progress** (this phase)
+  1. **Multi-tenant data model** — **Done**
      - Tables in schema `claims` (Alembic, `tenant_id` on everything, composite
        `(tenant_id, id)` foreign keys): clients, data_dictionaries (versioned), files
        (status lifecycle), file_columns, mappings (suggested / approved / rejected,
@@ -65,7 +65,14 @@ on the shared platform. Synthetic claims data only.
        create a client, register a file, decide mappings, move status and sign off.
      - ADR 0009; [current state of the old app](../products/claims-onboarding/docs/current-state.md).
   2. **Synthetic data:** 10 client claims files with different headers and formats and
-     planted errors, each with an answer key — Not started
+     planted errors, each with an answer key — **In progress** (this phase)
+     - Dictionary v1: 12 fields + optional `paid_date`; 10 fictional clients (CSV, pipe,
+       tab, .xlsx, latin-1, UTF-8 BOM, title lines + TOTAL footer), week 1 and week 2;
+       client 1 = the original 2,000-row / 52-error sample with synthetic `Z` procedure
+       codes.
+     - Mapping and error keys per file, checked both ways; SHA-256 manifest; seeded into
+       the demo tenant as `system:seed`; nightly reset clears and reseeds. ADR 0010;
+       [data README](../products/claims-onboarding/data/synthetic/README.md).
   3. **Ingestion:** upload, SFTP drop and S3-compatible watch folder; duplicate and format
      checks — Not started
   4. **Privacy:** Presidio masking before any model call, `hipaa_safe_harbor` profile,
