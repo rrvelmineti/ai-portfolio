@@ -21,6 +21,7 @@ COPY --from=uv /uv /usr/local/bin/uv
 WORKDIR /app
 COPY pyproject.toml uv.lock ./
 COPY core core
+COPY products products
 COPY scripts scripts
 RUN --mount=type=cache,target=/root/.cache/uv \
     --mount=type=secret,id=ca,required=false \

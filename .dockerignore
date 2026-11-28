@@ -17,7 +17,8 @@ htmlcov
 eval
 docs
 infra
-products
+# products: only their sources and pyproject (workspace members uv must resolve)
+products/**/docs
 **/tests
 *.md
 !README.md

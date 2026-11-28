@@ -11,6 +11,7 @@ members = [
     "ai-platform-guardrails",
     "ai-platform-observability",
     "ai-portfolio",
+    "claims-onboarding",
 ]
 
 [[package]]
@@ -182,6 +183,7 @@ dependencies = [
     { name = "ai-platform-gateway" },
     { name = "ai-platform-guardrails" },
     { name = "ai-platform-observability" },
+    { name = "claims-onboarding" },
 ]
 
 [package.dev-dependencies]
@@ -211,6 +213,7 @@ requires-dist = [
     { name = "ai-platform-gateway", editable = "core/gateway" },
     { name = "ai-platform-guardrails", editable = "core/guardrails" },
     { name = "ai-platform-observability", editable = "core/observability" },
+    { name = "claims-onboarding", editable = "products/claims-onboarding" },
 ]
 
 [package.metadata.requires-dev]
@@ -542,6 +545,35 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/a3/a5/cc188879ab8e8a36d295f888335f0a2875e39bcdacc6fe3207427c14036f/charset_normalizer-3.5.3-cp37-abi3-win_amd64.whl", hash = "sha256:a5a7e0326566759f9a7bc44f4b9a179cc40a297e09e759b0bc7c848c06347527", size = 200667, upload-time = "2026-11-23T02:46:27.221Z" },
     { url = "https://files.pythonhosted.org/packages/d5/a3/4a6047c40414f170ad09a6d44c1a0663914924619304817c2e33d19fae75/charset_normalizer-3.5.3-cp37-abi3-win_arm64.whl", hash = "sha256:e4f85c34f9be32ec5568a0668fb8bc029d3e729285fb8fccc38695e185379a9b", size = 290628, upload-time = "2026-11-23T02:46:29.06Z" },
     { url = "https://files.pythonhosted.org/packages/d2/0d/07ab8eb9b7015274353eac2add4067bde1ab1b51912bbae505392905eedd/charset_normalizer-3.5.3-py3-none-any.whl", hash = "sha256:96e268b0cbda016ac519513294fcd17032264085b600abaac58b93049477e132", size = 68878, upload-time = "2026-11-23T02:46:50.665Z" },
+]
+
+[[package]]
+name = "claims-onboarding"
+version = "0.1.0"
+source = { editable = "products/claims-onboarding" }
+dependencies = [
+    { name = "ai-platform-auth" },
+    { name = "ai-platform-common" },
+    { name = "ai-platform-guardrails" },
+    { name = "ai-platform-observability" },
+    { name = "alembic" },
+    { name = "fastapi" },
+    { name = "psycopg", extra = ["binary"] },
+    { name = "pydantic" },
+    { name = "sqlalchemy" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "ai-platform-auth", editable = "core/auth" },
+    { name = "ai-platform-common", editable = "core/common" },
+    { name = "ai-platform-guardrails", editable = "core/guardrails" },
+    { name = "ai-platform-observability", editable = "core/observability" },
+    { name = "alembic", specifier = "==1.20.1" },
+    { name = "fastapi", specifier = "==0.165.0" },
+    { name = "psycopg", extras = ["binary"], specifier = "==3.3.9" },
+    { name = "pydantic", specifier = "==2.14.4" },
+    { name = "sqlalchemy", specifier = "==2.1.9" },
 ]
 
 [[package]]
